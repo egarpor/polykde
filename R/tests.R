@@ -25,7 +25,7 @@
 #' Hellinger distance, which is the Bhattacharyya divergence (or coefficient).
 #' @examples
 #' ## Two-sample case
-#'
+#' \donttest{
 #' # H0 holds
 #' n <- c(50, 100)
 #' X1 <- rotasym::r_vMF(n = n[1], mu = c(0, 0, 1), kappa = 1)
@@ -39,7 +39,7 @@
 #'               d = 2, type = "jsd", h = 0.5, cv_jsd = 1)
 #'
 #' ## k-sample case
-#' \donttest{
+#'
 #' # H0 holds
 #' n <- c(50, 100, 50)
 #' X1 <- rotasym::r_vMF(n = n[1], mu = c(0, 0, 1), kappa = 1)
