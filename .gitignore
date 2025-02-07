@@ -5,14 +5,12 @@
 src/*.o
 src/*.so
 src/*.dll
-TODO/
 .DS_Store
 inst/doc
 *.html
 *.history
 man/.DS_Store
 .Renviron
-TODO.md
 tests/testthat/Rplots.pdf
 *.gcno
 *.gcda
