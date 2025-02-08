@@ -2,7 +2,7 @@
 % Please edit documentation in R/samplers.R
 \name{r_vmf_polysph}
 \alias{r_vmf_polysph}
-\title{Sample vMF-distributed polyspherical data}
+\title{Sample von Mises--Fisher distributed polyspherical data}
 \usage{
 r_vmf_polysph(n, d, mu, kappa, normalize_mu = FALSE)
 }
@@ -12,12 +12,18 @@ r_vmf_polysph(n, d, mu, kappa, normalize_mu = FALSE)
 \item{d}{dimensions vector, of size \code{r}.}
 
 \item{mu}{a vector of size \code{sum(d) + r} with the concatenated vMF means
-on \eqn{S^{d_j}}.}
+on \eqn{\mathcal{S}^{d_j}}.}
 
 \item{kappa}{a vector of size \code{r} with the vMF concentrations.}
 
 \item{normalize_mu}{ensure a normalization of \code{mu}?}
 }
 \description{
-Sample vMF-distributed polyspherical data
+Simulates from a product of von Mises--Fisher (vMF)
+distributions on the polysphere \eqn{\mathcal{S}^{d_1} \times \cdots
+\times \mathcal{S}^{d_r}}.
+}
+\examples{
+# Simulate vMF data on (S^1)^2
+r_vmf_polysph(n = 10, d = c(1, 1), mu = c(1, 0, 0, 1), kappa = c(1, 1))
 }

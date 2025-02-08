@@ -48,6 +48,9 @@ proj_grad_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), wrt_un
 
 #' @title Polyspherical kernel density estimator
 #'
+#' @description Computes the kernel density estimator for data on the
+#' polysphere \eqn{S^{d_1} \times \cdots \times S^{d_r}}.
+#'
 #' @param x a matrix of size \code{c(nx, sum(d) + r)} with the evaluation
 #' points.
 #' @param X a matrix of size \code{c(n, sum(d) + r)} with the sample.
@@ -94,7 +97,7 @@ sfp <- function(t) {
 #' @title Polyspherical projection
 #'
 #' @inheritParams kde_polysph
-#' @param ind_dj 0-based index separating the spheres. Computed using
+#' @param ind_dj \code{0}-based index separating the spheres. Computed using
 #' \code{\link{comp_ind_dj}}.
 #' @keywords internal
 proj_polysph <- function(x, ind_dj) {

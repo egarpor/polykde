@@ -10,7 +10,7 @@ dist_polysph_matrix(x, ind_dj, norm_x = FALSE, norm_y = FALSE,
 \arguments{
 \item{x}{a matrix of size \code{c(n, sum(d) + r)}.}
 
-\item{ind_dj}{0-based index separating the spheres. Computed using
+\item{ind_dj}{\code{0}-based index separating the spheres. Computed using
 \code{\link{comp_ind_dj}}.}
 
 \item{norm_x, norm_y}{ensure a normalization of the data?}

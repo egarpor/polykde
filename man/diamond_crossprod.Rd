@@ -9,7 +9,7 @@ diamond_crossprod(X, ind_dj)
 \arguments{
 \item{X}{a matrix of size \code{c(n, sum(d) + r)} with the sample.}
 
-\item{ind_dj}{0-based index separating the spheres. Computed using
+\item{ind_dj}{\code{0}-based index separating the spheres. Computed using
 \code{\link{comp_ind_dj}}.}
 }
 \description{

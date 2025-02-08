@@ -1,5 +1,4 @@
 
-
 #' @title Parallel Euler algorithm
 #'
 #' @inheritParams euler_ridge

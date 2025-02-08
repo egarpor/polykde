@@ -2,7 +2,8 @@
 % Please edit documentation in R/bwd.R
 \name{bw_rot_polysph}
 \alias{bw_rot_polysph}
-\title{Rule-of-thumb bandwidths}
+\title{Rule-of-thumb bandwidth selection for polyspherical kernel
+density estimator}
 \usage{
 bw_rot_polysph(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
   bw0 = NULL, upscale = FALSE, deriv = 0, k = 10, kappa = NULL, ...)
@@ -22,7 +23,8 @@ for Epa, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}}; \code{3} for softplus.}
 \code{\link{bw_rot_polysph}} if not provided (default).}
 
 \item{upscale}{rescale bandwidths to work on
-\eqn{S^{d_1}\times\cdots\times S^{d_r}} and for derivative estimation?
+\eqn{\mathcal{S}^{d_1}\times\cdots\times \mathcal{S}^{d_r}} and for
+derivative estimation?
 Defaults to \code{FALSE}. If \code{upscale == 1}, the order \code{n} is
 upscaled. If \code{upscale == 2}, then also the kernel constant is upscaled.}
 
@@ -33,8 +35,31 @@ upscaled. If \code{upscale == 2}, then also the kernel constant is upscaled.}
 \item{kappa}{estimate of the concentration parameters. Computed if not
 provided (default).}
 
-\item{...}{further parameters passed to \code{\link[=stats]{optim}}.}
+\item{...}{further parameters passed to \code{\link[=stats]{nlm}}.}
+}
+\value{
+A list with entries \code{bw} (optimal bandwidth) and \code{opt},
+the latter containing the output of \code{\link[=stats]{nlm}}.
 }
 \description{
-Rule-of-thumb bandwidths
+Computes the rule-of-thumb bandwidth for the polyspherical
+kernel density estimator using a product of von Mises--Fisher distributions
+as reference.
+}
+\details{
+The selector assumes that the density curvature matrix
+\eqn{\boldsymbol{R}} of the unknown density is approximable by that of a
+product of von Mises--Fisher densities,
+\eqn{\boldsymbol{R}(\boldsymbol{\kappa})}. The estimation of the
+concentration parameters \eqn{\boldsymbol{\kappa}} is done by maximum
+likelihood.
+}
+\examples{
+# Simple check
+n <- 100
+d <- 1:2
+kappa <- rep(10, 2)
+X <- r_vmf_polysph(n = n, d = d, mu = r_unif_polysph(n = 1, d = d),
+                   kappa = kappa)
+bw_rot_polysph(X = X, d = d)$bw
 }

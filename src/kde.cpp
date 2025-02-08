@@ -20,6 +20,9 @@ const double log_M_PI = std::log(M_PI);
 
 //' @title Polyspherical kernel density estimator
 //'
+//' @description Computes the kernel density estimator for data on the
+//' polysphere \eqn{S^{d_1} \times \cdots \times S^{d_r}}.
+//'
 //' @param x a matrix of size \code{c(nx, sum(d) + r)} with the evaluation
 //' points.
 //' @param X a matrix of size \code{c(n, sum(d) + r)} with the sample.

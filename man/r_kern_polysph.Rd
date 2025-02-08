@@ -13,7 +13,7 @@ r_kern_polysph(n, d, mu, h, kernel = 1, kernel_type = 1, k = 10,
 \item{d}{dimensions vector, of size \code{r}.}
 
 \item{mu}{a vector of size \code{sum(d) + r} with the concatenated means
-on \eqn{S^{d_j}}.}
+on \eqn{\mathcal{S}^{d_j}}.}
 
 \item{h}{bandwidth vector, of size \code{r}.}
 
@@ -28,7 +28,13 @@ for Epa, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}}; \code{3} for softplus.}
 \item{norm_mu}{ensure a normalization of \code{mu}?}
 }
 \description{
-Sample kernel-distributed polyspherical data
+Simulates from the distribution defined by a kernel on the
+polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
+}
+\details{
+Simulation for non-von Mises--Fisher spherically symmetric kernels
+is done by acceptance-rejection from a von Mises--Fisher proposal
+distribution.
 }
 \examples{
 # Simulate kernels in (S^1)^2

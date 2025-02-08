@@ -11,7 +11,7 @@ interp_polysph(x, y, ind_dj, N = 1)
 
 \item{y}{TODO}
 
-\item{ind_dj}{0-based index separating the spheres. Computed using
+\item{ind_dj}{\code{0}-based index separating the spheres. Computed using
 \code{\link{comp_ind_dj}}.}
 
 \item{N}{TODO}

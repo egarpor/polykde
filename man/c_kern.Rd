@@ -32,9 +32,9 @@ Normalizing constant of the a directional kernel
 }
 \details{
 This function computes the normalizing constant \eqn{c(h,d,L)}
-such that \eqn{\int_{S^d} c(h,d,L) L((1 - x'y)/h^2) dx = 1}
+such that \eqn{\int_{\mathcal{S}^d} c(h,d,L) L((1 - x'y)/h^2) dx = 1}
 (extrinsic-chordal distance) or
-\eqn{\int_{S^d} c(h,d,L) L(arccos(x'y)^2/(2h^2)) dx = 1} (intrinsic
+\eqn{\int_{\mathcal{S}^d} c(h,d,L) L(arccos(x'y)^2/(2h^2)) dx = 1} (intrinsic
 distance).
 }
 \examples{

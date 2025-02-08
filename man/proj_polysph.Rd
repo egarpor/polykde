@@ -10,7 +10,7 @@ proj_polysph(x, ind_dj)
 \item{x}{a matrix of size \code{c(nx, sum(d) + r)} with the evaluation
 points.}
 
-\item{ind_dj}{0-based index separating the spheres. Computed using
+\item{ind_dj}{\code{0}-based index separating the spheres. Computed using
 \code{\link{comp_ind_dj}}.}
 }
 \description{

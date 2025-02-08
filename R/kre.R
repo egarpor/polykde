@@ -1,5 +1,4 @@
 
-
 #' @title Local polynomial estimator for polyspherical-on-scalar regression
 #'
 #' @param x a vector of size \code{n} with the evaluation points.

@@ -2,7 +2,8 @@
 % Please edit documentation in R/bwd.R
 \name{bw_lcv_min_epa}
 \alias{bw_lcv_min_epa}
-\title{Minimum Epanechnikov bandwidth allowed in LCV}
+\title{Minimum bandwidth allowed in likelihood cross-validation for
+Epanechnikov kernels}
 \usage{
 bw_lcv_min_epa(X, d, kernel_type = c("prod", "sph")[1])
 }
@@ -14,6 +15,19 @@ bw_lcv_min_epa(X, d, kernel_type = c("prod", "sph")[1])
 \item{kernel_type}{type of kernel employed: \code{1} for product kernel
 (default); \code{2} for spherically symmetric kernel.}
 }
+\value{
+The minimum bandwidth allowed.
+}
 \description{
-Minimum Epanechnikov bandwidth allowed in LCV
+This function computes the minimum bandwidth allowed in
+likelihood cross-validation with Epanechnikov kernels, for a given dataset
+and dimension.
+}
+\examples{
+n <- 5
+d <- 1:3
+X <- r_unif_polysph(n = n, d = d)
+h_min <- rep(bw_lcv_min_epa(X = X, d = d), length(d))
+log_cv_kde_polysph(X = X, d = d, h = h_min - 1e-4, kernel = 2) # Problem
+log_cv_kde_polysph(X = X, d = d, h = h_min + 1e-4, kernel = 2) # OK
 }

@@ -6,23 +6,29 @@
 \title{Conversion between the angular and Cartesian coordinates of the
 polysphere}
 \usage{
-polysph_to_angles(x, dims)
+polysph_to_angles(x, d)
 
-angles_to_polysph(theta, dims)
+angles_to_polysph(theta, d)
 }
 \arguments{
-\item{x}{matrix of size \code{c(n, sum(dims + 1))} with the Cartesian
-coordinates.}
+\item{x}{matrix of size \code{c(n, sum(d + 1))} with the Cartesian
+coordinates on \eqn{\mathcal{S}^{d_1}\times\cdots\times\mathcal{S}^{d_r}}.
+Assumed to be of unit norm by blocks of coordinates in the rows.}
 
-\item{dims}{vector with the dimensions of the polysphere.}
+\item{d}{vector with the dimensions of the polysphere.}
 
-\item{theta}{matrix of size \code{c(n, sum(dims))} with the angles.}
+\item{theta}{matrix of size \code{c(n, sum(d))} with the angles.}
+}
+\value{
+For \code{angles_to_polysph}, the matrix \code{x}. For
+\code{polysph_to_angles}, the matrix \code{theta}.
 }
 \description{
-Conversion between the angular and Cartesian coordinates of the
-polysphere
+Obtain the angular coordinates of points on a polysphere
+\eqn{\mathcal{S}^{d_1}\times\cdots\times\mathcal{S}^{d_r}}, and viceversa.
 }
 \examples{
-polysph_to_angles(x = c(0, 0, 1, 0, 1), dims = c(2, 1))
-angles_to_polysph(rep(pi / 2, 3), dims = c(2, 1))
+# Check changes of coordinates
+polysph_to_angles(angles_to_polysph(rep(pi / 2, 3), d = 2:1), d = 2:1)
+angles_to_polysph(polysph_to_angles(x = c(0, 0, 1, 0, 1), d = 2:1), d = 2:1)
 }

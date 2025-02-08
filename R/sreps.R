@@ -1,5 +1,4 @@
 
-
 #' @title Interpolation on the polysphere
 #'
 #' @param x TODO

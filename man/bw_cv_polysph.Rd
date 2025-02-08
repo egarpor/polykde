@@ -2,7 +2,8 @@
 % Please edit documentation in R/bwd.R
 \name{bw_cv_polysph}
 \alias{bw_cv_polysph}
-\title{Cross-validation bandwidth selection for polyspherical kde}
+\title{Cross-validation bandwidth selection for polyspherical kernel
+density estimator}
 \usage{
 bw_cv_polysph(X, d, kernel = 1, kernel_type = 1, k = 10,
   type = c("LCV", "LSCV")[1], M = 10000, start = NULL, na.rm = FALSE,
@@ -34,8 +35,8 @@ the LSCV loss.}
 
 \item{h_min}{minimum h enforced (componentwise).}
 
-\item{upscale}{rescale bandwidths to work for derivative estimation?
-Defaults to \code{FALSE}.}
+\item{upscale}{rescale the resulting bandwidths to work for derivative
+estimation? Defaults to \code{FALSE}.}
 
 \item{deriv}{derivative order to perform the upscaling. Defaults to \code{0}.}
 
@@ -43,6 +44,23 @@ Defaults to \code{FALSE}.}
 (if \code{ncores = 1}) or \code{\link[optimParallel]{optimParallel}}
 (if \code{ncores > 1}).}
 }
+\value{
+A list as \code{\link[=stats]{optim}} or
+\code{\link[optimParallel]{optimParallel}} output. In particular, the
+optimal bandwidth is stored in \code{par}.
+}
 \description{
-Cross-validation bandwidth selection for polyspherical kde
+Likelihood Cross-Validation (LCV) and Least Squares
+Cross-Validation (LSCV) bandwidth selection for the polyspherical kernel
+density estimator.
+}
+\examples{
+# Simple checks
+n <- 50
+d <- 1:2
+kappa <- rep(10, 2)
+X <- r_vmf_polysph(n = n, d = d, mu = r_unif_polysph(n = 1, d = d),
+                   kappa = kappa)
+bw_cv_polysph(X = X, d = d, type = "LCV")$par
+bw_cv_polysph(X = X, d = d, type = "LSCV")$par
 }

@@ -1,5 +1,4 @@
 
-
 #' @title Stable computation of the softplus function
 #'
 #' @param t numeric vector or matrix.

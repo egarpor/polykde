@@ -1,6 +1,10 @@
 
-
-#' @title Cross-validation bandwidth selection for polyspherical kde
+#' @title Cross-validation bandwidth selection for polyspherical kernel
+#' density estimator
+#'
+#' @description Likelihood Cross-Validation (LCV) and Least Squares
+#' Cross-Validation (LSCV) bandwidth selection for the polyspherical kernel
+#' density estimator.
 #'
 #' @inheritParams kde_polysph
 #' @param type cross-validation type, either \code{"LCV"} or \code{"LSCV"}.
@@ -11,11 +15,23 @@
 #' @param ncores number of cores used during the optimization.
 #' @param h_min minimum h enforced (componentwise).
 #' @inheritParams bw_rot_polysph
-#' @param upscale rescale bandwidths to work for derivative estimation?
-#' Defaults to \code{FALSE}.
+#' @param upscale rescale the resulting bandwidths to work for derivative
+#' estimation? Defaults to \code{FALSE}.
 #' @param ... further arguments passed to \code{\link{optim}}
 #' (if \code{ncores = 1}) or \code{\link[optimParallel]{optimParallel}}
 #' (if \code{ncores > 1}).
+#' @return A list as \code{\link[=stats]{optim}} or
+#' \code{\link[optimParallel]{optimParallel}} output. In particular, the
+#' optimal bandwidth is stored in \code{par}.
+#' @examples
+#' # Simple checks
+#' n <- 50
+#' d <- 1:2
+#' kappa <- rep(10, 2)
+#' X <- r_vmf_polysph(n = n, d = d, mu = r_unif_polysph(n = 1, d = d),
+#'                    kappa = kappa)
+#' bw_cv_polysph(X = X, d = d, type = "LCV")$par
+#' bw_cv_polysph(X = X, d = d, type = "LSCV")$par
 #' @export
 bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
                           type = c("LCV", "LSCV")[1], M = 1e4,
@@ -194,7 +210,12 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 }
 
 
-#' @title Rule-of-thumb bandwidths
+#' @title Rule-of-thumb bandwidth selection for polyspherical kernel
+#' density estimator
+#'
+#' @description Computes the rule-of-thumb bandwidth for the polyspherical
+#' kernel density estimator using a product of von Mises--Fisher distributions
+#' as reference.
 #'
 #' @inheritParams kde_polysph
 #' @param bw0 initial bandwidth for minimizing the AMISE. Computed with
@@ -207,7 +228,23 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 #' @param deriv derivative order to perform the upscaling. Defaults to \code{0}.
 #' @param kappa estimate of the concentration parameters. Computed if not
 #' provided (default).
-#' @param ... further parameters passed to \code{\link[=stats]{optim}}.
+#' @param ... further parameters passed to \code{\link[=stats]{nlm}}.
+#' @details The selector assumes that the density curvature matrix
+#' \eqn{\boldsymbol{R}} of the unknown density is approximable by that of a
+#' product of von Mises--Fisher densities,
+#' \eqn{\boldsymbol{R}(\boldsymbol{\kappa})}. The estimation of the
+#' concentration parameters \eqn{\boldsymbol{\kappa}} is done by maximum
+#' likelihood.
+#' @return A list with entries \code{bw} (optimal bandwidth) and \code{opt},
+#' the latter containing the output of \code{\link[=stats]{nlm}}.
+#' @examples
+#' # Simple check
+#' n <- 100
+#' d <- 1:2
+#' kappa <- rep(10, 2)
+#' X <- r_vmf_polysph(n = n, d = d, mu = r_unif_polysph(n = 1, d = d),
+#'                    kappa = kappa)
+#' bw_rot_polysph(X = X, d = d)$bw
 #' @export
 bw_rot_polysph <- function(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
                            bw0 = NULL, upscale = FALSE, deriv = 0, k = 10,
@@ -280,18 +317,6 @@ bw_rot_polysph <- function(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
   }
 
   # AMISE and gradient functions
-  # f_log_amise_stable <- function(h) {
-  #
-  #   log_h <- log(h)
-  #   log_var2 <- log_var - sum(d * log_h)
-  #   logs <- log(tcrossprod(h^2)) + log_bias2 - log_var2
-  #   log_obj <- log_var2 + log_sum_exp(x = c(logs, 0))
-  #   attr(log_obj, "gradient") <-
-  #     exp(log(4) + log_bias2 - log_obj + log_h) %*% h^2 -
-  #     exp(log(d) + log_var2 - log_obj - log_h)
-  #   return(log_obj)
-  #
-  # }
   f_log_amise_stable_log_h <- function(log_h) {
 
     h <- exp(log_h)
@@ -368,12 +393,82 @@ bw_rot_polysph <- function(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
 }
 
 
-#' @title Rule-of-thumb marginal bandwidths
+#' @title Curvature of a polyspherical von Mises--Fisher density
+#'
+#' @description Computes the curvature matrix \eqn{\boldsymbol{R}} of a
+#' polyspherical von Mises--Fisher density. This curvature is used in the
+#' rule-of-thumb selector \code{\link{bw_rot_polysph}}.
+#'
+#' @inheritParams r_vmf_polysph
+#' @param log compute the (entrywise) logarithm of the curvature matrix?
+#' Defaults to \code{FALSE}.
+#' @return A matrix of size \code{c(length(r), length(r))}.
+#' @examples
+#' # Curvature matrix
+#' d <- 2:4
+#' kappa <- 1:3
+#' curv_vmf_polysph(kappa = kappa, d = d)
+#' curv_vmf_polysph(kappa = kappa, d = d, log = TRUE)
+#'
+#' # Equivalence on the sphere with DirStats::R_Psi_mixvmf
+#' drop(curv_vmf_polysph(kappa = kappa[1], d = d[1]))
+#' d[1]^2 * DirStats::R_Psi_mixvmf(q = d[1], mu = rbind(c(rep(0, d[1]), 1)),
+#'                                 kappa = kappa[1], p = 1)
+#' @export
+curv_vmf_polysph <- function(kappa, d, log = FALSE) {
+
+  # Dimension check
+  stopifnot(length(d) %in% c(1, length(kappa)))
+
+  # Log-Bessels
+  log_I_1 <- log(besselI(x = 2 * kappa, nu = (d + 1) / 2, expon.scaled = TRUE))
+  log_I_2 <- log(besselI(x = 2 * kappa, nu = (d - 1) / 2, expon.scaled = TRUE))
+  log_I_3 <- log(besselI(x = kappa, nu = (d - 1) / 2, expon.scaled = TRUE))
+  I <- exp(log_I_1 - log_I_2)
+
+  # Auxiliary functions
+  v_kappa <- d * kappa * (2 * (2 + d) * kappa - (d * d - d + 2) * I)
+  u_kappa <- d * kappa * I
+  R0_kappa <- sum(((d - 1) / 2) * log(kappa) + log_I_2 -
+                    d * log(2) - ((d + 1) / 2) * log(pi) - 2 * log_I_3)
+
+  # log(R(kappa))
+  R_kappa <- tcrossprod(u_kappa)
+  diag(R_kappa) <- 0.5 * v_kappa
+  R_kappa <- log(R_kappa) + log(0.25) + R0_kappa
+
+  # Logarithm or not?
+  if (!log) {
+
+    R_kappa <- exp(R_kappa)
+
+  }
+  return(R_kappa)
+
+}
+
+
+#' @title Marginal rule-of-thumb bandwidth selection for polyspherical kernel
+#' density estimator
+#'
+#' @description Computes marginal (sphere by sphere) rule-of-thumb bandwidths
+#' for the polyspherical kernel density estimator using a von Mises--Fisher
+#' distribution as reference.
 #'
 #' @inheritParams kde_polysph
 #' @inheritParams bw_rot_polysph
+#' @return A vector of length \code{r} with the marginal optimal bandwidths.
+#' @examples
+#' # Comparison of marginal and joint bandwidths
+#' n <- 100
+#' d <- 1:2
+#' kappa <- rep(10, 2)
+#' X <- r_vmf_polysph(n = n, d = d, mu = r_unif_polysph(n = 1, d = d),
+#'                    kappa = kappa)
+#' bw_rot_polysph(X = X, d = d)$bw
+#' bw_mrot_polysph(X = X, d = d)
 #' @export
-bw_mrot_polysph <- function(X, d, kernel = 1,  k = 10, upscale = FALSE,
+bw_mrot_polysph <- function(X, d, kernel = 1, k = 10, upscale = FALSE,
                             deriv = 0, kappa = NULL, ...) {
 
   # Check dimensions
@@ -482,9 +577,22 @@ bw_mrot_polysph <- function(X, d, kernel = 1,  k = 10, upscale = FALSE,
 }
 
 
-#' @title Minimum Epanechnikov bandwidth allowed in LCV
+#' @title Minimum bandwidth allowed in likelihood cross-validation for
+#' Epanechnikov kernels
+#'
+#' @description This function computes the minimum bandwidth allowed in
+#' likelihood cross-validation with Epanechnikov kernels, for a given dataset
+#' and dimension.
 #'
 #' @inheritParams bw_cv_polysph
+#' @return The minimum bandwidth allowed.
+#' @examples
+#' n <- 5
+#' d <- 1:3
+#' X <- r_unif_polysph(n = n, d = d)
+#' h_min <- rep(bw_lcv_min_epa(X = X, d = d), length(d))
+#' log_cv_kde_polysph(X = X, d = d, h = h_min - 1e-4, kernel = 2) # Problem
+#' log_cv_kde_polysph(X = X, d = d, h = h_min + 1e-4, kernel = 2) # OK
 #' @export
 bw_lcv_min_epa <- function(X, d, kernel_type = c("prod", "sph")[1]) {
 
@@ -537,45 +645,5 @@ bw_lcv_min_epa <- function(X, d, kernel_type = c("prod", "sph")[1]) {
     stop("\"kernel_type\" must be either \"prod\" or \"sph\".")
 
   }
-
-}
-
-
-#' @title Curvature of a polyspherical von Mises--Fisher density
-#'
-#' @description Computes the curvature matrix \eqn{\boldsymbol{R}} of a
-#' polyspherical von Mises--Fisher density.
-#' @inheritParams r_vmf_polysph
-#' @param log compute the logarithm of the curvature? Defaults to \code{FALSE}.
-#' @export
-curv_vmf_polysph <- function(kappa, d, log = FALSE) {
-
-  # Dimension check
-  stopifnot(length(d) %in% c(1, length(kappa)))
-
-  # Log-Bessels
-  log_I_1 <- log(besselI(x = 2 * kappa, nu = (d + 1) / 2, expon.scaled = TRUE))
-  log_I_2 <- log(besselI(x = 2 * kappa, nu = (d - 1) / 2, expon.scaled = TRUE))
-  log_I_3 <- log(besselI(x = kappa, nu = (d - 1) / 2, expon.scaled = TRUE))
-  I <- exp(log_I_1 - log_I_2)
-
-  # Auxiliary functions
-  v_kappa <- d * kappa * (2 * (2 + d) * kappa - (d * d - d + 2) * I)
-  u_kappa <- d * kappa * I
-  R0_kappa <- sum(((d - 1) / 2) * log(kappa) + log_I_2 -
-                    d * log(2) - ((d + 1) / 2) * log(pi) - 2 * log_I_3)
-
-  # log(R(kappa))
-  R_kappa <- tcrossprod(u_kappa)
-  diag(R_kappa) <- 0.5 * v_kappa
-  R_kappa <- log(R_kappa) + log(0.25) + R0_kappa
-
-  # Logarithm or not?
-  if (!log) {
-
-    R_kappa <- exp(R_kappa)
-
-  }
-  return(R_kappa)
 
 }

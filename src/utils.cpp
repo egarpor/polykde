@@ -29,7 +29,7 @@ arma::mat sfp(arma::mat t) {
 //' @title Polyspherical projection
 //'
 //' @inheritParams kde_polysph
-//' @param ind_dj 0-based index separating the spheres. Computed using
+//' @param ind_dj \code{0}-based index separating the spheres. Computed using
 //' \code{\link{comp_ind_dj}}.
 //' @keywords internal
 // [[Rcpp::export]]

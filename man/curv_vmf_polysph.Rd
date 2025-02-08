@@ -11,9 +11,26 @@ curv_vmf_polysph(kappa, d, log = FALSE)
 
 \item{d}{dimensions vector, of size \code{r}.}
 
-\item{log}{compute the logarithm of the curvature? Defaults to \code{FALSE}.}
+\item{log}{compute the (entrywise) logarithm of the curvature matrix?
+Defaults to \code{FALSE}.}
+}
+\value{
+A matrix of size \code{c(length(r), length(r))}.
 }
 \description{
 Computes the curvature matrix \eqn{\boldsymbol{R}} of a
-polyspherical von Mises--Fisher density.
+polyspherical von Mises--Fisher density. This curvature is used in the
+rule-of-thumb selector \code{\link{bw_rot_polysph}}.
+}
+\examples{
+# Curvature matrix
+d <- 2:4
+kappa <- 1:3
+curv_vmf_polysph(kappa = kappa, d = d)
+curv_vmf_polysph(kappa = kappa, d = d, log = TRUE)
+
+# Equivalence on the sphere with DirStats::R_Psi_mixvmf
+drop(curv_vmf_polysph(kappa = kappa[1], d = d[1]))
+d[1]^2 * DirStats::R_Psi_mixvmf(q = d[1], mu = rbind(c(rep(0, d[1]), 1)),
+                                kappa = kappa[1], p = 1)
 }

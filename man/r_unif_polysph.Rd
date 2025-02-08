@@ -12,5 +12,10 @@ r_unif_polysph(n, d)
 \item{d}{dimensions vector, of size \code{r}.}
 }
 \description{
-Sample uniform polyspherical data
+Simulates from a uniform distribution on the polysphere
+\eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
+}
+\examples{
+# Simulate uniform data on (S^1)^2
+r_unif_polysph(n = 10, d = c(1, 1))
 }
