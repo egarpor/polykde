@@ -52,3 +52,4 @@ view_srep(base, dirs, bdry, radii, show_base = TRUE, show_base_pt = TRUE,
 \description{
 s-rep viewer
 }
+\keyword{internal}

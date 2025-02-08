@@ -13,5 +13,6 @@ sfp(t)
 Stable computation of the softplus function
 }
 \examples{
-curve(log(sfp(rbind(5 * (1 - x)))), from = -10, to = 10)
+curve(log(polykde:::sfp(rbind(5 * (1 - x)))), from = -10, to = 10)
 }
+\keyword{internal}

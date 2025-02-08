@@ -18,3 +18,4 @@ AP(x, v, ind_dj, orth = FALSE)
 The \eqn{jj}-block of \eqn{P} is \eqn{I_{d_j} - x_j x_j'}. The
 \eqn{jj}-block of \eqn{A} is \eqn{(x_j' * v_j) * I_{d_j}}.
 }
+\keyword{internal}

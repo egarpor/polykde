@@ -6,8 +6,7 @@
 #' \code{FALSE}.
 #' @param deriv kernel derivative. Must be \code{0}, \code{1}, or \code{2}.
 #' Defaults to \code{0}.
-#' @param inc_sfp include the softplus(k) function in the constant? Defaults to
-#' \code{TRUE}.
+#' @param inc_sfp include \code{softplus(k)} in the constant? Defaults to
 #' \code{TRUE}.
 #' @param y center of the kernel.
 #' @details TODO
@@ -90,9 +89,9 @@ hess_L <- function(x, y, h, kernel = 1, k = 10) {
 #' @inheritParams L
 #' @param intrinsic consider the intrinsic distance? Defaults to \code{FALSE}.
 #' @details This function computes the normalizing constant \eqn{c(h,d,L)}
-#' such that \eqn{\int_{S^d} c(h,d,L) L((1 - x'y)/h^2) dx = 1}
+#' such that \eqn{\int_{\mathcal{S}^d} c(h,d,L) L((1 - x'y)/h^2) dx = 1}
 #' (extrinsic-chordal distance) or
-#' \eqn{\int_{S^d} c(h,d,L) L(arccos(x'y)^2/(2h^2)) dx = 1} (intrinsic
+#' \eqn{\int_{\mathcal{S}^d} c(h,d,L) L(arccos(x'y)^2/(2h^2)) dx = 1} (intrinsic
 #' distance).
 #' @examples
 #' h_grid <- seq(0.01, 4, l = 100)
@@ -397,7 +396,7 @@ r_g_kern <- function(n, d, h, kernel = "1", k = 10) {
 
 
 #' @title Product kernel moments and efficiencies
-#' @param d dimension of each hypersphere.
+#' @param d common dimension of each hypersphere (a scalar).
 #' @param r number of polyspheres of the same dimension.
 #' @inheritParams kde_polysph
 #' @param kernel_ref reference kernel to which compare the efficiency. Uses the
@@ -416,8 +415,9 @@ eff_kern <- function(d, r, k = 10, kernel, kernel_type = c("prod", "sph")[1],
                      kernel_ref = "2", kernel_ref_type = c("prod", "sph")[2],
                      ...) {
 
-  # Check d
+  # Check d and r
   stopifnot(length(d) == 1)
+  stopifnot(length(r) == 1)
 
   # Make kernel_type and kernel_ref_type character
   if (is.numeric(kernel_type)) {
@@ -688,90 +688,6 @@ v_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
 }
 
 
-# TODO
-# lambda_d <- function(kernel, d, r, k = 10, kernel_type = c("prod", "sph")[1],
-#                      h = NULL, ...) {
-#
-#   if (is.function(kernel)) {
-#
-#     if (kernel_type == "prod") {
-#
-#       ld <- sapply(d, function(di) {
-#         num <- integrate(function(t) kernel(t)^2 * t^(di / 2 - 1),
-#                          lower = 0, upper = Inf, ...)$value
-#         den <- integrate(function(t) kernel(t) * t^(di / 2 - 1),
-#                          lower = 0, upper = Inf, ...)$value
-#         return(exp(-(di / 2 - 1) * log(2) - rotasym::w_p(p = di, log = TRUE) +
-#                      log(num) - 2 * log(den)))
-#       })
-#
-#     } else if (kernel_type == "sph") {
-#
-#       ld <- sapply(d, function(di) {
-#         num <- integrate(function(t) kernel(t)^2 * t^(di * r / 2 - 1),
-#                          lower = 0, upper = Inf, ...)$value
-#         den <- integrate(function(t) kernel(t) * t^(di * r / 2 - 1),
-#                          lower = 0, upper = Inf, ...)$value
-#         return(exp(lgamma(di * r / 2) -
-#                      r * ((di / 2 - 1) * log(2) +
-#                             rotasym::w_p(p = di, log = TRUE) +
-#                             lgamma(di / 2)) + log(num) - 2 * log(den)))
-#       })
-#
-#     }
-#
-#   } else {
-#
-#     if (kernel == "1") {
-#
-#       if (kernel_type == "prod") {
-#
-#         ld <- 1 / (2 * sqrt(pi))^d
-#
-#       } else if (kernel_type == "sph") {
-#
-#         ld <- 1 / (2 * sqrt(pi))^(d * r)
-#
-#       }
-#
-#     } else if (kernel == "2") {
-#
-#       if (kernel_type == "prod") {
-#
-#         ld <- exp(log(4) + lgamma(d / 2 + 2) - (d / 2) * log(2 * pi) -
-#                     log(d + 4))
-#
-#       } else if (kernel_type == "sph") {
-#
-#         ld <- 0
-#
-#       }
-#
-#     } else if (kernel == "3") {
-#
-#       if (kernel_type == "prod") {
-#
-#         ld <- 0
-#
-#       } else if (kernel_type == "sph") {
-#
-#         ld <- 0
-#
-#       }
-#
-#     } else {
-#
-#       stop("\"kernel\" must be 1 (vMF), 2 (Epa), 3 (softplus), or a function.")
-#
-#     }
-#
-#   }
-#
-#   return(ld)
-#
-# }
-
-
 #' @rdname eff_kern
 #' @export
 lambda_h <- function(d, h = NULL, kernel = "1", bias = FALSE, squared = FALSE,
@@ -798,11 +714,6 @@ lambda_h <- function(d, h = NULL, kernel = "1", bias = FALSE, squared = FALSE,
   return(lambda)
 
 }
-
-
-# if (kernel == "1" && !bias && squared) {
-# return(exp(-c_kern(h = h, d = d, kernel = "1", log = TRUE) - d * log(h)))
-# }
 
 
 #' @rdname eff_kern
@@ -843,14 +754,14 @@ lambda_vmf_h <- function(d, h = NULL, bias = FALSE, squared = FALSE) {
 #' to determine the weights of the weighted Epanechnikov kernel.
 #' @inheritParams eff_kern
 #' @param R curvature matrix as outputted by \code{\link{curv_vmf_polysph}}.
-#' @param tol tolerance for the fixed-point algorithm.
+#' @param tol tolerance for the fixed-point algorithm. Defaults to \code{1e-10}.
 #' @examples
 #' r <- 2
 #' d <- 1:r
 #' R <- curv_vmf_polysph(kappa = 1:r, d = d)
-#' beta0_R(d = d, R = R)
-#' @export
-beta0_R <- function(d, R, tol = 1e-16) {
+#' polykde:::beta0_R(d = d, R = R)
+#' @keywords internal
+beta0_R <- function(d, R, tol = 1e-10) {
 
   # # Simple fixed-point algorithm
   # b <- rep(1, length(d))

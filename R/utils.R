@@ -1,12 +1,13 @@
 
+
 #' @title Stable computation of the softplus function
 #'
 #' @param t numeric vector or matrix.
 #' @examples
 #' h <- 0.1
 #' k <- 1
-#' curve(softplus(k * (1 - (1 - x) / h^2)), from = -1, to = 1)
-#' @export
+#' curve(polykde:::softplus(k * (1 - (1 - x) / h^2)), from = -1, to = 1)
+#' @keywords internal
 softplus <- function(t) {
 
   # Evaluate the function in a stable for either positive or negative t's
@@ -17,6 +18,7 @@ softplus <- function(t) {
   return(res)
 
 }
+
 
 #' @title Polyspherical distance matrix
 #'
@@ -75,6 +77,7 @@ comp_ind_dj <- function(d) {
 #'
 #' @param lists lists whose entries are to be binded.
 #' @param bind bind operator, either \code{"rbind"} or \code{"cbind"}.
+#' @keywords internal
 bind_lists <- function(lists, bind = "rbind") {
 
   stopifnot(bind %in% c("rbind", "cbind"))
@@ -104,6 +107,7 @@ bind_lists <- function(lists, bind = "rbind") {
 #' @details If \code{s} is an integer, 1/2, 3/2, or 5/2, then routines from
 #' the \href{https://www.gnu.org/software/gsl/}{GSL library} to compute
 #' Fermi--Dirac integrals are called. Otherwise, numerical integration is used.
+#' @keywords internal
 polylog_minus_exp_mu <- function(mu, s, upper = Inf, ...) {
 
   # gsl::fermi_dirac_int() computes the complete Fermi-Dirac integral
@@ -188,6 +192,7 @@ polylog_minus_exp_mu <- function(mu, s, upper = Inf, ...) {
 #' @title Computes integral \eqn{J_{d, k}}
 #' @inheritParams eff_kern
 #' @inheritParams polylog_minus_exp_mu
+#' @keywords internal
 J_d_k <- function(d, k = 10, upper = Inf, ...) {
 
   sapply(d, function(di)

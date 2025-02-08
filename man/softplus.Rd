@@ -15,5 +15,6 @@ Stable computation of the softplus function
 \examples{
 h <- 0.1
 k <- 1
-curve(softplus(k * (1 - (1 - x) / h^2)), from = -1, to = 1)
+curve(polykde:::softplus(k * (1 - (1 - x) / h^2)), from = -1, to = 1)
 }
+\keyword{internal}

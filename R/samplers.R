@@ -1,8 +1,15 @@
 
 #' @title Sample uniform polyspherical data
+#'
+#' @description Simulates from a uniform distribution on the polysphere
+#' \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
+#'
 #' @param n sample size.
 #' @inheritParams kde_polysph
 #' @export
+#' @examples
+#' # Simulate uniform data on (S^1)^2
+#' r_unif_polysph(n = 10, d = c(1, 1))
 r_unif_polysph <- function(n, d) {
 
   do.call(cbind, as.list(sapply(d, function(dj)
@@ -12,14 +19,22 @@ r_unif_polysph <- function(n, d) {
 }
 
 
-#' @title Sample vMF-distributed polyspherical data
+#' @title Sample von Mises--Fisher distributed polyspherical data
+#'
+#' @description Simulates from a product of von Mises--Fisher (vMF)
+#' distributions on the polysphere \eqn{\mathcal{S}^{d_1} \times \cdots
+#' \times \mathcal{S}^{d_r}}.
+#'
 #' @param mu a vector of size \code{sum(d) + r} with the concatenated vMF means
-#' on \eqn{S^{d_j}}.
+#' on \eqn{\mathcal{S}^{d_j}}.
 #' @param kappa a vector of size \code{r} with the vMF concentrations.
 #' @param normalize_mu ensure a normalization of \code{mu}?
 #' @inheritParams r_unif_polysph
 #' @inheritParams kde_polysph
 #' @export
+#' @examples
+#' # Simulate vMF data on (S^1)^2
+#' r_vmf_polysph(n = 10, d = c(1, 1), mu = c(1, 0, 0, 1), kappa = c(1, 1))
 r_vmf_polysph <- function(n, d, mu, kappa, normalize_mu = FALSE) {
 
   # Check dimensions
@@ -60,11 +75,18 @@ r_vmf_polysph <- function(n, d, mu, kappa, normalize_mu = FALSE) {
 
 
 #' @title Sample kernel-distributed polyspherical data
+#'
+#' @description Simulates from the distribution defined by a kernel on the
+#' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
+#'
 #' @param mu a vector of size \code{sum(d) + r} with the concatenated means
-#' on \eqn{S^{d_j}}.
+#' on \eqn{\mathcal{S}^{d_j}}.
 #' @param norm_mu ensure a normalization of \code{mu}?
 #' @inheritParams r_unif_polysph
 #' @inheritParams kde_polysph
+#' @details Simulation for non-von Mises--Fisher spherically symmetric kernels
+#' is done by acceptance-rejection from a von Mises--Fisher proposal
+#' distribution.
 #' @examples
 #' # Simulate kernels in (S^1)^2
 #' n <- 1e3
@@ -252,7 +274,7 @@ r_kern_polysph <- function(n, d, mu, h, kernel = 1, kernel_type = 1, k = 10,
 
   } else {
 
-    stop()
+    stop("kernel_type must be either 1 or 2.")
 
   }
   return(samp)
@@ -260,10 +282,38 @@ r_kern_polysph <- function(n, d, mu, h, kernel = 1, kernel_type = 1, k = 10,
 }
 
 
-#' @title Sample from polyspherical kde
+#' @title Sample from polyspherical kernel density estimator
+#'
+#' @description Simulates from the distribution defined by a polyspherical
+#' kernel density estimator on \eqn{S^{d_1} \times \cdots \times S^{d_r}}.
+#'
 #' @inheritParams kde_polysph
 #' @param norm_X ensure a normalization of the data?
 #' @inheritParams r_unif_polysph
+#' @details The function uses \code{\link{r_kern_polysph}} to sample from the
+#' considered kernel.
+#' @examples
+#' # Simulated data on (S^1)^2
+#' n <- 50
+#' samp <- r_path_s1r(n = n, r = 2, k = c(1, 2), angles = TRUE)
+#' plot(samp, xlim = c(-pi, pi), ylim = c(-pi, pi), col = rainbow(n),
+#'      axes = FALSE, xlab = "", ylab = "", pch = 16, cex = 0.75)
+#' points(torus_to_angles(r_kde_polysph(n = 10 * n, X = angles_to_torus(samp),
+#'                                      d = c(1, 1), h = c(0.1, 0.1))),
+#'        col = "black", pch = 16, cex = 0.2)
+#' sdetorus::torusAxis()
+#'
+#' # Simulated data on S^2
+#' n <- 50
+#' samp <- r_path_s2r(n = n, r = 1, sigma = 0.1, kappa = 5,
+#'                    spiral = TRUE)[, , 1]
+#' sc3d <- scatterplot3d::scatterplot3d(
+#'   samp, xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
+#'   xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
+#' )
+#' xyz <- r_kde_polysph(n = 10 * n, X = samp, d = 2, h = 0.1)
+#' sc3d$points3d(xyz[, 1], xyz[, 2], xyz[, 3], col = "black", pch = 16,
+#'               cex = 0.2)
 #' @export
 r_kde_polysph <- function(n, X, d, h, kernel = 1, kernel_type = 1, k = 10,
                           norm_X = FALSE) {
@@ -346,14 +396,14 @@ r_kde_polysph <- function(n, X, d, h, kernel = 1, kernel_type = 1, k = 10,
 #' \code{c(n ,r)} with angles is returned.
 #' @examples
 #' # Straight trends on (S^1)^2
-#' n <- 200
+#' n <- 100
 #' samp_1 <- r_path_s1r(n = n, r = 2, k = c(1, 2), angles = TRUE)
 #' plot(samp_1, xlim = c(-pi, pi), ylim = c(-pi, pi), col = rainbow(n),
 #'      axes = FALSE, xlab = "", ylab = "", pch = 16)
 #' sdetorus::torusAxis()
 #'
 #' # Straight trends on (S^1)^3
-#' n <- 200
+#' n <- 100
 #' samp_2 <- r_path_s1r(n = n, r = 3, angles = TRUE)
 #' pairs(samp_2, xlim = c(-pi, pi), ylim = c(-pi, pi), col = rainbow(n),
 #'       pch = 16)
@@ -364,7 +414,7 @@ r_kde_polysph <- function(n, X, d, h, kernel = 1, kernel_type = 1, k = 10,
 #' )
 #'
 #' # Small-circle trends on (S^2)^2
-#' n <- 200
+#' n <- 100
 #' samp_3 <- r_path_s2r(n = n, r = 2, sigma = 0.1, kappa = 5)
 #' old_par <- par(mfrow = c(1, 2))
 #' scatterplot3d::scatterplot3d(
@@ -378,7 +428,7 @@ r_kde_polysph <- function(n, X, d, h, kernel = 1, kernel_type = 1, k = 10,
 #' par(old_par)
 #'
 #' # Spiral trends on (S^2)^2
-#' n <- 200
+#' n <- 100
 #' samp_4 <- r_path_s2r(n = n, r = 2, c = 3, spiral = TRUE, sigma = 0.01)
 #' old_par <- par(mfrow = c(1, 2))
 #' scatterplot3d::scatterplot3d(
@@ -390,10 +440,6 @@ r_kde_polysph <- function(n, X, d, h, kernel = 1, kernel_type = 1, k = 10,
 #'   xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
 #' )
 #' par(old_par)
-#' @name samplers_one
-
-
-#' @rdname samplers_one
 #' @export
 r_path_s1r <- function(n, r, alpha = runif(r, -pi, pi),
                        k = sample(-2:2, size = r, replace = TRUE),
@@ -421,7 +467,7 @@ r_path_s1r <- function(n, r, alpha = runif(r, -pi, pi),
 }
 
 
-#' @rdname samplers_one
+#' @rdname r_path_s1r
 #' @export
 r_path_s2r <- function(n, r, t = 0, c = 1,
                        Theta = t(rotasym::r_unif_sphere(n = r, p = 3)),
@@ -484,4 +530,3 @@ r_path_s2r <- function(n, r, t = 0, c = 1,
   return(samp)
 
 }
-

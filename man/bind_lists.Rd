@@ -14,3 +14,4 @@ bind_lists(lists, bind = "rbind")
 \description{
 Merge a list of lists
 }
+\keyword{internal}

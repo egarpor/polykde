@@ -14,8 +14,8 @@ arma::vec dist_polysph(arma::mat x, arma::mat y, arma::uvec ind_dj,
 //'
 //' @inheritParams softplus
 //' @examples
-//' curve(log(sfp(rbind(5 * (1 - x)))), from = -10, to = 10)
-//' @export
+//' curve(log(polykde:::sfp(rbind(5 * (1 - x)))), from = -10, to = 10)
+//' @keywords internal
 // [[Rcpp::export]]
 arma::mat sfp(arma::mat t) {
 
@@ -25,12 +25,13 @@ arma::mat sfp(arma::mat t) {
 
 }
 
+
 //' @title Polyspherical projection
 //'
 //' @inheritParams kde_polysph
 //' @param ind_dj 0-based index separating the spheres. Computed using
 //' \code{\link{comp_ind_dj}}.
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 arma::mat proj_polysph(arma::mat x, arma::uvec ind_dj) {
 
@@ -216,7 +217,7 @@ arma::mat dist_polysph_cross(arma::mat x, arma::mat y, arma::uvec ind_dj,
 //'
 //' @inheritParams kde_polysph
 //' @inheritParams proj_polysph
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 arma::cube diamond_crossprod(arma::mat X, arma::uvec ind_dj) {
 
@@ -272,7 +273,7 @@ arma::cube diamond_crossprod(arma::mat X, arma::uvec ind_dj) {
 //'
 //' @param A matrix.
 //' @param add return simply the addition A + A'? Defaults to \code{FALSE}
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 arma::mat s(arma::mat A, bool add = false) {
 
@@ -297,7 +298,7 @@ arma::mat s(arma::mat A, bool add = false) {
 //' @param x,v row vectors of size \code{sum(d) + r}.
 //' @inheritParams proj_polysph
 //' @param orth return the orthogonal complement of \eqn{P}, \eqn{I - P}?
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 Rcpp::List AP(arma::rowvec x, arma::rowvec v, arma::uvec ind_dj,
               bool orth = false) {

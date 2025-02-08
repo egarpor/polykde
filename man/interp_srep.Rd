@@ -19,3 +19,4 @@ interp_srep(X, ind_dj, ord, L = NULL)
 \description{
 Movie weighted by distances
 }
+\keyword{internal}

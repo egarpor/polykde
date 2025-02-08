@@ -269,7 +269,7 @@ clean_euler_ridge <- function(e, X, p_out = NULL) {
 
 #' @title Index a ridge curve, creating the smoothed and indexed ridge
 #'
-#' @param endpoints TODO.
+#' @param endpoints end points of the ridge algorithm to be indexed.
 #' @inheritParams euler_ridge
 #' @param l_index length of the grid index used for finding projections.
 #' Defaults to \code{1e3}.

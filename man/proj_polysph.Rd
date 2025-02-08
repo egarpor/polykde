@@ -16,3 +16,4 @@ points.}
 \description{
 Polyspherical projection
 }
+\keyword{internal}

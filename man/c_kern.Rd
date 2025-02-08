@@ -22,8 +22,7 @@ for Epa, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}}; \code{3} for softplus.}
 
 \item{log}{compute the logarithm of the constant?}
 
-\item{inc_sfp}{include the softplus(k) function in the constant? Defaults to
-\code{TRUE}.
+\item{inc_sfp}{include \code{softplus(k)} in the constant? Defaults to
 \code{TRUE}.}
 
 \item{intrinsic}{consider the intrinsic distance? Defaults to \code{FALSE}.}

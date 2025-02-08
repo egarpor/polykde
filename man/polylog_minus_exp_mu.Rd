@@ -24,3 +24,4 @@ If \code{s} is an integer, 1/2, 3/2, or 5/2, then routines from
 the \href{https://www.gnu.org/software/gsl/}{GSL library} to compute
 Fermi--Dirac integrals are called. Otherwise, numerical integration is used.
 }
+\keyword{internal}

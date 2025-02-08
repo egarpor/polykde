@@ -85,8 +85,8 @@ log_cv_kde_polysph <- function(X, d, h, weights = as.numeric( c()), wrt_unif = F
 #'
 #' @inheritParams softplus
 #' @examples
-#' curve(log(sfp(rbind(5 * (1 - x)))), from = -10, to = 10)
-#' @export
+#' curve(log(polykde:::sfp(rbind(5 * (1 - x)))), from = -10, to = 10)
+#' @keywords internal
 sfp <- function(t) {
     .Call(`_polykde_sfp`, t)
 }
@@ -96,7 +96,7 @@ sfp <- function(t) {
 #' @inheritParams kde_polysph
 #' @param ind_dj 0-based index separating the spheres. Computed using
 #' \code{\link{comp_ind_dj}}.
-#' @export
+#' @keywords internal
 proj_polysph <- function(x, ind_dj) {
     .Call(`_polykde_proj_polysph`, x, ind_dj)
 }
@@ -129,7 +129,7 @@ dist_polysph_cross <- function(x, y, ind_dj, norm_x = FALSE, norm_y = FALSE, std
 #'
 #' @inheritParams kde_polysph
 #' @inheritParams proj_polysph
-#' @export
+#' @keywords internal
 diamond_crossprod <- function(X, ind_dj) {
     .Call(`_polykde_diamond_crossprod`, X, ind_dj)
 }
@@ -138,7 +138,7 @@ diamond_crossprod <- function(X, ind_dj) {
 #'
 #' @param A matrix.
 #' @param add return simply the addition A + A'? Defaults to \code{FALSE}
-#' @export
+#' @keywords internal
 s <- function(A, add = FALSE) {
     .Call(`_polykde_s`, A, add)
 }
@@ -151,7 +151,7 @@ s <- function(A, add = FALSE) {
 #' @param x,v row vectors of size \code{sum(d) + r}.
 #' @inheritParams proj_polysph
 #' @param orth return the orthogonal complement of \eqn{P}, \eqn{I - P}?
-#' @export
+#' @keywords internal
 AP <- function(x, v, ind_dj, orth = FALSE) {
     .Call(`_polykde_AP`, x, v, ind_dj, orth)
 }

@@ -27,8 +27,7 @@ Defaults to \code{0}.}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 
-\item{inc_sfp}{include the softplus(k) function in the constant? Defaults to
-\code{TRUE}.
+\item{inc_sfp}{include \code{softplus(k)} in the constant? Defaults to
 \code{TRUE}.}
 
 \item{x}{a matrix of size \code{c(nx, sum(d) + r)} with the evaluation

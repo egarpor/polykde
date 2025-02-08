@@ -4,14 +4,14 @@
 \alias{beta0_R}
 \title{Fixed-point algorithm for the weighted Epanechnikov kernel}
 \usage{
-beta0_R(d, R, tol = 1e-16)
+beta0_R(d, R, tol = 1e-10)
 }
 \arguments{
-\item{d}{dimension of each hypersphere.}
+\item{d}{common dimension of each hypersphere (a scalar).}
 
 \item{R}{curvature matrix as outputted by \code{\link{curv_vmf_polysph}}.}
 
-\item{tol}{tolerance for the fixed-point algorithm.}
+\item{tol}{tolerance for the fixed-point algorithm. Defaults to \code{1e-10}.}
 }
 \description{
 Solves the equation
@@ -23,5 +23,6 @@ to determine the weights of the weighted Epanechnikov kernel.
 r <- 2
 d <- 1:r
 R <- curv_vmf_polysph(kappa = 1:r, d = d)
-beta0_R(d = d, R = R)
+polykde:::beta0_R(d = d, R = R)
 }
+\keyword{internal}

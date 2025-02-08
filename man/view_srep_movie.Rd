@@ -31,3 +31,4 @@ view_srep_movie(avg_base, avg_radii, avg_dirs, moving_spokes, X, ord,
 \description{
 View s-reps across time
 }
+\keyword{internal}

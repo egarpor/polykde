@@ -19,3 +19,4 @@ interp_polysph(x, y, ind_dj, N = 1)
 \description{
 Interpolation on the polysphere
 }
+\keyword{internal}

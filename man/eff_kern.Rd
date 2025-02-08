@@ -21,7 +21,7 @@ lambda_h(d, h = NULL, kernel = "1", bias = FALSE, squared = FALSE,
 lambda_vmf_h(d, h = NULL, bias = FALSE, squared = FALSE)
 }
 \arguments{
-\item{d}{dimension of each hypersphere.}
+\item{d}{common dimension of each hypersphere (a scalar).}
 
 \item{r}{number of polyspheres of the same dimension.}
 

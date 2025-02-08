@@ -9,7 +9,7 @@ index_ridge(endpoints, X, d, l_index = 1000, f_index = 2,
   "min")[1], p = 0, ...)
 }
 \arguments{
-\item{endpoints}{TODO.}
+\item{endpoints}{end points of the ridge algorithm to be indexed.}
 
 \item{X}{a matrix of size \code{c(n, sum(d) + r)} with the sample.}
 

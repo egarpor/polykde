@@ -200,7 +200,8 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 #' @param bw0 initial bandwidth for minimizing the AMISE. Computed with
 #' \code{\link{bw_rot_polysph}} if not provided (default).
 #' @param upscale rescale bandwidths to work on
-#' \eqn{S^{d_1}\times\cdots\times S^{d_r}} and for derivative estimation?
+#' \eqn{\mathcal{S}^{d_1}\times\cdots\times \mathcal{S}^{d_r}} and for
+#' derivative estimation?
 #' Defaults to \code{FALSE}. If \code{upscale == 1}, the order \code{n} is
 #' upscaled. If \code{upscale == 2}, then also the kernel constant is upscaled.
 #' @param deriv derivative order to perform the upscaling. Defaults to \code{0}.

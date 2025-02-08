@@ -15,3 +15,4 @@ diamond_crossprod(X, ind_dj)
 \description{
 Compute cube \eqn{X_i \diamond X_i'}
 }
+\keyword{internal}

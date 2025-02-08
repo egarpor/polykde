@@ -14,3 +14,4 @@ s(A, add = FALSE)
 \description{
 Symmetrize a matrix A with (A+A')/2
 }
+\keyword{internal}

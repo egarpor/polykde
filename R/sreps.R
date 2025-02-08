@@ -6,7 +6,7 @@
 #' @param y TODO
 #' @inheritParams proj_polysph
 #' @param N TODO
-#' @export
+#' @keywords internal
 interp_polysph <- function(x, y, ind_dj, N = 1) {
 
   # Checks
@@ -29,7 +29,7 @@ interp_polysph <- function(x, y, ind_dj, N = 1) {
 #' @inheritParams proj_polysph
 #' @param ord TODO
 #' @param L TODO
-#' @export
+#' @keywords internal
 interp_srep <- function(X, ind_dj, ord, L = NULL) {
 
   # Ordered
@@ -87,7 +87,7 @@ interp_srep <- function(X, ind_dj, ord, L = NULL) {
 #' @param alpha_ashape3d_base,alpha_ashape3d_bdry TODO
 #' @param lit TODO
 #' @param ... TODO
-#' @export
+#' @keywords internal
 view_srep <- function(base, dirs, bdry, radii, show_base = TRUE,
                       show_base_pt = TRUE, show_bdry = TRUE,
                       show_bdry_pt = TRUE, show_seg = TRUE, col_base = "red",
@@ -240,7 +240,7 @@ view_srep <- function(base, dirs, bdry, radii, show_base = TRUE,
 #' @param L TODO
 #' @param static TODO
 #' @param ... TODO
-#' @export
+#' @keywords internal
 view_srep_movie <- function(avg_base, avg_radii, avg_dirs, moving_spokes,
                             X, ord, col_pal = grDevices::rainbow, L = NULL,
                             static = TRUE, ...) {

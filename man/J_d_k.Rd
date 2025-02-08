@@ -7,7 +7,7 @@
 J_d_k(d, k = 10, upper = Inf, ...)
 }
 \arguments{
-\item{d}{dimension of each hypersphere.}
+\item{d}{common dimension of each hypersphere (a scalar).}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 
@@ -19,3 +19,4 @@ J_d_k(d, k = 10, upper = Inf, ...)
 \description{
 Computes integral \eqn{J_{d, k}}
 }
+\keyword{internal}
