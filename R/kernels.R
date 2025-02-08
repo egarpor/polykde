@@ -1,5 +1,12 @@
 
-#' @title Directional kernels and their derivatives
+#' @title Kernels on the hypersphere and their derivatives
+#'
+#' @description An isotropic kernel \eqn{L} on \eqn{\mathcal{S}^d} and its
+#' normalizing constant are such that \eqn{\int_{\mathcal{S}^d} c(h, d, L)
+#' L\left(\frac{1 - \boldsymbol{x}'\boldsymbol{y}}{h^2}\right) d\boldsymbol{x}
+#' = 1} (extrinsic-chordal distance) or \eqn{\int_{\mathcal{S}^d} c(h,d,L)
+#' L\left(\frac{\cos^{-1}(\boldsymbol{x}'\boldsymbol{y})^2}{2h^2}\right)
+#' d\boldsymbol{x} = 1} (intrinsic distance).
 #' @inheritParams kde_polysph
 #' @param t kernel argument. A positive scalar.
 #' @param squared square the kernel? Only for \code{deriv == 0}. Defaults to
@@ -8,8 +15,44 @@
 #' Defaults to \code{0}.
 #' @param inc_sfp include \code{softplus(k)} in the constant? Defaults to
 #' \code{TRUE}.
+#' @param log compute the logarithm of the constant?
+#' @inheritParams L
+#' @param intrinsic consider the intrinsic distance? Defaults to \code{FALSE}.
 #' @param y center of the kernel.
-#' @details TODO
+#' @details The gradient and Hessian are computed for the functions
+#' \eqn{\boldsymbol{x} \mapsto
+#' L\left(\frac{1 - \boldsymbol{x}'\boldsymbol{y}}{h^2}\right)}.
+#' @return For \code{L}, a vector with the kernel evaluated at \code{t}. For
+#' \code{grad_L}, a vector with the gradient evaluated at \code{x}. For
+#' \code{hess_L}, a matrix with the Hessian evaluated at \code{x}.
+#' @examples
+#' # Constants in terms of h
+#' h_grid <- seq(0.01, 4, l = 100)
+#' r <- 2
+#' d <- 2
+#' dr <- rep(d, r)
+#' c_vmf <- sapply(h_grid, function(hi)
+#'   log(c_kern(h = rep(hi, r), d = dr, kernel = 1, kernel_type = 2)))
+#' c_epa <- sapply(h_grid, function(hi)
+#'   log(c_kern(h = rep(hi, r), d = dr, kernel = 2, kernel_type = 2)))
+#' c_sfp <- sapply(h_grid, function(hi)
+#'   log(c_kern(h = rep(hi, r), d = dr, kernel = 3, k = 1, kernel_type = 2)))
+#' plot(h_grid, c_epa, type = "l", ylab = "Constant", xlab = "h", col = 2)
+#' lines(h_grid, c_sfp, col = 3)
+#' lines(h_grid, c_vmf, col = 1)
+#' abline(v = sqrt(2), lty = 2, col = 2)
+#'
+#' # Kernel and its derivatives
+#' h <- 0.5
+#' x <- c(sqrt(2), -sqrt(2), 0) / 2
+#' y <- c(-sqrt(2), sqrt(3), sqrt(3)) / 3
+#' L(t = (1 - sum(x * y)) / h^2)
+#' grad_L(x = x, y = y, h = h)
+#' hess_L(x = x, y = y, h = h)
+#' @name kernel
+
+
+#' @rdname kernel
 #' @export
 L <- function(t, kernel = "1", squared = FALSE, deriv = 0, k = 10,
               inc_sfp = TRUE) {
@@ -63,51 +106,7 @@ L <- function(t, kernel = "1", squared = FALSE, deriv = 0, k = 10,
 }
 
 
-#' @rdname L
-#' @export
-grad_L <- function(x, y, h, kernel = 1, k = 10) {
-
-  -drop(L(t = (1 - x %*% y) / h^2, kernel = kernel, deriv = 1, k = k)) *
-    y / h^2
-
-}
-
-
-#' @rdname L
-#' @export
-hess_L <- function(x, y, h, kernel = 1, k = 10) {
-
-  drop(L(t = (1 - x %*% y) / h^2, kernel = kernel, deriv = 2, k = k)) *
-    tcrossprod(y) / h^4
-
-}
-
-
-#' @title Normalizing constant of the a directional kernel
-#' @inheritParams kde_polysph
-#' @param log compute the logarithm of the constant?
-#' @inheritParams L
-#' @param intrinsic consider the intrinsic distance? Defaults to \code{FALSE}.
-#' @details This function computes the normalizing constant \eqn{c(h,d,L)}
-#' such that \eqn{\int_{\mathcal{S}^d} c(h,d,L) L((1 - x'y)/h^2) dx = 1}
-#' (extrinsic-chordal distance) or
-#' \eqn{\int_{\mathcal{S}^d} c(h,d,L) L(arccos(x'y)^2/(2h^2)) dx = 1} (intrinsic
-#' distance).
-#' @examples
-#' h_grid <- seq(0.01, 4, l = 100)
-#' r <- 2
-#' d <- 2
-#' dr <- rep(d, r)
-#' c_vmf <- sapply(h_grid, function(hi)
-#'   log(c_kern(h = rep(hi, r), d = dr, kernel = 1, kernel_type = 2)))
-#' c_epa <- sapply(h_grid, function(hi)
-#'   log(c_kern(h = rep(hi, r), d = dr, kernel = 2, kernel_type = 2)))
-#' c_sfp <- sapply(h_grid, function(hi)
-#'   log(c_kern(h = rep(hi, r), d = dr, kernel = 3, k = 1, kernel_type = 2)))
-#' plot(h_grid, c_epa, type = "l", ylab = "Constant", xlab = "h", col = 2)
-#' lines(h_grid, c_sfp, col = 3)
-#' lines(h_grid, c_vmf, col = 1)
-#' abline(v = sqrt(2), lty = 2, col = 2)
+#' @rdname kernel
 #' @export
 c_kern <- function(h, d, kernel = "1", kernel_type = "1", k = 10, log = FALSE,
                    inc_sfp = TRUE, intrinsic = FALSE) {
@@ -117,10 +116,10 @@ c_kern <- function(h, d, kernel = "1", kernel_type = "1", k = 10, log = FALSE,
     if (kernel_type == "1") {
 
       const <- rotasym::w_p(p = d) * sapply(seq_along(d), function(i)
-          integrate(f = function(t)
-            L(t = acos(t)^2 / (2 * h[i]^2), kernel = kernel, k = k,
-              inc_sfp = inc_sfp) * (1 - t^2)^(d[i] / 2 - 1),
-            lower = -1, upper = 1)$value)
+        integrate(f = function(t)
+          L(t = acos(t)^2 / (2 * h[i]^2), kernel = kernel, k = k,
+            inc_sfp = inc_sfp) * (1 - t^2)^(d[i] / 2 - 1),
+          lower = -1, upper = 1)$value)
       return(switch(log + 1, 1 / const, -log(const)))
 
     } else if (kernel_type == "2") {
@@ -215,7 +214,7 @@ c_kern <- function(h, d, kernel = "1", kernel_type = "1", k = 10, log = FALSE,
 
           }
 
-        # Asymptotic form
+          # Asymptotic form
         } else {
 
           d_tilde <- sum(d)
@@ -264,7 +263,7 @@ c_kern <- function(h, d, kernel = "1", kernel_type = "1", k = 10, log = FALSE,
                   lchoose(r, l)) * (-1)^(r + l))
           return(switch(log + 1, 1 / const, -log(const)))
 
-        # Asymptotic form
+          # Asymptotic form
         } else {
 
           d_tilde <- sum(d)
@@ -292,9 +291,41 @@ c_kern <- function(h, d, kernel = "1", kernel_type = "1", k = 10, log = FALSE,
 }
 
 
-#' @title Sample from the angular kernel function
+#' @rdname kernel
+#' @export
+grad_L <- function(x, y, h, kernel = 1, k = 10) {
+
+  -drop(L(t = (1 - x %*% y) / h^2, kernel = kernel, deriv = 1, k = k)) *
+    y / h^2
+
+}
+
+
+#' @rdname kernel
+#' @export
+hess_L <- function(x, y, h, kernel = 1, k = 10) {
+
+  drop(L(t = (1 - x %*% y) / h^2, kernel = kernel, deriv = 2, k = k)) *
+    tcrossprod(y) / h^4
+
+}
+
+
+#' @title Sample from the angular kernel density
+#'
+#' @description Simulation from the angular density function of an isotropic
+#' kernel on \eqn{\mathcal{S}^d}.
+#'
 #' @inheritParams r_unif_polysph
 #' @inheritParams kde_polysph
+#' @return A vector of length \code{n}.
+#' @examples
+#' hist(r_g_kern(n = 1e3, d = 2, h = 1, kernel = "1"), breaks = 30,
+#'      probability = TRUE, main = "", xlim = c(-1, 1))
+#' hist(r_g_kern(n = 1e3, d = 2, h = 1, kernel = "2"), breaks = 30,
+#'      probability = TRUE, main = "", xlim = c(-1, 1))
+#' hist(r_g_kern(n = 1e3, d = 2, h = 1, kernel = "3"), breaks = 30,
+#'      probability = TRUE, main = "", xlim = c(-1, 1))
 #' @export
 r_g_kern <- function(n, d, h, kernel = "1", k = 10) {
 
@@ -395,8 +426,14 @@ r_g_kern <- function(n, d, h, kernel = "1", k = 10) {
 }
 
 
-#' @title Product kernel moments and efficiencies
-#' @param d common dimension of each hypersphere (a scalar).
+#' @title Polyspherical kernel moments and efficiencies
+#'
+#' @description Computes moments of kernels on \eqn{\mathcal{S}^{d_1} \times
+#' \cdots \times \mathcal{S}^{d_r}} and efficiencies of kernels on
+#' \eqn{(\mathcal{S}^d)^r}.
+#'
+#' @param d either a vector with the dimensions or a scalar with the
+#' common dimension of each hypersphere (a scalar).
 #' @param r number of polyspheres of the same dimension.
 #' @inheritParams kde_polysph
 #' @param kernel_ref reference kernel to which compare the efficiency. Uses the
@@ -410,6 +447,22 @@ r_g_kern <- function(n, d, h, kernel = "1", k = 10) {
 #' \code{upper}, \code{abs.tol}, \code{rel.tol}, etc.
 #' @param bias,squared flags parameters for computing the numerator constants
 #' in the bias and variance constants.
+#' @return For \code{b_d}, a vector with the first kernel moment on
+#' each hypersphere (common if \code{kernel_type = "sph"}). For \code{v_d},
+#' a vector with the second kernel moment if \code{kernel_type = "prod"}, or a
+#' scalar if \code{kernel_type = "sph"}. For \code{eff_kern}, a scalar with the
+#' kernel efficiency.
+#' @examples
+#' # Kernel moments
+#' b_d(kernel = 2, d = c(2, 3), kernel_type = "prod")
+#' v_d(kernel = 2, d = c(2, 3), kernel_type = "prod")
+#' b_d(kernel = 2, d = c(2, 3), kernel_type = "sph")
+#' v_d(kernel = 2, d = c(2, 3), kernel_type = "sph")
+#'
+#' # Kernel efficiencies
+#' eff_kern(d = 2, r = 1, kernel = "1")
+#' eff_kern(d = 2, r = 1, kernel = "2")
+#' eff_kern(d = 2, r = 1, k = 10, kernel = "3")
 #' @export
 eff_kern <- function(d, r, k = 10, kernel, kernel_type = c("prod", "sph")[1],
                      kernel_ref = "2", kernel_ref_type = c("prod", "sph")[2],
@@ -689,7 +742,7 @@ v_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
 
 
 #' @rdname eff_kern
-#' @export
+#' @keywords internal
 lambda_h <- function(d, h = NULL, kernel = "1", bias = FALSE, squared = FALSE,
                      k = 10, ...) {
 
@@ -717,7 +770,7 @@ lambda_h <- function(d, h = NULL, kernel = "1", bias = FALSE, squared = FALSE,
 
 
 #' @rdname eff_kern
-#' @export
+#' @keywords internal
 lambda_vmf_h <- function(d, h = NULL, bias = FALSE, squared = FALSE) {
 
   if (bias) {
@@ -748,17 +801,20 @@ lambda_vmf_h <- function(d, h = NULL, bias = FALSE, squared = FALSE) {
 
 
 #' @title Fixed-point algorithm for the weighted Epanechnikov kernel
+#'
 #' @description Solves the equation
 #' \deqn{\boldsymbol{\beta} = \mathrm{diag}(\boldsymbol{d}^{\odot (-1)})
 #' \boldsymbol{R}^{-1} \boldsymbol{\beta}^{\odot(-1)}}
 #' to determine the weights of the weighted Epanechnikov kernel.
+#'
 #' @inheritParams eff_kern
 #' @param R curvature matrix as outputted by \code{\link{curv_vmf_polysph}}.
 #' @param tol tolerance for the fixed-point algorithm. Defaults to \code{1e-10}.
+#' @return Vector \eqn{\boldsymbol{\beta}} of weights.
 #' @examples
 #' r <- 2
-#' d <- 1:r
-#' R <- curv_vmf_polysph(kappa = 1:r, d = d)
+#' d <- seq_len(r)
+#' R <- curv_vmf_polysph(kappa = 10 * d, d = d)
 #' polykde:::beta0_R(d = d, R = R)
 #' @keywords internal
 beta0_R <- function(d, R, tol = 1e-10) {

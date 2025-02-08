@@ -6,7 +6,7 @@
 \alias{v_d}
 \alias{lambda_h}
 \alias{lambda_vmf_h}
-\title{Product kernel moments and efficiencies}
+\title{Polyspherical kernel moments and efficiencies}
 \usage{
 eff_kern(d, r, k = 10, kernel, kernel_type = c("prod", "sph")[1],
   kernel_ref = "2", kernel_ref_type = c("prod", "sph")[2], ...)
@@ -21,7 +21,8 @@ lambda_h(d, h = NULL, kernel = "1", bias = FALSE, squared = FALSE,
 lambda_vmf_h(d, h = NULL, bias = FALSE, squared = FALSE)
 }
 \arguments{
-\item{d}{common dimension of each hypersphere (a scalar).}
+\item{d}{either a vector with the dimensions or a scalar with the
+common dimension of each hypersphere (a scalar).}
 
 \item{r}{number of polyspheres of the same dimension.}
 
@@ -48,6 +49,28 @@ default).}
 \item{bias, squared}{flags parameters for computing the numerator constants
 in the bias and variance constants.}
 }
-\description{
-Product kernel moments and efficiencies
+\value{
+For \code{b_d}, a vector with the first kernel moment on
+each hypersphere (common if \code{kernel_type = "sph"}). For \code{v_d},
+a vector with the second kernel moment if \code{kernel_type = "prod"}, or a
+scalar if \code{kernel_type = "sph"}. For \code{eff_kern}, a scalar with the
+kernel efficiency.
 }
+\description{
+Computes moments of kernels on \eqn{\mathcal{S}^{d_1} \times
+\cdots \times \mathcal{S}^{d_r}} and efficiencies of kernels on
+\eqn{(\mathcal{S}^d)^r}.
+}
+\examples{
+# Kernel moments
+b_d(kernel = 2, d = c(2, 3), kernel_type = "prod")
+v_d(kernel = 2, d = c(2, 3), kernel_type = "prod")
+b_d(kernel = 2, d = c(2, 3), kernel_type = "sph")
+v_d(kernel = 2, d = c(2, 3), kernel_type = "sph")
+
+# Kernel efficiencies
+eff_kern(d = 2, r = 1, kernel = "1")
+eff_kern(d = 2, r = 1, kernel = "2")
+eff_kern(d = 2, r = 1, k = 10, kernel = "3")
+}
+\keyword{internal}

@@ -18,8 +18,12 @@ dist_polysph_matrix(x, ind_dj, norm_x = FALSE, norm_y = FALSE,
 \item{std}{standardize distance to \eqn{[0,1]}? Uses that the maximum
 distance is \eqn{\sqrt{r}\pi}. Defaults to \code{TRUE}.}
 }
+\value{
+A symmetric matrix of distances of size \code{c(n, n)}.
+}
 \description{
-Polyspherical distance matrix
+Computes the pairwise polyspherical distances between the rows
+of a matrix.
 }
 \examples{
 # Example on S^2 x S^3 x S^1

@@ -2,13 +2,17 @@
 % Please edit documentation in R/utils.R
 \name{comp_ind_dj}
 \alias{comp_ind_dj}
-\title{Computes \code{ind_dj}}
+\title{Index of spheres}
 \usage{
 comp_ind_dj(d)
 }
 \arguments{
 \item{d}{dimensions vector, of size \code{r}.}
 }
+\value{
+A vector of length \code{sum(d) + 1}.
+}
 \description{
 Computes \code{ind_dj}
+A short description...
 }

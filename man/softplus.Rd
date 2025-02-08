@@ -9,6 +9,9 @@ softplus(t)
 \arguments{
 \item{t}{numeric vector or matrix.}
 }
+\value{
+The softplus function evaluated at \code{t}.
+}
 \description{
 Stable computation of the softplus function
 }

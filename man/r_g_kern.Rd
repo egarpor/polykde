@@ -2,7 +2,7 @@
 % Please edit documentation in R/kernels.R
 \name{r_g_kern}
 \alias{r_g_kern}
-\title{Sample from the angular kernel function}
+\title{Sample from the angular kernel density}
 \usage{
 r_g_kern(n, d, h, kernel = "1", k = 10)
 }
@@ -18,6 +18,18 @@ for Epa, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}}; \code{3} for softplus.}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 }
+\value{
+A vector of length \code{n}.
+}
 \description{
-Sample from the angular kernel function
+Simulation from the angular density function of an isotropic
+kernel on \eqn{\mathcal{S}^d}.
+}
+\examples{
+hist(r_g_kern(n = 1e3, d = 2, h = 1, kernel = "1"), breaks = 30,
+     probability = TRUE, main = "", xlim = c(-1, 1))
+hist(r_g_kern(n = 1e3, d = 2, h = 1, kernel = "2"), breaks = 30,
+     probability = TRUE, main = "", xlim = c(-1, 1))
+hist(r_g_kern(n = 1e3, d = 2, h = 1, kernel = "3"), breaks = 30,
+     probability = TRUE, main = "", xlim = c(-1, 1))
 }

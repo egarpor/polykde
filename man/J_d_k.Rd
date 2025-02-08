@@ -2,12 +2,13 @@
 % Please edit documentation in R/utils.R
 \name{J_d_k}
 \alias{J_d_k}
-\title{Computes integral \eqn{J_{d, k}}}
+\title{Computes the integral \eqn{J_{d, k}}}
 \usage{
 J_d_k(d, k = 10, upper = Inf, ...)
 }
 \arguments{
-\item{d}{common dimension of each hypersphere (a scalar).}
+\item{d}{either a vector with the dimensions or a scalar with the
+common dimension of each hypersphere (a scalar).}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 
@@ -17,6 +18,6 @@ J_d_k(d, k = 10, upper = Inf, ...)
 \code{upper}, \code{abs.tol}, \code{rel.tol}, etc.}
 }
 \description{
-Computes integral \eqn{J_{d, k}}
+Computes the integral \eqn{J_{d, k}}
 }
 \keyword{internal}

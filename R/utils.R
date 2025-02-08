@@ -2,6 +2,7 @@
 #' @title Stable computation of the softplus function
 #'
 #' @param t numeric vector or matrix.
+#' @return The softplus function evaluated at \code{t}.
 #' @examples
 #' h <- 0.1
 #' k <- 1
@@ -21,7 +22,11 @@ softplus <- function(t) {
 
 #' @title Polyspherical distance matrix
 #'
+#' @description Computes the pairwise polyspherical distances between the rows
+#' of a matrix.
+#'
 #' @inheritParams dist_polysph
+#' @return A symmetric matrix of distances of size \code{c(n, n)}.
 #' @examples
 #' # Example on S^2 x S^3 x S^1
 #' d <- c(2, 3, 1)
@@ -59,9 +64,13 @@ dist_polysph_matrix <- function(x, ind_dj, norm_x = FALSE, norm_y = FALSE,
 }
 
 
-#' @title Computes \code{ind_dj}
+#' @title Index of spheres
+#'
+#' @description Computes \code{ind_dj}
+#' A short description...
 #'
 #' @inheritParams kde_polysph
+#' @return A vector of length \code{sum(d) + 1}.
 #' @export
 comp_ind_dj <- function(d) {
 
@@ -188,7 +197,7 @@ polylog_minus_exp_mu <- function(mu, s, upper = Inf, ...) {
 }
 
 
-#' @title Computes integral \eqn{J_{d, k}}
+#' @title Computes the integral \eqn{J_{d, k}}
 #' @inheritParams eff_kern
 #' @inheritParams polylog_minus_exp_mu
 #' @keywords internal
