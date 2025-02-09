@@ -12,37 +12,10 @@ Y <- t(sapply(1:n, function(i) {
 }))
 Y_avg <- proj_polysph(x = rbind(colMeans(Y)), ind_dj = ind_dj)
 
-# # Timing
-# microbenchmark::microbenchmark(
-#   bw_cv_kre_polysph(X = X, Y = Y, d = d, h = h, p = 0, fast = FALSE, plot_cv = FALSE),
-#   bw_cv_kre_polysph(X = X, Y = Y, d = d, h = h, p = 0, fast = TRUE, plot_cv = FALSE),
-#   times = 1e3)
-# r = 10; d = 2; n = 100
-# Unit: milliseconds
-# expr       min        lq
-# bw_cv_kre_polysph(X = X, Y = Y, d = d, h = h, p = 0, fast = FALSE, plot_cv = FALSE) 313.29404 322.22574
-# bw_cv_kre_polysph(X = X, Y = Y, d = d, h = h, p = 0, fast = TRUE, plot_cv = FALSE)  20.66351  22.71197
-# mean    median        uq      max neval cld
-# 332.12150 325.80480 331.54650 610.0708  1000   b
-# 31.03197  23.25623  30.83821 144.7515  1000  a
-# r = 100; d = 2; n = 200
-# Unit: milliseconds
-# expr       min        lq
-# bw_cv_kre_polysph(X = X, Y = Y, d = d, h = h, p = 0, fast = FALSE, plot_cv = FALSE) 961.26206 988.12673
-# bw_cv_kre_polysph(X = X, Y = Y, d = d, h = h, p = 0, fast = TRUE, plot_cv = FALSE)  74.81003  81.48791
-# mean    median        uq       max neval cld
-# 1009.0932 995.36549 1006.7707 1584.8514  1000   b
-# 114.0201  85.91021  170.0534  361.3551  1000  a
-
 test_that("Equivalent bandwidth selection with fast and slow CV in NW", {
   expect_equal(bw_cv_kre_polysph(X = X, Y = Y, d = d, p = 0, fast = FALSE)$cvm,
                bw_cv_kre_polysph(X = X, Y = Y, d = d, p = 0, fast = TRUE)$cvm)
 })
-
-# test_that("Equivalent bandwidth selection with fast and slow CV in LL", {
-#   expect_equal(bw_cv_kre_polysph(X = X, Y = Y, d = d, p = 1, fast = FALSE)$cvm,
-#                bw_cv_kre_polysph(X = X, Y = Y, d = d, p = 1, fast = TRUE)$cvm)
-# })
 
 test_that("NW interpolates for very small bandwidth", {
   expect_lt(suppressWarnings(

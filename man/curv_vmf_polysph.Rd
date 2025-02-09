@@ -7,9 +7,10 @@
 curv_vmf_polysph(kappa, d, log = FALSE)
 }
 \arguments{
-\item{kappa}{a vector of size \code{r} with the vMF concentrations.}
+\item{kappa}{a vector of size \code{r} with the von Mises--Fisher
+concentrations.}
 
-\item{d}{dimensions vector, of size \code{r}.}
+\item{d}{vector of size \code{r} with dimensions.}
 
 \item{log}{compute the (entrywise) logarithm of the curvature matrix?
 Defaults to \code{FALSE}.}
@@ -18,9 +19,10 @@ Defaults to \code{FALSE}.}
 A matrix of size \code{c(length(r), length(r))}.
 }
 \description{
-Computes the curvature matrix \eqn{\boldsymbol{R}} of a
-polyspherical von Mises--Fisher density. This curvature is used in the
-rule-of-thumb selector \code{\link{bw_rot_polysph}}.
+Computes the curvature matrix
+\eqn{\boldsymbol{R}(\boldsymbol{\kappa})} of a product of von Mises--Fisher
+densities on the polyspher. This curvature is used in the rule-of-thumb
+selector \code{\link{bw_rot_polysph}}.
 }
 \examples{
 # Curvature matrix

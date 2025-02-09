@@ -1,6 +1,4 @@
 
-# r <- sample(1:4, size = 1)
-# d <- sample(1:5, size = 1)
 r <- 2
 d <- 3
 n <- 10
@@ -87,18 +85,6 @@ test_that("Asymptotic sphericaly symmetric kernel constants become product
                  tolerance = 1e-1)
   }
 })
-
-# d <- 3
-# kern <- 2
-# h <- seq(0.05, 0.5, l = 100)
-# plot(h, sapply(h, function(hi) tryCatch(
-#   c_kern(h = hi, d = d, kernel = kern, k = 10, kernel_type = 1,
-#          inc_sfp = FALSE, log = TRUE),
-#   error = function(e) NA)), type = "o")
-# lines(h, sapply(h, function(hi) tryCatch(
-#   c_kern(h = hi, d = d, kernel = kern, k = 10,
-#          kernel_type = 2, inc_sfp = FALSE, log = TRUE),
-#   error = function(e) NA)), type = "o", col = 2)
 
 test_that("Kernel constants for sphericaly symmetric vMF", {
   h_small <- h_r

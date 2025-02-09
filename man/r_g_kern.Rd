@@ -9,13 +9,12 @@ r_g_kern(n, d, h, kernel = "1", k = 10)
 \arguments{
 \item{n}{sample size.}
 
-\item{d}{dimensions vector, of size \code{r}.}
+\item{d}{vector of size \code{r} with dimensions.}
 
-\item{h}{bandwidth vector, of size \code{r}.}
+\item{h}{vector of size \code{r} with bandwidths.}
 
 \item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
-\code{2} for Epanechnikov, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}};
-\code{3} for softplus.}
+\code{2} for Epanechnikov; \code{3} for softplus.}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 }

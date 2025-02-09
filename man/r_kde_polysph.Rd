@@ -12,13 +12,12 @@ r_kde_polysph(n, X, d, h, kernel = 1, kernel_type = 1, k = 10,
 
 \item{X}{a matrix of size \code{c(n, sum(d) + r)} with the sample.}
 
-\item{d}{dimensions vector, of size \code{r}.}
+\item{d}{vector of size \code{r} with dimensions.}
 
-\item{h}{bandwidth vector, of size \code{r}.}
+\item{h}{vector of size \code{r} with bandwidths.}
 
 \item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
-\code{2} for Epanechnikov, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}};
-\code{3} for softplus.}
+\code{2} for Epanechnikov; \code{3} for softplus.}
 
 \item{kernel_type}{type of kernel employed: \code{1} for product kernel
 (default); \code{2} for spherically symmetric kernel.}
@@ -29,7 +28,8 @@ r_kde_polysph(n, X, d, h, kernel = 1, kernel_type = 1, k = 10,
 }
 \description{
 Simulates from the distribution defined by a polyspherical
-kernel density estimator on \eqn{S^{d_1} \times \cdots \times S^{d_r}}.
+kernel density estimator on \eqn{\mathcal{S}^{d_1} \times \ldots \times
+\mathcal{S}^{d_r}}.
 }
 \details{
 The function uses \code{\link{r_kern_polysph}} to sample from the

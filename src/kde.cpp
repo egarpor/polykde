@@ -31,8 +31,8 @@ const double log_M_PI = std::log(M_PI);
 //' @param x a matrix of size \code{c(nx, sum(d) + r)} with the evaluation
 //' points.
 //' @param X a matrix of size \code{c(n, sum(d) + r)} with the sample.
-//' @param d dimensions vector, of size \code{r}.
-//' @param h bandwidth vector, of size \code{r}.
+//' @param d vector of size \code{r} with dimensions.
+//' @param h vector of size \code{r} with bandwidths.
 //' @param weights weights for each observation. If provided, a vector of size
 //' \code{n} with the weights for multiplying each kernel. If not provided,
 //' set internally to \code{rep(1 / n, n)}, which gives the standard estimator.
@@ -47,8 +47,7 @@ const double log_M_PI = std::log(M_PI);
 //' @param norm_x,norm_X ensure a normalization of the data? Defaults to
 //' \code{FALSE}.
 //' @param kernel kernel employed: \code{1} for von Mises--Fisher (default);
-//' \code{2} for Epanechnikov, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}};
-//' \code{3} for softplus.
+//' \code{2} for Epanechnikov; \code{3} for softplus.
 //' @param kernel_type type of kernel employed: \code{1} for product kernel
 //' (default); \code{2} for spherically symmetric kernel.
 //' @param k softplus kernel parameter. Defaults to \code{10.0}.

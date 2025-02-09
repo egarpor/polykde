@@ -1,7 +1,5 @@
 
 # Randomize testing
-# r <- sample(1:4, size = 1)
-# d <- sample(1:4, size = r, replace = TRUE)
 r <- 3
 d <- c(1, 2, 3)
 h <- runif(r, 0.2, 1.5)
@@ -306,12 +304,6 @@ test_that("bw_lcv_min_epa is the critical point", {
   expect_true(any(!is.finite(log_cv_kde_polysph(X = X, d = d, h = h_bad_2,
                                                 wrt_unif = TRUE, kernel = 2))))
 })
-# test_that("bw_cv_polysph does not give an error", {
-#   bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV")$par
-#   bw_cv_polysph(X = X, d = d, kernel = 2, type = "LCV")$par
-#   bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV")$par
-#   bw_cv_polysph(X = X, d = d, kernel = 2, type = "LSCV")$par
-# })
 
 ## Others
 

@@ -20,8 +20,10 @@ Assumed to be of unit norm by blocks of coordinates in the rows.}
 \item{theta}{matrix of size \code{c(n, sum(d))} with the angles.}
 }
 \value{
-For \code{angles_to_polysph}, the matrix \code{x}. For
-\code{polysph_to_angles}, the matrix \code{theta}.
+\itemize{
+\item{\code{angles_to_polysph}: the matrix \code{x}.}
+\item{\code{polysph_to_angles}: the matrix \code{theta}.}
+}
 }
 \description{
 Obtain the angular coordinates of points on a polysphere

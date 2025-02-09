@@ -22,9 +22,12 @@
 #' @details The gradient and Hessian are computed for the functions
 #' \eqn{\boldsymbol{x} \mapsto
 #' L\left(\frac{1 - \boldsymbol{x}'\boldsymbol{y}}{h^2}\right)}.
-#' @return For \code{L}, a vector with the kernel evaluated at \code{t}. For
-#' \code{grad_L}, a vector with the gradient evaluated at \code{x}. For
-#' \code{hess_L}, a matrix with the Hessian evaluated at \code{x}.
+#' @return
+#' \itemize{
+#' \item{\code{L}: a vector with the kernel evaluated at \code{t}.}
+#' \item{\code{grad_L}: a vector with the gradient evaluated at \code{x}.}
+#' \item{\code{hess_L}:a matrix with the Hessian evaluated at \code{x}.}
+#' }
 #' @examples
 #' # Constants in terms of h
 #' h_grid <- seq(0.01, 4, l = 100)
@@ -447,11 +450,14 @@ r_g_kern <- function(n, d, h, kernel = "1", k = 10) {
 #' \code{upper}, \code{abs.tol}, \code{rel.tol}, etc.
 #' @param bias,squared flags parameters for computing the numerator constants
 #' in the bias and variance constants.
-#' @return For \code{b_d}, a vector with the first kernel moment on
-#' each hypersphere (common if \code{kernel_type = "sph"}). For \code{v_d},
-#' a vector with the second kernel moment if \code{kernel_type = "prod"}, or a
-#' scalar if \code{kernel_type = "sph"}. For \code{eff_kern}, a scalar with the
-#' kernel efficiency.
+#' @return
+#' \itemize{
+#' \item{\code{b_d}: a vector with the first kernel moment on each hypersphere
+#' (common if \code{kernel_type = "sph"}).}
+#' \item{\code{v_d}: a vector with the second kernel moment if
+#' \code{kernel_type = "prod"}, or a scalar if \code{kernel_type = "sph"}.}
+#' \item{\code{eff_kern}: a scalar with the kernel efficiency.}
+#' }
 #' @examples
 #' # Kernel moments
 #' b_d(kernel = 2, d = c(2, 3), kernel_type = "prod")

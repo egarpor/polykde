@@ -9,7 +9,7 @@ r_unif_polysph(n, d)
 \arguments{
 \item{n}{sample size.}
 
-\item{d}{dimensions vector, of size \code{r}.}
+\item{d}{vector of size \code{r} with dimensions.}
 }
 \description{
 Simulates from a uniform distribution on the polysphere

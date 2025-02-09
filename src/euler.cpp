@@ -22,10 +22,14 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
                       bool normalized, bool intrinsic, bool norm_x, bool norm_X,
                       arma::uword kernel, arma::uword kernel_type, double k);
 
-//' @title Euler step for density ridge estimation
+//' @title Euler algorithms for polyspherical density ridge estimation
 //'
-//' @description TODO
+//' @description Functions to perform density ridge estimation on the
+//' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}
+//' through the Euler algorithm in standard, parallel, or block mode.
 //'
+//' @param x a matrix of size \code{c(nx, sum(d) + r)} with the starting points
+//' for the Euler algorithm.
 //' @inheritParams kde_polysph
 //' @inheritParams proj_grad_kde_polysph
 //' @param h_euler vector of size \code{r} with the advance steps in the Euler
@@ -38,9 +42,70 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
 //' \code{TRUE}.
 //' @param show_prog_j display a progress bar for \code{N}? Defaults to
 //' \code{FALSE}.
-//' @return TODO
+//' @param ind_blocks indexes of the blocks, a vector or length \code{r}.
+//' @param ... further parameters passed to \code{\link{euler_ridge}}.
+//' @param cores cores to use. Defaults to \code{1}.
+//' @details \code{euler_ridge} is the main function to perform density ridge
+//' estimation through the Euler algorithm from the starting values \code{x}
+//' to initiate the ridge path. The function \code{euler_ridge_parallel}
+//' parallelizes on the starting values \code{x}. The function
+//' \code{euler_ridge_block} runs the Euler algorithm marginally in blocks
+//' of hyperspheres, instead of jointly in the whole polysphere. This function
+//' requires that all the dimensions are the same.
+//' @return The three functions return a list with the following fields:
+//' \item{ridge_y}{a matrix of size \code{c(nx, sum(d) + r)} with the end
+//' points of Euler algorithm defining the estimated ridge.}
+//' \item{lamb_norm_y}{a matrix of size \code{c(nx, sum(d) + r)} with the
+//' first filtered Hessian eigenvalue at end points.}
+//' \item{log_dens_y}{a column vector of size \code{c(nx, 1)} with the
+//' logarithm of the density at end points.}
+//' \item{paths}{an array of size \code{c(nx, sum(d) + r, N + 1)} containing
+//' the Euler paths.}
+//' \item{start_x}{a matrix of size \code{c(nx, sum(d) + r)} with the starting
+//' points for the Euler algorithm.}
+//' \item{iter}{a column vector of size \code{c(nx, 1)} counting the iterations
+//' required for each point.}
+//' \item{conv}{a column vector of size \code{c(nx, 1)} with convergence flags.}
+//' \item{d}{vector \code{d}.}
+//' \item{h}{bandwidth used for the kernel density estimator.}
+//' \item{error}{a column vector of size \code{c(nx, 1)} indicating if errors
+//' were found for each path.}
 //' @examples
-//' # TODO
+//' ## Test on S^2
+//'
+//' # Sample
+//' r <- 1
+//' d <- 2
+//' n <- 50
+//' ind_dj <- comp_ind_dj(d = d)
+//' X <- r_path_s2r(n = n, r = r, spiral = FALSE, Theta = cbind(c(1, 0, 0)),
+//'                 sigma = 0.35)[, , 1]
+//' col_X_alp <- viridis::viridis(n, alpha = 0.25)
+//' col_X <- viridis::viridis(n)
+//'
+//' # Euler
+//' h_rid <- 0.5
+//' h_eu <- h_rid^2
+//' N <- 30
+//' eps <- 1e-6
+//' Y <- euler_ridge(x = X, X = X, d = d, h = h_rid, h_euler = h_eu,
+//'                  N = N, eps = eps, keep_paths = TRUE)
+//' Y
+//' \donttest{
+//' # Dynamic visualization
+//' manipulate::manipulate({
+//'
+//'   sc3 <- scatterplot3d::scatterplot3d(Y$paths[, , 1], color = col_X_alp,
+//'                                       pch = 19, xlim = c(-1, 1),
+//'                                       ylim = c(-1, 1), zlim = c(-1, 1),
+//'                                       xlab = "x", ylab = "y", zlab = "z")
+//'   sc3$points3d(rbind(Y$paths[, , i]), col = col_X, pch = 16, cex = 0.75)
+//'   invisible(sapply(seq_len(nrow(Y$paths)), function(k) {
+//'     sc3$points3d(t(Y$paths[k, , ]), col = col_X_alp[k], type = "l")
+//'   }))
+//'
+//' }, i = manipulate::slider(1, dim(Y$paths)[3]))
+//' }
 //' @export
 // [[Rcpp::export]]
 Rcpp::List euler_ridge(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,

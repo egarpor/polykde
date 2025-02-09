@@ -7,7 +7,7 @@
 comp_ind_dj(d)
 }
 \arguments{
-\item{d}{dimensions vector, of size \code{r}.}
+\item{d}{vector of size \code{r} with dimensions.}
 }
 \value{
 A vector of length \code{sum(d) + 1}.

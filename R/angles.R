@@ -10,8 +10,11 @@
 #' @param x matrix of size \code{c(n, 2 * d)} with the Cartesian coordinates on
 #' \eqn{(\mathcal{S}^1)^d}. Assumed to be of unit norm by pairs of coordinates
 #' in the rows.
-#' @return For \code{angles_to_torus}, the matrix \code{x}. For
-#' \code{torus_to_angles}, the matrix \code{theta}.
+#' @return
+#' \itemize{
+#' \item{\code{angles_to_torus}: the matrix \code{x}.}
+#' \item{\code{torus_to_angles}: the matrix \code{theta}.}
+#' }
 #' @examples
 #' # Check changes of coordinates
 #' torus_to_angles(angles_to_torus(c(0, pi / 3, pi / 2)))
@@ -77,8 +80,11 @@ torus_to_angles <- function(x) {
 #' @param theta matrix of size \code{c(n, d)} with the angles.
 #' @param x matrix of size \code{c(n, d + 1)} with the Cartesian coordinates
 #' on \eqn{\mathcal{S}^{d}}. Assumed to be of unit norm by rows.
-#' @return For \code{angles_to_sph}, the matrix \code{x}. For
-#' \code{sph_to_angles}, the matrix \code{theta}.
+#' @return
+#' \itemize{
+#' \item{\code{angles_to_sph}: the matrix \code{x}.}
+#' \item{\code{sph_to_angles}: the matrix \code{theta}.}
+#' }
 #' @examples
 #' # Check changes of coordinates
 #' sph_to_angles(angles_to_sph(c(pi / 2, 0, pi)))
@@ -162,8 +168,11 @@ sph_to_angles <- function(x) {
 #' Assumed to be of unit norm by blocks of coordinates in the rows.
 #' @param theta matrix of size \code{c(n, sum(d))} with the angles.
 #' @param d vector with the dimensions of the polysphere.
-#' @return For \code{angles_to_polysph}, the matrix \code{x}. For
-#' \code{polysph_to_angles}, the matrix \code{theta}.
+#' @return
+#' \itemize{
+#' \item{\code{angles_to_polysph}: the matrix \code{x}.}
+#' \item{\code{polysph_to_angles}: the matrix \code{theta}.}
+#' }
 #' @examples
 #' # Check changes of coordinates
 #' polysph_to_angles(angles_to_polysph(rep(pi / 2, 3), d = 2:1), d = 2:1)

@@ -14,7 +14,7 @@ kre_polysph(x, X, Y, d, h, p = 0)
 \item{Y}{a matrix of size \code{c(n, sum(d) + r)} with the response sample
 on the polysphere.}
 
-\item{d}{dimensions vector, of size \code{r}.}
+\item{d}{vector of size \code{r} with dimensions.}
 
 \item{h}{a positive scalar giving the bandwidth.}
 
@@ -26,8 +26,8 @@ A vector of size \code{nx} with the estimated regression curve
 evaluated at \code{x}.
 }
 \description{
-Computes a local constant or local linear estimator with
-polyspherical response and scalar predictor.
+Computes a local constant (Nadaraya--Watson) or local linear
+estimator with polyspherical response and scalar predictor.
 }
 \examples{
 x_grid <- seq(-0.25, 1.25, l = 200)

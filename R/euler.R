@@ -1,14 +1,6 @@
 
-#' @title Parallel Euler algorithm for density ridge estimation
-#'
-#' @description TODO
-#'
-#' @inheritParams euler_ridge
-#' @param ... further parameters passed to \code{\link{euler_ridge}}.
-#' @param cores cores to use. Defaults to \code{1}.
-#' @return TODO
-#' @examples
-#' # TODO
+
+#' @rdname euler_ridge
 #' @export
 parallel_euler_ridge <- function(x, X, d, h, h_euler, N = 1e3, eps = 1e-5,
                                  keep_paths = FALSE, cores = 1, ...) {
@@ -87,17 +79,7 @@ parallel_euler_ridge <- function(x, X, d, h, h_euler, N = 1e3, eps = 1e-5,
 }
 
 
-#' @title Blockwise Euler algorithm for density ridge estimation
-#'
-#' @description TODO
-#'
-#' @param ind_blocks indexes of the blocks, a vector or length \code{r}.
-#' @inheritParams euler_ridge
-#' @inheritParams parallel_euler_ridge
-#' @param ... further parameters passed to \code{\link{euler_ridge}}.
-#' @return TODO
-#' @examples
-#' # TODO
+#' @rdname euler_ridge
 #' @export
 block_euler_ridge <- function(x, X, d, h, h_euler, ind_blocks, N = 1e3,
                               eps = 1e-5, keep_paths = FALSE, cores = 1, ...) {
@@ -112,6 +94,13 @@ block_euler_ridge <- function(x, X, d, h, h_euler, ind_blocks, N = 1e3,
   blocks <- sort(unique(ind_blocks))
   n_blocks <- length(blocks)
   e_block_j <- list(n_blocks)
+
+  # Stop if all d's are not equal
+  if (!all(d == d[1])) {
+
+    stop("All d's must be equal for splitting in blocks.")
+
+  }
 
   # Sanity checks for ind_blocks
   if (length(ind_blocks) != r) {
@@ -198,7 +187,7 @@ block_euler_ridge <- function(x, X, d, h, h_euler, ind_blocks, N = 1e3,
                                1, function(x) x[1]:x[2],
                                simplify = FALSE)[ind_reord_blocks])
 
-  # Revert bloc-orderings
+  # Revert block-orderings
   e_block$ridge_y <- e_block$ridge_y[, ind_X_blocks]
   e_block$lamb_norm_y <- e_block$lamb_norm_y[, ind_X_blocks]
   if (keep_paths) e_block$paths <- e_block$paths[, ind_X_blocks, ]

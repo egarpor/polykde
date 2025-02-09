@@ -22,8 +22,7 @@ hess_L(x, y, h, kernel = 1, k = 10)
 \item{t}{kernel argument. A positive scalar.}
 
 \item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
-\code{2} for Epanechnikov, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}};
-\code{3} for softplus.}
+\code{2} for Epanechnikov; \code{3} for softplus.}
 
 \item{squared}{square the kernel? Only for \code{deriv == 0}. Defaults to
 \code{FALSE}.}
@@ -36,9 +35,9 @@ Defaults to \code{0}.}
 \item{inc_sfp}{include \code{softplus(k)} in the constant? Defaults to
 \code{TRUE}.}
 
-\item{h}{bandwidth vector, of size \code{r}.}
+\item{h}{vector of size \code{r} with bandwidths.}
 
-\item{d}{dimensions vector, of size \code{r}.}
+\item{d}{vector of size \code{r} with dimensions.}
 
 \item{kernel_type}{type of kernel employed: \code{1} for product kernel
 (default); \code{2} for spherically symmetric kernel.}
@@ -53,9 +52,11 @@ points.}
 \item{y}{center of the kernel.}
 }
 \value{
-For \code{L}, a vector with the kernel evaluated at \code{t}. For
-\code{grad_L}, a vector with the gradient evaluated at \code{x}. For
-\code{hess_L}, a matrix with the Hessian evaluated at \code{x}.
+\itemize{
+\item{\code{L}: a vector with the kernel evaluated at \code{t}.}
+\item{\code{grad_L}: a vector with the gradient evaluated at \code{x}.}
+\item{\code{hess_L}:a matrix with the Hessian evaluated at \code{x}.}
+}
 }
 \description{
 An isotropic kernel \eqn{L} on \eqn{\mathcal{S}^d} and its

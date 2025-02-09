@@ -10,7 +10,7 @@ hd_mc(log_f, log_g, d, bhatta = FALSE)
 \item{log_f, log_g}{logarithms of \eqn{f} and \eqn{g} evaluated in a Monte
 Carlo sample.}
 
-\item{d}{dimensions vector, of size \code{r}.}
+\item{d}{vector of size \code{r} with dimensions.}
 
 \item{bhatta}{compute the Bhattacharyya divergence (or coefficient) instead?}
 }

@@ -13,7 +13,7 @@ index_ridge(endpoints, X, d, l_index = 1000, f_index = 2,
 
 \item{X}{a matrix of size \code{c(n, sum(d) + r)} with the sample.}
 
-\item{d}{dimensions vector, of size \code{r}.}
+\item{d}{vector of size \code{r} with dimensions.}
 
 \item{l_index}{length of the grid index used for finding projections.
 Defaults to \code{1e3}.}

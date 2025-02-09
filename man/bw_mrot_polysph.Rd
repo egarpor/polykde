@@ -11,19 +11,18 @@ bw_mrot_polysph(X, d, kernel = 1, k = 10, upscale = FALSE, deriv = 0,
 \arguments{
 \item{X}{a matrix of size \code{c(n, sum(d) + r)} with the sample.}
 
-\item{d}{dimensions vector, of size \code{r}.}
+\item{d}{vector of size \code{r} with dimensions.}
 
 \item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
-\code{2} for Epanechnikov, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}};
-\code{3} for softplus.}
+\code{2} for Epanechnikov; \code{3} for softplus.}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 
 \item{upscale}{rescale bandwidths to work on
 \eqn{\mathcal{S}^{d_1}\times\cdots\times \mathcal{S}^{d_r}} and for
 derivative estimation?
-Defaults to \code{FALSE}. If \code{upscale == 1}, the order \code{n} is
-upscaled. If \code{upscale == 2}, then also the kernel constant is upscaled.}
+Defaults to \code{FALSE}. If \code{upscale = 1}, the order \code{n} is
+upscaled. If \code{upscale = 2}, then also the kernel constant is upscaled.}
 
 \item{deriv}{derivative order to perform the upscaling. Defaults to \code{0}.}
 

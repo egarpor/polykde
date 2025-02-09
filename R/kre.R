@@ -1,8 +1,8 @@
 
 #' @title Local polynomial estimator for polyspherical-on-scalar regression
 #'
-#' @description Computes a local constant or local linear estimator with
-#' polyspherical response and scalar predictor.
+#' @description Computes a local constant (Nadaraya--Watson) or local linear
+#' estimator with polyspherical response and scalar predictor.
 #'
 #' @param x a vector of size \code{nx} with the evaluation points.
 #' @param X a vector of size \code{n} with the predictor sample.

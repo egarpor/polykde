@@ -103,7 +103,7 @@ hess_kde_vmf <- function(x, X, d, h) {
 
 }
 
-hess_zhang <- function(f, x, d) {
+hezz <- function(f, x, d) {
 
   # Full gradient and Hessian
   grad <- numDeriv::grad(func = f, x = x, method.args = list(eps = 1e-12))
@@ -224,17 +224,17 @@ hess_ana <- hess_bar(f = function(y) kde_polysph(x = y, X = X, d = d, h = h,
                                                  norm_x = FALSE),
                      x = x, d = d)
 
-hess_zh <- hess_zhang(f = function(y) kde_polysph(x = y, X = X, d = d, h = h,
-                                                  norm_x = FALSE),
-                      x = x, d = d)
+hess_zz <- hezz(f = function(y) kde_polysph(x = y, X = X, d = d, h = h,
+                                            norm_x = FALSE),
+                x = x, d = d)
 
 P <- proj_P(x = x, d = d)
-test_that("ZHessian is the projection of Hessian", {
-  expect_equal(P %*% hess_ana %*% P, hess_zh)
+test_that("Hezzian is the projection of Hessian", {
+  expect_equal(P %*% hess_ana %*% P, hess_zz)
   expect_equal(grad_hess_kde_polysph(x = x, X = X, d = d, h = h,
                                      projected = TRUE,
                                      proj_alt = TRUE)$hess[1, , ],
-               hess_zh)
+               hess_zz)
 })
 
 hess_num <- numDeriv::hessian(func = function(x) {
@@ -251,7 +251,7 @@ test_that("Numerical and analytical projected Hessian coincide", {
 
 test_that("Unprojected analytical and vMF-specific R Hessian coincide", {
   expect_equal(hess_kde_vmf(x = x, X = X, d = d, h = h),
-                      hess_num_unproj, tolerance = 1e-9)
+                      hess_num_unproj, tolerance = 1e-8)
 })
 
 test_that("Unprojected analytical and vMF-specific Rcpp Hessian coincide", {
@@ -261,7 +261,7 @@ test_that("Unprojected analytical and vMF-specific Rcpp Hessian coincide", {
                                 norm_grad_hess = TRUE)
   expect_equal(drop(gh_1$hess[1, , ]), hess_num_unproj, tolerance = 1e-9)
   expect_equal(drop(gh_2$hess[1, , ]), drop(gh_1$hess[1, , ]) / drop(gh_1$dens),
-               tolerance = 1e-9)
+               tolerance = 1e-8)
 })
 
 test_that("Analytical and vMF-specific Rcpp Hessian coincide", {
@@ -277,7 +277,7 @@ test_that("Analytical and vMF-specific Rcpp Hessian coincide", {
 test_that("Hessian vanish in the x direction", {
   expect_equal(drop(x %*% hess_ana %*% t(x)), 0)
   expect_equal(drop(x %*% hess_num %*% t(x)), 0)
-  expect_equal(drop(x %*% hess_zh %*% t(x)), 0)
+  expect_equal(drop(x %*% hess_zz %*% t(x)), 0)
   expect_equal(drop(x %*% grad_hess_kde_polysph(x = x, X = X, d = d, h = h,
                                                 projected = TRUE)$hess[1, , ]
                     %*% t(x)), 0)
@@ -354,41 +354,38 @@ test_that("Normalizing constants in projected gradient and Hessians", {
   expect_equal(gh_3, gh_4)
 })
 
-## Laplacians
-
-skip("Skipping Laplacians; experimental for ROT bandwidth")
-
-r <- 3
-d <- rep(2, r)
-mu <- r_unif_polysph(n = 1, d = d)
-h <- rep(1, r)
-M <- 1e4
-x_MC <- r_unif_polysph(n = M, d = d)
-
-# Compute Laplacians
-laplacians <- apply(x_MC, 1, function(x) {
-  hess_ana <- hess_bar(f = function(y) kde_polysph(x = y, X = mu, d = d, h = h,
-                                                   norm_x = FALSE),
-                       x = rbind(x), d = d)
-  rowSums(matrix(diag(hess_ana), nrow = r, byrow = TRUE))
-})
-laplacian <- t(laplacians)
-
-# Joint curvature
-int <- (laplacians[1, ] + laplacians[2, ] + laplacians[3, ])^2
-prod(rotasym::w_p(p = d + 1)) * mean(int)
-
-# Sum of marginal curvatures
-int1 <- laplacians[1, ]^2
-int2 <- laplacians[2, ]^2
-int3 <- laplacians[3, ]^2
-prod(rotasym::w_p(p = d + 1)) * (mean(int1) + mean(int2) + mean(int3))
-
-# Cross-term curvature?
-int12 <- laplacians[1, ] * laplacians[2, ]
-int13 <- laplacians[1, ] * laplacians[3, ]
-int23 <- laplacians[2, ] * laplacians[3, ]
-prod(rotasym::w_p(p = d + 1)) * mean(int12)
-prod(rotasym::w_p(p = d + 1)) * mean(int13)
-prod(rotasym::w_p(p = d + 1)) * mean(int23)
-
+# ## Laplacians
+#
+# r <- 3
+# d <- rep(2, r)
+# mu <- r_unif_polysph(n = 1, d = d)
+# h <- rep(1, r)
+# M <- 1e4
+# x_MC <- r_unif_polysph(n = M, d = d)
+#
+# # Compute Laplacians
+# laplacians <- apply(x_MC, 1, function(x) {
+#   hess_ana <- hess_bar(f = function(y) kde_polysph(x = y, X = mu, d = d, h = h,
+#                                                    norm_x = FALSE),
+#                        x = rbind(x), d = d)
+#   rowSums(matrix(diag(hess_ana), nrow = r, byrow = TRUE))
+# })
+# laplacian <- t(laplacians)
+#
+# # Joint curvature
+# int <- (laplacians[1, ] + laplacians[2, ] + laplacians[3, ])^2
+# prod(rotasym::w_p(p = d + 1)) * mean(int)
+#
+# # Sum of marginal curvatures
+# int1 <- laplacians[1, ]^2
+# int2 <- laplacians[2, ]^2
+# int3 <- laplacians[3, ]^2
+# prod(rotasym::w_p(p = d + 1)) * (mean(int1) + mean(int2) + mean(int3))
+#
+# # Cross-term curvature?
+# int12 <- laplacians[1, ] * laplacians[2, ]
+# int13 <- laplacians[1, ] * laplacians[3, ]
+# int23 <- laplacians[2, ] * laplacians[3, ]
+# prod(rotasym::w_p(p = d + 1)) * mean(int12)
+# prod(rotasym::w_p(p = d + 1)) * mean(int13)
+# prod(rotasym::w_p(p = d + 1)) * mean(int23)

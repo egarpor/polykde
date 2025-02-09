@@ -29,8 +29,7 @@ common dimension of each hypersphere (a scalar).}
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 
 \item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
-\code{2} for Epanechnikov, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}};
-\code{3} for softplus.}
+\code{2} for Epanechnikov; \code{3} for softplus.}
 
 \item{kernel_type}{type of kernel. Must be either \code{"prod"} (product
 kernel, default) or \code{"sph"} (spherically symmetric kernel).}
@@ -45,17 +44,19 @@ default).}
 \item{...}{further parameters passed to \code{\link{integrate}}, such as
 \code{upper}, \code{abs.tol}, \code{rel.tol}, etc.}
 
-\item{h}{bandwidth vector, of size \code{r}.}
+\item{h}{vector of size \code{r} with bandwidths.}
 
 \item{bias, squared}{flags parameters for computing the numerator constants
 in the bias and variance constants.}
 }
 \value{
-For \code{b_d}, a vector with the first kernel moment on
-each hypersphere (common if \code{kernel_type = "sph"}). For \code{v_d},
-a vector with the second kernel moment if \code{kernel_type = "prod"}, or a
-scalar if \code{kernel_type = "sph"}. For \code{eff_kern}, a scalar with the
-kernel efficiency.
+\itemize{
+\item{\code{b_d}: a vector with the first kernel moment on each hypersphere
+(common if \code{kernel_type = "sph"}).}
+\item{\code{v_d}: a vector with the second kernel moment if
+\code{kernel_type = "prod"}, or a scalar if \code{kernel_type = "sph"}.}
+\item{\code{eff_kern}: a scalar with the kernel efficiency.}
+}
 }
 \description{
 Computes moments of kernels on \eqn{\mathcal{S}^{d_1} \times

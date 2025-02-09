@@ -17,8 +17,10 @@ sph_to_angles(x)
 on \eqn{\mathcal{S}^{d}}. Assumed to be of unit norm by rows.}
 }
 \value{
-For \code{angles_to_sph}, the matrix \code{x}. For
-\code{sph_to_angles}, the matrix \code{theta}.
+\itemize{
+\item{\code{angles_to_sph}: the matrix \code{x}.}
+\item{\code{sph_to_angles}: the matrix \code{theta}.}
+}
 }
 \description{
 Transforms the angles \eqn{(\theta_1,\ldots,\theta_d)} in

@@ -10,16 +10,15 @@ r_kern_polysph(n, d, mu, h, kernel = 1, kernel_type = 1, k = 10,
 \arguments{
 \item{n}{sample size.}
 
-\item{d}{dimensions vector, of size \code{r}.}
+\item{d}{vector of size \code{r} with dimensions.}
 
 \item{mu}{a vector of size \code{sum(d) + r} with the concatenated means
 on \eqn{\mathcal{S}^{d_j}}.}
 
-\item{h}{bandwidth vector, of size \code{r}.}
+\item{h}{vector of size \code{r} with bandwidths.}
 
 \item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
-\code{2} for Epanechnikov, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}};
-\code{3} for softplus.}
+\code{2} for Epanechnikov; \code{3} for softplus.}
 
 \item{kernel_type}{type of kernel employed: \code{1} for product kernel
 (default); \code{2} for spherically symmetric kernel.}

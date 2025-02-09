@@ -11,12 +11,13 @@ d_vmf_polysph(x, d, mu, kappa, log = FALSE)
 \item{x}{a matrix of size \code{c(nx, sum(d) + r)} with the evaluation
 points.}
 
-\item{d}{dimensions vector, of size \code{r}.}
+\item{d}{vector of size \code{r} with dimensions.}
 
-\item{mu}{a vector of size \code{sum(d) + r} with the concatenated vMF means
-on \eqn{\mathcal{S}^{d_j}}.}
+\item{mu}{a vector of size \code{sum(d) + r} with the concatenated von
+Mises--Fisher means on \eqn{\mathcal{S}^{d_j}}.}
 
-\item{kappa}{a vector of size \code{r} with the vMF concentrations.}
+\item{kappa}{a vector of size \code{r} with the von Mises--Fisher
+concentrations.}
 
 \item{log}{compute the logarithm of the density? Defaults to \code{FALSE}.}
 }

@@ -17,8 +17,8 @@ A matrix of size \code{c(n, sum(d) + r)} with the projected points.
 }
 \description{
 Projects points on \eqn{\mathbb{R}^{d_1 + \cdots + d_r + r}}
-onto the polysphere \eqn{S^{d_1} \times \cdots \times S^{d_r}} by
-normalizing each block of \eqn{d_j} coordinates.
+onto the polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times
+\mathcal{S}^{d_r}} by normalizing each block of \eqn{d_j} coordinates.
 }
 \examples{
 # Example on (S^1)^2

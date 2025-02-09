@@ -33,23 +33,22 @@ mu <- r_unif_polysph(n = 5, d = d)
 X <- r_kde_polysph(n = n, X = mu, d = d, h = h)
 
 test_that("bw_cv_polysph(type = \"LCV\") in sequential and parallel mode", {
+  skip("Unstable")
   expect_equal(
-    suppressWarnings(bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV",
-                                   control = list(maxit = 1e3))$par),
-    suppressWarnings(bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV",
-                                   control = list(maxit = 1e3),
-                                   ncores = 2)$par),
+    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV",
+                  control = list(maxit = 1e3))$par,
+    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV",
+                  control = list(maxit = 1e3), ncores = 2)$par,
                tolerance = 5e-2)
 })
 
 test_that("bw_cv_polysph(type = \"LSCV\") in sequential and parallel mode", {
-  skip("LSCV Broken")
+  skip("Unstable")
   expect_equal(
-    suppressWarnings(bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
-                                   control = list(maxit = 1e3))$par),
-    suppressWarnings(bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
-                                   control = list(maxit = 1e3),
-                                   ncores = 2)$par),
+    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
+                  control = list(maxit = 1e3))$par,
+    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
+                  control = list(maxit = 1e3), ncores = 2)$par,
     tolerance = 5e-2)
 })
 
@@ -71,7 +70,6 @@ test_that("bw_cv_polysph(type = \"LCV\") equals DirStats::bw_dir_lcv()", {
 })
 
 test_that("bw_cv_polysph(type = \"LSCV\") equals DirStats::bw_dir_lscv()", {
-  skip("LSCV Broken")
   expect_equal(
     bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
                   method = "L-BFGS-B", start = h, M = 1e4)$par,

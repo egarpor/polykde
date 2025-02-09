@@ -11,9 +11,9 @@ log_cv_kde_polysph(X, d, h, weights = as.numeric(c()), wrt_unif = FALSE,
 \arguments{
 \item{X}{a matrix of size \code{c(n, sum(d) + r)} with the sample.}
 
-\item{d}{dimensions vector, of size \code{r}.}
+\item{d}{vector of size \code{r} with dimensions.}
 
-\item{h}{bandwidth vector, of size \code{r}.}
+\item{h}{vector of size \code{r} with bandwidths.}
 
 \item{weights}{weights for each observation. If provided, a vector of size
 \code{n} with the weights for multiplying each kernel. If not provided,
@@ -30,8 +30,7 @@ and include it in the kernel density estimator. Defaults to \code{TRUE}.}
 extrinsic-chordal distance, in the kernel? Defaults to \code{FALSE}.}
 
 \item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
-\code{2} for Epanechnikov, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}};
-\code{3} for softplus.}
+\code{2} for Epanechnikov; \code{3} for softplus.}
 
 \item{kernel_type}{type of kernel employed: \code{1} for product kernel
 (default); \code{2} for spherically symmetric kernel.}

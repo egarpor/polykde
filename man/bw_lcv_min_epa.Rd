@@ -10,7 +10,7 @@ bw_lcv_min_epa(X, d, kernel_type = c("prod", "sph")[1])
 \arguments{
 \item{X}{a matrix of size \code{c(n, sum(d) + r)} with the sample.}
 
-\item{d}{dimensions vector, of size \code{r}.}
+\item{d}{vector of size \code{r} with dimensions.}
 
 \item{kernel_type}{type of kernel employed: \code{1} for product kernel
 (default); \code{2} for spherically symmetric kernel.}

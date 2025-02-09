@@ -1,7 +1,6 @@
 
 r <- rpois(1, lambda = 15) + 1
-# d <- rep(sample(1:10, size = 1), r)
-d <- sample(x = r, size = r, replace = TRUE)
+d <- rep(sample(1:10, size = 1), r)
 h <- runif(r, min = 0.2)
 X <- r_unif_polysph(n = 3, d = d)
 x <- r_unif_polysph(n = 2, d = d)
@@ -18,12 +17,6 @@ test_that("Reordering of blocks works in block_euler_ridge()", {
   expect_equal(x, res$start_x)
   expect_equal(x, res$paths[, , 1])
 })
-
-# TODO: adapt to different d's; recollection of blocks does not work so far
-
-skip("Skipping; development version")
-
-library(polykde)
 
 # Transformation functions
 s1r_to_angles <- function(x) {
@@ -493,6 +486,8 @@ viz_euler_s2r <- function(y_old, X, col_X, k = 1, ind_dj, d, h, h_euler,
 
 }
 
+skip("No tests for euler ridges, just visualizations")
+
 ## (S^1)^2 test
 
 # Sample
@@ -506,19 +501,19 @@ X <- angles_to_s1r(Th)
 col_X_alp <- viridis::viridis(n, alpha = 0.25)
 col_X <- viridis::viridis(n)
 
-# # Single starting point
-# i <- 50
-# y <- X[i, , drop = FALSE]
-# # y <- angles_to_s1r(th = rbind(c(1, 2)))
-# col_X_alp <- c(col_X_alp, 1)
-# col_X <- c(col_X, 1)
+# Single starting point
+i <- 50
+y <- X[i, , drop = FALSE]
+# y <- angles_to_s1r(th = rbind(c(1, 2)))
+col_X_alp <- c(col_X_alp, 1)
+col_X <- c(col_X, 1)
 
 # Euler
 h_rid <- rep(0.75, r)
 h_eu <- h_rid^2
 N <- 200
 eps <- 1e-6
-Xy <- X#rbind(X, y)
+Xy <- rbind(X, y)
 Y <- euler_ridge(x = Xy, X = X, d = d, h = h_rid, h_euler = h_eu,
                  N = N, eps = eps, keep_paths = TRUE)
 # kde_X <- kde_polysph(x = Xy, X = X, d = d, h = h_rid)
@@ -557,10 +552,10 @@ manipulate::manipulate({
 # }
 }, i = manipulate::slider(1, dim(Y$paths)[3]))
 
-# # Visualization on T^2
-# viz_euler_t2(y_old = y, X = X, col_X = col_X_alp, d = d, h = h_rid,
-#              h_euler = h_eu, N = N, eps = eps, frame = TRUE, grad = FALSE)
-# lines(s1r_to_angles(t(Y$paths[n + 1, , ])), col = 6, lwd = 5)
+# Visualization on T^2
+viz_euler_t2(y_old = y, X = X, col_X = col_X_alp, d = d, h = h_rid,
+             h_euler = h_eu, N = N, eps = eps, frame = TRUE, grad = FALSE)
+lines(s1r_to_angles(t(Y$paths[n + 1, , ])), col = 6, lwd = 5)
 
 # Visualization on (S^1)^2
 viz_euler_s1r(y_old = y, X = X, col_X = col_X_alp, k = 1, ind_dj = ind_dj,
@@ -777,37 +772,3 @@ rgl::par3d(windowRect = c(80, 125, 1280, 826), zoom = 0.78)
 viz_euler_s2r(y_old = y, X = X, col_X = col_X_alp, k = 2, ind_dj = ind_dj,
               d = d, h = h_rid, h_euler = h_eu, N = N, eps = eps, frame = FALSE)
 rgl::lines3d(t(Y$paths[n + 1, 4:6, ]), col = 6, lwd = 5)
-
-# ## Spokes
-#
-# # Sample
-# h_rot_nice <- bw_rot_polysph(X = X_nice, d = d_nice, upscale = TRUE, deriv = 2)
-#
-# # Euler
-# N <- 1e3
-# eps <- 1e-6
-# h_nice <- 5 * h_rot_nice
-# h_euler <- h_rot_nice
-# i <- 1
-# y <- X_nice[i, , drop = FALSE]
-#
-#
-# X_nice2 <-  X_nice#[, 1:6]
-# d_nice2 <- d_nice#[1:2]
-# h_nice2 <- h_nice#[1:2]
-# h_euler2 <- h_euler#[1:2]
-# ind_dj_nice2 <- ind_dj_nice#[1:3]
-# y2 <- y#[, 1:6, drop = FALSE]
-# Y <- euler_ridge(x = y2, X = X_nice2, d = d_nice2, h = h_nice2,
-#                  h_euler = h_euler2, N = N, eps = eps, keep_paths = TRUE,
-#                  show_prog_j = TRUE, show_prog = FALSE, sparse = FALSE)
-#
-# # Visualization
-# rgl::open3d()
-# rgl::par3d(windowRect = c(80, 125, 1280, 826), zoom = 0.78)
-# k <- 2
-# viz_euler_s2r(y_old = y2, X = X_nice2, k = k, ind_dj = ind_dj_nice2, d = d_nice2,
-#               h = h_nice2, h_euler = h_euler2, N = 10, eps = eps, rays = TRUE,
-#               frame = TRUE)
-# rgl::lines3d(t(Y$paths[1, 1:3 + 3 * (k - 1), 1:(10 + 1)]), col = 6, lwd = 5)
-#

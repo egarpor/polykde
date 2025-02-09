@@ -17,8 +17,10 @@ torus_to_angles(x)
 in the rows.}
 }
 \value{
-For \code{angles_to_torus}, the matrix \code{x}. For
-\code{torus_to_angles}, the matrix \code{theta}.
+\itemize{
+\item{\code{angles_to_torus}: the matrix \code{x}.}
+\item{\code{torus_to_angles}: the matrix \code{theta}.}
+}
 }
 \description{
 Transforms the angles \eqn{(\theta_1,\ldots,\theta_p)} in

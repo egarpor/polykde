@@ -9,19 +9,20 @@ r_vmf_polysph(n, d, mu, kappa, normalize_mu = FALSE)
 \arguments{
 \item{n}{sample size.}
 
-\item{d}{dimensions vector, of size \code{r}.}
+\item{d}{vector of size \code{r} with dimensions.}
 
-\item{mu}{a vector of size \code{sum(d) + r} with the concatenated vMF means
-on \eqn{\mathcal{S}^{d_j}}.}
+\item{mu}{a vector of size \code{sum(d) + r} with the concatenated von
+Mises--Fisher means on \eqn{\mathcal{S}^{d_j}}.}
 
-\item{kappa}{a vector of size \code{r} with the vMF concentrations.}
+\item{kappa}{a vector of size \code{r} with the von Mises--Fisher
+concentrations.}
 
 \item{normalize_mu}{ensure a normalization of \code{mu}?}
 }
 \description{
-Simulates from a product of von Mises--Fisher (vMF)
-distributions on the polysphere \eqn{\mathcal{S}^{d_1} \times \cdots
-\times \mathcal{S}^{d_r}}.
+Simulates from a product of von Mises--Fisher distributions on
+the polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times
+\mathcal{S}^{d_r}}.
 }
 \examples{
 # Simulate vMF data on (S^1)^2

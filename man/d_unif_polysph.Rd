@@ -10,7 +10,7 @@ d_unif_polysph(x, d, log = FALSE)
 \item{x}{a matrix of size \code{c(nx, sum(d) + r)} with the evaluation
 points.}
 
-\item{d}{dimensions vector, of size \code{r}.}
+\item{d}{vector of size \code{r} with dimensions.}
 
 \item{log}{compute the logarithm of the density? Defaults to \code{FALSE}.}
 }

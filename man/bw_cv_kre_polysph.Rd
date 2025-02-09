@@ -14,7 +14,7 @@ bw_cv_kre_polysph(X, Y, d, p = 0, h_grid = bw.nrd(X) * 10^seq(-2, 2, l =
 \item{Y}{a matrix of size \code{c(n, sum(d) + r)} with the response sample
 on the polysphere.}
 
-\item{d}{dimensions vector, of size \code{r}.}
+\item{d}{vector of size \code{r} with dimensions.}
 
 \item{p}{degree of local fit, either \code{0} or \code{1}. Defaults to
 \code{0}.}
