@@ -29,21 +29,32 @@ and include it in the kernel density estimator. Defaults to \code{TRUE}.}
 \item{intrinsic}{use the intrinsic distance, instead of the
 extrinsic-chordal distance, in the kernel? Defaults to \code{FALSE}.}
 
-\item{kernel}{kernel employed: \code{1} for vMF (default); \code{2}
-for Epa, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}}; \code{3} for softplus.}
+\item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
+\code{2} for Epanechnikov, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}};
+\code{3} for softplus.}
 
 \item{kernel_type}{type of kernel employed: \code{1} for product kernel
 (default); \code{2} for spherically symmetric kernel.}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
+
+\item{norm_x, norm_X}{ensure a normalization of the data? Defaults to
+\code{FALSE}.}
 }
 \value{
 A column vector of size \code{c(n, 1)}.
 }
 \description{
-Computes \eqn{\log
-\hat{f}_{-i}(\boldsymbol{X}_i;\boldsymbol{h})}, \eqn{i=1,\ldots,n}.
+Computes the logarithm of the cross-validated kernel density
+estimator: \eqn{\log \hat{f}_{-i}(\boldsymbol{X}_i;\boldsymbol{h})},
+\eqn{i = 1, \ldots, n.}
 }
 \examples{
-# TODO
+# Simple check on S^1 x S^2
+n <- 5
+d <- c(1, 2)
+h <- c(0.2, 0.2)
+X <- r_unif_polysph(n = n, d = d)
+log_cv_kde_polysph(X = X, d = d, h = h)
+kde_polysph(x = X[1, , drop = FALSE], X = X[-1, ], d = d, h = h, log = TRUE)
 }

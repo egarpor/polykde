@@ -28,8 +28,9 @@ common dimension of each hypersphere (a scalar).}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 
-\item{kernel}{kernel employed: \code{1} for vMF (default); \code{2}
-for Epa, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}}; \code{3} for softplus.}
+\item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
+\code{2} for Epanechnikov, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}};
+\code{3} for softplus.}
 
 \item{kernel_type}{type of kernel. Must be either \code{"prod"} (product
 kernel, default) or \code{"sph"} (spherically symmetric kernel).}

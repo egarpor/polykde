@@ -46,14 +46,23 @@ const double log_M_PI = std::log(M_PI);
 //' extrinsic-chordal distance, in the kernel? Defaults to \code{FALSE}.
 //' @param norm_x,norm_X ensure a normalization of the data? Defaults to
 //' \code{FALSE}.
-//' @param kernel kernel employed: \code{1} for vMF (default); \code{2}
-//' for Epa, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}}; \code{3} for softplus.
+//' @param kernel kernel employed: \code{1} for von Mises--Fisher (default);
+//' \code{2} for Epanechnikov, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}};
+//' \code{3} for softplus.
 //' @param kernel_type type of kernel employed: \code{1} for product kernel
 //' (default); \code{2} for spherically symmetric kernel.
 //' @param k softplus kernel parameter. Defaults to \code{10.0}.
 //' @return A column vector of size \code{c(nx, 1)}.
 //' @examples
-//' # TODO
+//' # Simple check on S^1 x S^2
+//' n <- 1e3
+//' d <- c(1, 2)
+//' mu <- c(0, 1, 0, 0, 1)
+//' kappa <- c(5, 5)
+//' h <- c(0.2, 0.2)
+//' X <- r_vmf_polysph(n = n, d = d, mu = mu, kappa = kappa)
+//' kde_polysph(x = rbind(mu), X = X, d = d, h = h)
+//' d_vmf_polysph(x = rbind(mu), d = d, mu = mu, kappa = kappa)
 //' @export
 // [[Rcpp::export]]
 arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
@@ -375,13 +384,22 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
 
 //' @title Cross-validation for the polyspherical kernel density estimator
 //'
-//' @description Computes \eqn{\log
-//' \hat{f}_{-i}(\boldsymbol{X}_i;\boldsymbol{h})}, \eqn{i=1,\ldots,n}.
+//' @description Computes the logarithm of the cross-validated kernel density
+//' estimator: \eqn{\log \hat{f}_{-i}(\boldsymbol{X}_i;\boldsymbol{h})},
+//' \eqn{i = 1, \ldots, n.}
 //'
 //' @inheritParams kde_polysph
+//' @param norm_x,norm_X ensure a normalization of the data? Defaults to
+//' \code{FALSE}.
 //' @return A column vector of size \code{c(n, 1)}.
 //' @examples
-//' # TODO
+//' # Simple check on S^1 x S^2
+//' n <- 5
+//' d <- c(1, 2)
+//' h <- c(0.2, 0.2)
+//' X <- r_unif_polysph(n = n, d = d)
+//' log_cv_kde_polysph(X = X, d = d, h = h)
+//' kde_polysph(x = X[1, , drop = FALSE], X = X[-1, ], d = d, h = h, log = TRUE)
 //' @export
 // [[Rcpp::export]]
 arma::vec log_cv_kde_polysph(arma::mat X, arma::uvec d, arma::vec h,

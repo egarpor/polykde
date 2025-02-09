@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{grad_hess_kde_polysph}
 \alias{grad_hess_kde_polysph}
-\title{Gradient and Hessian of the polyspherical kde}
+\title{Gradient and Hessian of the polyspherical kernel density estimator}
 \usage{
 grad_hess_kde_polysph(x, X, d, h, weights = as.numeric(c()),
   projected = TRUE, proj_alt = TRUE, norm_grad_hess = FALSE,
@@ -29,7 +29,7 @@ accounts for the radial projection? Defaults to \code{TRUE}.}
 \item{proj_alt}{alternative projection. Defaults to \code{TRUE}.}
 
 \item{norm_grad_hess}{normalize the gradient and Hessian dividing by the
-kde? Defaults to \code{FALSE}.}
+kernel density estimator? Defaults to \code{FALSE}.}
 
 \item{log}{compute the logarithm of the density? Defaults to \code{FALSE}.}
 
@@ -43,8 +43,9 @@ and include it in the kernel density estimator. Defaults to \code{TRUE}.}
 \item{norm_x, norm_X}{ensure a normalization of the data? Defaults to
 \code{FALSE}.}
 
-\item{kernel}{kernel employed: \code{1} for vMF (default); \code{2}
-for Epa, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}}; \code{3} for softplus.}
+\item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
+\code{2} for Epanechnikov, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}};
+\code{3} for softplus.}
 
 \item{kernel_type}{type of kernel employed: \code{1} for product kernel
 (default); \code{2} for spherically symmetric kernel.}
@@ -52,11 +53,30 @@ for Epa, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}}; \code{3} for softplus.}
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 }
 \value{
-TODO
+A list with the following components:
+\item{dens}{a column vector of size \code{c(nx, 1)} with the kernel
+density estimator evaluated at \code{x}.}
+\item{grad}{a matrix of size \code{c(nx, sum(d) + r)} with the gradient of
+the kernel density estimator evaluated at \code{x}.}
+\item{hess}{an array of size \code{c(nx, sum(d) + r, sum(d) + r)} with the
+Hessian matrix of the kernel density estimator evaluated at \code{x}.}
 }
 \description{
-TODO
+Computes the gradient
+\eqn{\mathsf{D}\hat{f}(\boldsymbol{x};\boldsymbol{h})} and Hessian matrix
+\eqn{\mathsf{H}\hat{f}(\boldsymbol{x};\boldsymbol{h})} of the kernel density
+estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the
+polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
 }
 \examples{
-# TODO
+# Simple check on (S^1)^2
+n <- 3
+d <- c(1, 1)
+mu <- c(0, 1, 0, 1)
+kappa <- c(5, 5)
+h <- c(0.2, 0.2)
+X <- r_vmf_polysph(n = n, d = d, mu = mu, kappa = kappa)
+grh <- grad_hess_kde_polysph(x = X, X = X, d = d, h = h)
+str(grh)
+grh
 }

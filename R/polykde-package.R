@@ -5,7 +5,9 @@
 #' hypersphere, and circle. Includes functions for density estimation,
 #' regression estimation, ridge estimation, bandwidth selection, kernels,
 #' samplers, and homogeneity tests. Companion package to García-Portugués and
-#' Meilán-Vila (2024) <\doi{10.48550/arXiv.2411.04166}>.
+#' Meilán-Vila (2024) <\doi{10.48550/arXiv.2411.04166}> and
+#' and García-Portugués and Meilán-Vila (2023)
+#' <\doi{10.1007/978-3-031-32729-2_4}>.
 #'
 #' @author Eduardo García-Portugués.
 #' @references

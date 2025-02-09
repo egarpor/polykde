@@ -25,7 +25,7 @@
 #' Defaults to \code{FALSE}.
 #' @param seed_jsd seed for the Monte Carlo simulations used to estimate the
 #' integrals in the Jensen--Shannon distance.
-#' @details Only \code{type = "jsd"} is available for \eqn{k > 2}.
+#' @details Only \code{type = "jsd"} is able to deal with \eqn{k > 2}.
 #'
 #' The \code{"mean"} statistic measures the maximum (chordal) distance
 #' between the estimated group means. This statistic is bounded in \eqn{[0, 1]}.

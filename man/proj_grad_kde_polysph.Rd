@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{proj_grad_kde_polysph}
 \alias{proj_grad_kde_polysph}
-\title{Projected gradient of the polyspherical kde}
+\title{Projected gradient of the polyspherical kernel density estimator}
 \usage{
 proj_grad_kde_polysph(x, X, d, h, weights = as.numeric(c()),
   wrt_unif = FALSE, normalized = TRUE, norm_x = FALSE, norm_X = FALSE,
@@ -33,8 +33,9 @@ and include it in the kernel density estimator. Defaults to \code{TRUE}.}
 \item{norm_x, norm_X}{ensure a normalization of the data? Defaults to
 \code{FALSE}.}
 
-\item{kernel}{kernel employed: \code{1} for vMF (default); \code{2}
-for Epa, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}}; \code{3} for softplus.}
+\item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
+\code{2} for Epanechnikov, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}};
+\code{3} for softplus.}
 
 \item{kernel_type}{type of kernel employed: \code{1} for product kernel
 (default); \code{2} for spherically symmetric kernel.}
@@ -50,11 +51,29 @@ Prevents the Euler algorithm to "surf the ridge". Defaults to \code{TRUE}.}
 \code{FALSE}.}
 }
 \value{
-TODO
+A list with the following components:
+\item{eta}{a matrix of size \code{c(nx, sum(d) + r)} with the
+projected gradient evaluated at \code{x}.}
+\item{u1}{a matrix of size \code{c(nx, sum(d) + r)} with the
+first filtered eigenvectors of the Hessian evaluated at \code{x}.}
+\item{lamb_norm}{a matrix of size \code{c(nx, sum(d) + r)} with the
+eigenvalues of the Hessian evaluated at \code{x}.}
 }
 \description{
-TODO
+Computes the projected gradient
+\eqn{\mathsf{D}_{(p-1)}\hat{f}(\boldsymbol{x};\boldsymbol{h})} of the
+kernel density estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the
+polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}},
+where \eqn{p=\sum_{j=1}^r d_j+r} is the total dimension of the ambient
+space.
 }
 \examples{
-# TODO
+# Simple check on (S^1)^2
+n <- 3
+d <- c(1, 1)
+mu <- c(0, 1, 0, 1)
+kappa <- c(5, 5)
+h <- c(0.2, 0.2)
+X <- r_vmf_polysph(n = n, d = d, mu = mu, kappa = kappa)
+proj_grad_kde_polysph(x = X, X = X, d = d, h = h)
 }

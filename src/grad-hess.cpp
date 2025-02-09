@@ -23,19 +23,38 @@ const double log_two_M_PI = std::log(2.0 * M_PI);
 const double log_M_PI = std::log(M_PI);
 
 
-//' @title Gradient and Hessian of the polyspherical kde
+//' @title Gradient and Hessian of the polyspherical kernel density estimator
 //'
-//' @description TODO
+//' @description Computes the gradient
+//' \eqn{\mathsf{D}\hat{f}(\boldsymbol{x};\boldsymbol{h})} and Hessian matrix
+//' \eqn{\mathsf{H}\hat{f}(\boldsymbol{x};\boldsymbol{h})} of the kernel density
+//' estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the
+//' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
 //'
 //' @inheritParams kde_polysph
 //' @param projected compute the \emph{projected} gradient and Hessian that
 //' accounts for the radial projection? Defaults to \code{TRUE}.
 //' @param proj_alt alternative projection. Defaults to \code{TRUE}.
 //' @param norm_grad_hess normalize the gradient and Hessian dividing by the
-//' kde? Defaults to \code{FALSE}.
-//' @return TODO
+//' kernel density estimator? Defaults to \code{FALSE}.
+//' @return A list with the following components:
+//' \item{dens}{a column vector of size \code{c(nx, 1)} with the kernel
+//' density estimator evaluated at \code{x}.}
+//' \item{grad}{a matrix of size \code{c(nx, sum(d) + r)} with the gradient of
+//' the kernel density estimator evaluated at \code{x}.}
+//' \item{hess}{an array of size \code{c(nx, sum(d) + r, sum(d) + r)} with the
+//' Hessian matrix of the kernel density estimator evaluated at \code{x}.}
 //' @examples
-//' # TODO
+//' # Simple check on (S^1)^2
+//' n <- 3
+//' d <- c(1, 1)
+//' mu <- c(0, 1, 0, 1)
+//' kappa <- c(5, 5)
+//' h <- c(0.2, 0.2)
+//' X <- r_vmf_polysph(n = n, d = d, mu = mu, kappa = kappa)
+//' grh <- grad_hess_kde_polysph(x = X, X = X, d = d, h = h)
+//' str(grh)
+//' grh
 //' @export
 // [[Rcpp::export]]
 Rcpp::List grad_hess_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
@@ -454,9 +473,14 @@ Rcpp::List grad_hess_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
 }
 
 
-//' @title Projected gradient of the polyspherical kde
+//' @title Projected gradient of the polyspherical kernel density estimator
 //'
-//' @description TODO
+//' @description Computes the projected gradient
+//' \eqn{\mathsf{D}_{(p-1)}\hat{f}(\boldsymbol{x};\boldsymbol{h})} of the
+//' kernel density estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the
+//' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}},
+//' where \eqn{p=\sum_{j=1}^r d_j+r} is the total dimension of the ambient
+//' space.
 //'
 //' @inheritParams kde_polysph
 //' @inheritParams grad_hess_kde_polysph
@@ -464,9 +488,22 @@ Rcpp::List grad_hess_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
 //' Prevents the Euler algorithm to "surf the ridge". Defaults to \code{TRUE}.
 //' @param sparse use a sparse eigendecomposition of the Hessian? Defaults to
 //' \code{FALSE}.
-//' @return TODO
+//' @return A list with the following components:
+//' \item{eta}{a matrix of size \code{c(nx, sum(d) + r)} with the
+//' projected gradient evaluated at \code{x}.}
+//' \item{u1}{a matrix of size \code{c(nx, sum(d) + r)} with the
+//' first filtered eigenvectors of the Hessian evaluated at \code{x}.}
+//' \item{lamb_norm}{a matrix of size \code{c(nx, sum(d) + r)} with the
+//' eigenvalues of the Hessian evaluated at \code{x}.}
 //' @examples
-//' # TODO
+//' # Simple check on (S^1)^2
+//' n <- 3
+//' d <- c(1, 1)
+//' mu <- c(0, 1, 0, 1)
+//' kappa <- c(5, 5)
+//' h <- c(0.2, 0.2)
+//' X <- r_vmf_polysph(n = n, d = d, mu = mu, kappa = kappa)
+//' proj_grad_kde_polysph(x = X, X = X, d = d, h = h)
 // [[Rcpp::export]]
 Rcpp::List proj_grad_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
                                  arma::vec h, Rcpp::NumericVector weights =
@@ -572,9 +609,9 @@ Rcpp::List proj_grad_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
 
       }
 
-      // Check that there are r null eigenvalues. It is mathematically impossible
-      // that there are less than r null eigenvalues, but it may happen due to
-      // a loss of accuracy with small bandwidths.
+      // Check that there are r null eigenvalues. It is mathematically
+      // impossible that there are less than r null eigenvalues, but it may
+      // happen due to a loss of accuracy with small bandwidths.
       arma::uvec where_nonzero_eigvals = arma::find(arma::abs(eigval) > 1e-10);
       arma::uword n_zero_eigvals = p - where_nonzero_eigvals.n_elem;
       if (n_zero_eigvals != r) {

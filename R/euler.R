@@ -1,5 +1,5 @@
 
-#' @title Parallel Euler algorithm
+#' @title Parallel Euler algorithm for density ridge estimation
 #'
 #' @description TODO
 #'
@@ -87,7 +87,7 @@ parallel_euler_ridge <- function(x, X, d, h, h_euler, N = 1e3, eps = 1e-5,
 }
 
 
-#' @title Blockwise Euler algorithm
+#' @title Blockwise Euler algorithm for density ridge estimation
 #'
 #' @description TODO
 #'

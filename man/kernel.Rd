@@ -21,8 +21,9 @@ hess_L(x, y, h, kernel = 1, k = 10)
 \arguments{
 \item{t}{kernel argument. A positive scalar.}
 
-\item{kernel}{kernel employed: \code{1} for vMF (default); \code{2}
-for Epa, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}}; \code{3} for softplus.}
+\item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
+\code{2} for Epanechnikov, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}};
+\code{3} for softplus.}
 
 \item{squared}{square the kernel? Only for \code{deriv == 0}. Defaults to
 \code{FALSE}.}

@@ -38,8 +38,9 @@ and include it in the kernel density estimator. Defaults to \code{TRUE}.}
 \item{norm_x, norm_X}{ensure a normalization of the data? Defaults to
 \code{FALSE}.}
 
-\item{kernel}{kernel employed: \code{1} for vMF (default); \code{2}
-for Epa, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}}; \code{3} for softplus.}
+\item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
+\code{2} for Epanechnikov, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}};
+\code{3} for softplus.}
 
 \item{kernel_type}{type of kernel employed: \code{1} for product kernel
 (default); \code{2} for spherically symmetric kernel.}

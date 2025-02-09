@@ -13,8 +13,9 @@ bw_mrot_polysph(X, d, kernel = 1, k = 10, upscale = FALSE, deriv = 0,
 
 \item{d}{dimensions vector, of size \code{r}.}
 
-\item{kernel}{kernel employed: \code{1} for vMF (default); \code{2}
-for Epa, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}}; \code{3} for softplus.}
+\item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
+\code{2} for Epanechnikov, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}};
+\code{3} for softplus.}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 

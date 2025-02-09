@@ -2,7 +2,7 @@
 % Please edit documentation in R/euler.R
 \name{block_euler_ridge}
 \alias{block_euler_ridge}
-\title{Blockwise Euler algorithm}
+\title{Blockwise Euler algorithm for density ridge estimation}
 \usage{
 block_euler_ridge(x, X, d, h, h_euler, ind_blocks, N = 1000, eps = 1e-05,
   keep_paths = FALSE, cores = 1, ...)

@@ -38,8 +38,9 @@ extrinsic-chordal distance, in the kernel? Defaults to \code{FALSE}.}
 \item{norm_x, norm_X}{ensure a normalization of the data? Defaults to
 \code{FALSE}.}
 
-\item{kernel}{kernel employed: \code{1} for vMF (default); \code{2}
-for Epa, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}}; \code{3} for softplus.}
+\item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
+\code{2} for Epanechnikov, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}};
+\code{3} for softplus.}
 
 \item{kernel_type}{type of kernel employed: \code{1} for product kernel
 (default); \code{2} for spherically symmetric kernel.}
@@ -59,5 +60,13 @@ L_{\boldsymbol{h}}(\boldsymbol{x},\boldsymbol{X}_i)}
 for a kernel \eqn{L} and a vector of bandwidths \eqn{\boldsymbol{h}}.
 }
 \examples{
-# TODO
+# Simple check on S^1 x S^2
+n <- 1e3
+d <- c(1, 2)
+mu <- c(0, 1, 0, 0, 1)
+kappa <- c(5, 5)
+h <- c(0.2, 0.2)
+X <- r_vmf_polysph(n = n, d = d, mu = mu, kappa = kappa)
+kde_polysph(x = rbind(mu), X = X, d = d, h = h)
+d_vmf_polysph(x = rbind(mu), d = d, mu = mu, kappa = kappa)
 }

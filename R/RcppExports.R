@@ -25,27 +25,51 @@ euler_ridge <- function(x, X, d, h, h_euler = as.numeric( c()), weights = as.num
     .Call(`_polykde_euler_ridge`, x, X, d, h, h_euler, weights, wrt_unif, normalized, norm_x, norm_X, kernel, kernel_type, k, N, eps, keep_paths, proj_alt, fix_u1, sparse, show_prog, show_prog_j)
 }
 
-#' @title Gradient and Hessian of the polyspherical kde
+#' @title Gradient and Hessian of the polyspherical kernel density estimator
 #'
-#' @description TODO
+#' @description Computes the gradient
+#' \eqn{\mathsf{D}\hat{f}(\boldsymbol{x};\boldsymbol{h})} and Hessian matrix
+#' \eqn{\mathsf{H}\hat{f}(\boldsymbol{x};\boldsymbol{h})} of the kernel density
+#' estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the
+#' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
 #'
 #' @inheritParams kde_polysph
 #' @param projected compute the \emph{projected} gradient and Hessian that
 #' accounts for the radial projection? Defaults to \code{TRUE}.
 #' @param proj_alt alternative projection. Defaults to \code{TRUE}.
 #' @param norm_grad_hess normalize the gradient and Hessian dividing by the
-#' kde? Defaults to \code{FALSE}.
-#' @return TODO
+#' kernel density estimator? Defaults to \code{FALSE}.
+#' @return A list with the following components:
+#' \item{dens}{a column vector of size \code{c(nx, 1)} with the kernel
+#' density estimator evaluated at \code{x}.}
+#' \item{grad}{a matrix of size \code{c(nx, sum(d) + r)} with the gradient of
+#' the kernel density estimator evaluated at \code{x}.}
+#' \item{hess}{an array of size \code{c(nx, sum(d) + r, sum(d) + r)} with the
+#' Hessian matrix of the kernel density estimator evaluated at \code{x}.}
 #' @examples
-#' # TODO
+#' # Simple check on (S^1)^2
+#' n <- 3
+#' d <- c(1, 1)
+#' mu <- c(0, 1, 0, 1)
+#' kappa <- c(5, 5)
+#' h <- c(0.2, 0.2)
+#' X <- r_vmf_polysph(n = n, d = d, mu = mu, kappa = kappa)
+#' grh <- grad_hess_kde_polysph(x = X, X = X, d = d, h = h)
+#' str(grh)
+#' grh
 #' @export
 grad_hess_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), projected = TRUE, proj_alt = TRUE, norm_grad_hess = FALSE, log = FALSE, wrt_unif = FALSE, normalized = TRUE, norm_x = FALSE, norm_X = FALSE, kernel = 1L, kernel_type = 1L, k = 10.0) {
     .Call(`_polykde_grad_hess_kde_polysph`, x, X, d, h, weights, projected, proj_alt, norm_grad_hess, log, wrt_unif, normalized, norm_x, norm_X, kernel, kernel_type, k)
 }
 
-#' @title Projected gradient of the polyspherical kde
+#' @title Projected gradient of the polyspherical kernel density estimator
 #'
-#' @description TODO
+#' @description Computes the projected gradient
+#' \eqn{\mathsf{D}_{(p-1)}\hat{f}(\boldsymbol{x};\boldsymbol{h})} of the
+#' kernel density estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the
+#' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}},
+#' where \eqn{p=\sum_{j=1}^r d_j+r} is the total dimension of the ambient
+#' space.
 #'
 #' @inheritParams kde_polysph
 #' @inheritParams grad_hess_kde_polysph
@@ -53,9 +77,22 @@ grad_hess_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), projec
 #' Prevents the Euler algorithm to "surf the ridge". Defaults to \code{TRUE}.
 #' @param sparse use a sparse eigendecomposition of the Hessian? Defaults to
 #' \code{FALSE}.
-#' @return TODO
+#' @return A list with the following components:
+#' \item{eta}{a matrix of size \code{c(nx, sum(d) + r)} with the
+#' projected gradient evaluated at \code{x}.}
+#' \item{u1}{a matrix of size \code{c(nx, sum(d) + r)} with the
+#' first filtered eigenvectors of the Hessian evaluated at \code{x}.}
+#' \item{lamb_norm}{a matrix of size \code{c(nx, sum(d) + r)} with the
+#' eigenvalues of the Hessian evaluated at \code{x}.}
 #' @examples
-#' # TODO
+#' # Simple check on (S^1)^2
+#' n <- 3
+#' d <- c(1, 1)
+#' mu <- c(0, 1, 0, 1)
+#' kappa <- c(5, 5)
+#' h <- c(0.2, 0.2)
+#' X <- r_vmf_polysph(n = n, d = d, mu = mu, kappa = kappa)
+#' proj_grad_kde_polysph(x = X, X = X, d = d, h = h)
 proj_grad_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), wrt_unif = FALSE, normalized = TRUE, norm_x = FALSE, norm_X = FALSE, kernel = 1L, kernel_type = 1L, k = 10.0, proj_alt = TRUE, fix_u1 = TRUE, sparse = FALSE) {
     .Call(`_polykde_proj_grad_kde_polysph`, x, X, d, h, weights, wrt_unif, normalized, norm_x, norm_X, kernel, kernel_type, k, proj_alt, fix_u1, sparse)
 }
@@ -88,14 +125,23 @@ proj_grad_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), wrt_un
 #' extrinsic-chordal distance, in the kernel? Defaults to \code{FALSE}.
 #' @param norm_x,norm_X ensure a normalization of the data? Defaults to
 #' \code{FALSE}.
-#' @param kernel kernel employed: \code{1} for vMF (default); \code{2}
-#' for Epa, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}}; \code{3} for softplus.
+#' @param kernel kernel employed: \code{1} for von Mises--Fisher (default);
+#' \code{2} for Epanechnikov, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}};
+#' \code{3} for softplus.
 #' @param kernel_type type of kernel employed: \code{1} for product kernel
 #' (default); \code{2} for spherically symmetric kernel.
 #' @param k softplus kernel parameter. Defaults to \code{10.0}.
 #' @return A column vector of size \code{c(nx, 1)}.
 #' @examples
-#' # TODO
+#' # Simple check on S^1 x S^2
+#' n <- 1e3
+#' d <- c(1, 2)
+#' mu <- c(0, 1, 0, 0, 1)
+#' kappa <- c(5, 5)
+#' h <- c(0.2, 0.2)
+#' X <- r_vmf_polysph(n = n, d = d, mu = mu, kappa = kappa)
+#' kde_polysph(x = rbind(mu), X = X, d = d, h = h)
+#' d_vmf_polysph(x = rbind(mu), d = d, mu = mu, kappa = kappa)
 #' @export
 kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), log = FALSE, wrt_unif = FALSE, normalized = TRUE, intrinsic = FALSE, norm_x = FALSE, norm_X = FALSE, kernel = 1L, kernel_type = 1L, k = 10.0) {
     .Call(`_polykde_kde_polysph`, x, X, d, h, weights, log, wrt_unif, normalized, intrinsic, norm_x, norm_X, kernel, kernel_type, k)
@@ -103,13 +149,22 @@ kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), log = FALSE, wrt
 
 #' @title Cross-validation for the polyspherical kernel density estimator
 #'
-#' @description Computes \eqn{\log
-#' \hat{f}_{-i}(\boldsymbol{X}_i;\boldsymbol{h})}, \eqn{i=1,\ldots,n}.
+#' @description Computes the logarithm of the cross-validated kernel density
+#' estimator: \eqn{\log \hat{f}_{-i}(\boldsymbol{X}_i;\boldsymbol{h})},
+#' \eqn{i = 1, \ldots, n.}
 #'
 #' @inheritParams kde_polysph
+#' @param norm_x,norm_X ensure a normalization of the data? Defaults to
+#' \code{FALSE}.
 #' @return A column vector of size \code{c(n, 1)}.
 #' @examples
-#' # TODO
+#' # Simple check on S^1 x S^2
+#' n <- 5
+#' d <- c(1, 2)
+#' h <- c(0.2, 0.2)
+#' X <- r_unif_polysph(n = n, d = d)
+#' log_cv_kde_polysph(X = X, d = d, h = h)
+#' kde_polysph(x = X[1, , drop = FALSE], X = X[-1, ], d = d, h = h, log = TRUE)
 #' @export
 log_cv_kde_polysph <- function(X, d, h, weights = as.numeric( c()), wrt_unif = FALSE, normalized = TRUE, intrinsic = FALSE, norm_X = FALSE, kernel = 1L, kernel_type = 1L, k = 10.0) {
     .Call(`_polykde_log_cv_kde_polysph`, X, d, h, weights, wrt_unif, normalized, intrinsic, norm_X, kernel, kernel_type, k)

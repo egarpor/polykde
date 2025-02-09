@@ -21,13 +21,14 @@ r_unif_polysph <- function(n, d) {
 
 #' @title Sample von Mises--Fisher distributed polyspherical data
 #'
-#' @description Simulates from a product of von Mises--Fisher (vMF)
-#' distributions on the polysphere \eqn{\mathcal{S}^{d_1} \times \cdots
-#' \times \mathcal{S}^{d_r}}.
+#' @description Simulates from a product of von Mises--Fisher distributions on
+#' the polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times
+#' \mathcal{S}^{d_r}}.
 #'
-#' @param mu a vector of size \code{sum(d) + r} with the concatenated vMF means
-#' on \eqn{\mathcal{S}^{d_j}}.
-#' @param kappa a vector of size \code{r} with the vMF concentrations.
+#' @param mu a vector of size \code{sum(d) + r} with the concatenated von
+#' Mises--Fisher means on \eqn{\mathcal{S}^{d_j}}.
+#' @param kappa a vector of size \code{r} with the von Mises--Fisher
+#' concentrations.
 #' @param normalize_mu ensure a normalization of \code{mu}?
 #' @inheritParams r_unif_polysph
 #' @inheritParams kde_polysph
@@ -285,7 +286,8 @@ r_kern_polysph <- function(n, d, mu, h, kernel = 1, kernel_type = 1, k = 10,
 #' @title Sample from polyspherical kernel density estimator
 #'
 #' @description Simulates from the distribution defined by a polyspherical
-#' kernel density estimator on \eqn{S^{d_1} \times \cdots \times S^{d_r}}.
+#' kernel density estimator on \eqn{\mathcal{S}^{d_1} \times \ldots \times
+#' \mathcal{S}^{d_r}}.
 #'
 #' @inheritParams kde_polysph
 #' @param norm_X ensure a normalization of the data?

@@ -229,7 +229,7 @@ hess_zh <- hess_zhang(f = function(y) kde_polysph(x = y, X = X, d = d, h = h,
                       x = x, d = d)
 
 P <- proj_P(x = x, d = d)
-test_that("Zhang's Hessian is the projection of our Hessian", {
+test_that("ZHessian is the projection of Hessian", {
   expect_equal(P %*% hess_ana %*% P, hess_zh)
   expect_equal(grad_hess_kde_polysph(x = x, X = X, d = d, h = h,
                                      projected = TRUE,
