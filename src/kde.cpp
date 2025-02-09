@@ -22,6 +22,11 @@ const double log_M_PI = std::log(M_PI);
 //'
 //' @description Computes the kernel density estimator for data on the
 //' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
+//' Given a sample \eqn{\boldsymbol{X}_1,\ldots,\boldsymbol{X}_n}, this
+//' estimator is
+//' \deqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})=\sum_{i=1}^n
+//' L_{\boldsymbol{h}}(\boldsymbol{x},\boldsymbol{X}_i)}
+//' for a kernel \eqn{L} and a vector of bandwidths \eqn{\boldsymbol{h}}.
 //'
 //' @param x a matrix of size \code{c(nx, sum(d) + r)} with the evaluation
 //' points.
@@ -31,9 +36,10 @@ const double log_M_PI = std::log(M_PI);
 //' @param weights weights for each observation. If provided, a vector of size
 //' \code{n} with the weights for multiplying each kernel. If not provided,
 //' set internally to \code{rep(1 / n, n)}, which gives the standard estimator.
-//' @param log compute the logarithm of the kde? Defaults to \code{FALSE}.
-//' @param wrt_unif flag to return a pdf with respect to the uniform measure.
-//' If \code{FALSE} (default), the pdf is with respect to the Lebesgue measure.
+//' @param log compute the logarithm of the density? Defaults to \code{FALSE}.
+//' @param wrt_unif flag to return a density with respect to the uniform
+//' measure. If \code{FALSE} (default), the density is with respect to the
+//' Lebesgue measure.
 //' @param normalized flag to compute the normalizing constant of the kernel
 //' and include it in the kernel density estimator. Defaults to \code{TRUE}.
 //' @param intrinsic use the intrinsic distance, instead of the
@@ -45,7 +51,7 @@ const double log_M_PI = std::log(M_PI);
 //' @param kernel_type type of kernel employed: \code{1} for product kernel
 //' (default); \code{2} for spherically symmetric kernel.
 //' @param k softplus kernel parameter. Defaults to \code{10.0}.
-//' @return TODO
+//' @return A column vector of size \code{c(nx, 1)}.
 //' @examples
 //' # TODO
 //' @export
@@ -367,7 +373,15 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
 }
 
 
-//' @rdname kde_polysph
+//' @title Cross-validation for the polyspherical kernel density estimator
+//'
+//' @description Computes \eqn{\log
+//' \hat{f}_{-i}(\boldsymbol{X}_i;\boldsymbol{h})}, \eqn{i=1,\ldots,n}.
+//'
+//' @inheritParams kde_polysph
+//' @return A column vector of size \code{c(n, 1)}.
+//' @examples
+//' # TODO
 //' @export
 // [[Rcpp::export]]
 arma::vec log_cv_kde_polysph(arma::mat X, arma::uvec d, arma::vec h,

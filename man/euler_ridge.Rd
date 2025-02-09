@@ -28,8 +28,9 @@ method. Set internally as \code{h} if not provided.}
 \code{n} with the weights for multiplying each kernel. If not provided,
 set internally to \code{rep(1 / n, n)}, which gives the standard estimator.}
 
-\item{wrt_unif}{flag to return a pdf with respect to the uniform measure.
-If \code{FALSE} (default), the pdf is with respect to the Lebesgue measure.}
+\item{wrt_unif}{flag to return a density with respect to the uniform
+measure. If \code{FALSE} (default), the density is with respect to the
+Lebesgue measure.}
 
 \item{normalized}{flag to compute the normalizing constant of the kernel
 and include it in the kernel density estimator. Defaults to \code{TRUE}.}

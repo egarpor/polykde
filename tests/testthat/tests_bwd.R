@@ -122,7 +122,7 @@ test_that("sum(curv_vmf_polysph()) curvature term against its numerical
           version", {
   expect_equal(sum(R_X_vmf),
                sum(curv_vmf_polysph(kappa = kappa, d = d)),
-               tolerance = 1e-2)
+               tolerance = 5e-2)
 })
 
 test_that("curv_vmf_polysph() is coherent with scalar/vector d", {

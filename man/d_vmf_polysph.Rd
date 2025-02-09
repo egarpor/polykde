@@ -2,27 +2,37 @@
 % Please edit documentation in R/distr.R
 \name{d_vmf_polysph}
 \alias{d_vmf_polysph}
-\title{TODO}
+\title{Density of the product of von Mises--Fisher distributions on the
+polysphere}
 \usage{
 d_vmf_polysph(x, d, mu, kappa, log = FALSE)
 }
 \arguments{
-\item{x}{TODO}
+\item{x}{a matrix of size \code{c(nx, sum(d) + r)} with the evaluation
+points.}
 
-\item{d}{TODO}
+\item{d}{dimensions vector, of size \code{r}.}
 
-\item{mu}{TODO}
+\item{mu}{a vector of size \code{sum(d) + r} with the concatenated vMF means
+on \eqn{\mathcal{S}^{d_j}}.}
 
-\item{kappa}{TODO}
+\item{kappa}{a vector of size \code{r} with the vMF concentrations.}
 
-\item{log}{TODO}
+\item{log}{compute the logarithm of the density? Defaults to \code{FALSE}.}
 }
 \value{
-TODO
+A vector of length \code{nx} with the evaluated density.
 }
 \description{
-TODO
+Computes the density of the product of von Mises--Fisher
+densities on the polysphere.
 }
 \examples{
-# TODO
+# Simple check of integration on S^1 x S^2
+d <- c(1, 2)
+mu <- c(0, 1, 0, 1, 0)
+kappa <- c(1, 1)
+x <- r_vmf_polysph(n = 1e4, d = d, mu = mu, kappa = kappa)
+mean(1 / d_vmf_polysph(x = x, d = d, mu = mu, kappa = kappa)) /
+  prod(rotasym::w_p(p = d + 1))
 }

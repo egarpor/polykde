@@ -2,17 +2,12 @@
 % Please edit documentation in R/RcppExports.R
 \name{kde_polysph}
 \alias{kde_polysph}
-\alias{log_cv_kde_polysph}
 \title{Polyspherical kernel density estimator}
 \usage{
 kde_polysph(x, X, d, h, weights = as.numeric(c()), log = FALSE,
   wrt_unif = FALSE, normalized = TRUE, intrinsic = FALSE,
   norm_x = FALSE, norm_X = FALSE, kernel = 1L, kernel_type = 1L,
   k = 10)
-
-log_cv_kde_polysph(X, d, h, weights = as.numeric(c()), wrt_unif = FALSE,
-  normalized = TRUE, intrinsic = FALSE, norm_X = FALSE, kernel = 1L,
-  kernel_type = 1L, k = 10)
 }
 \arguments{
 \item{x}{a matrix of size \code{c(nx, sum(d) + r)} with the evaluation
@@ -28,10 +23,11 @@ points.}
 \code{n} with the weights for multiplying each kernel. If not provided,
 set internally to \code{rep(1 / n, n)}, which gives the standard estimator.}
 
-\item{log}{compute the logarithm of the kde? Defaults to \code{FALSE}.}
+\item{log}{compute the logarithm of the density? Defaults to \code{FALSE}.}
 
-\item{wrt_unif}{flag to return a pdf with respect to the uniform measure.
-If \code{FALSE} (default), the pdf is with respect to the Lebesgue measure.}
+\item{wrt_unif}{flag to return a density with respect to the uniform
+measure. If \code{FALSE} (default), the density is with respect to the
+Lebesgue measure.}
 
 \item{normalized}{flag to compute the normalizing constant of the kernel
 and include it in the kernel density estimator. Defaults to \code{TRUE}.}
@@ -51,11 +47,16 @@ for Epa, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}}; \code{3} for softplus.}
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 }
 \value{
-TODO
+A column vector of size \code{c(nx, 1)}.
 }
 \description{
 Computes the kernel density estimator for data on the
 polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
+Given a sample \eqn{\boldsymbol{X}_1,\ldots,\boldsymbol{X}_n}, this
+estimator is
+\deqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})=\sum_{i=1}^n
+L_{\boldsymbol{h}}(\boldsymbol{x},\boldsymbol{X}_i)}
+for a kernel \eqn{L} and a vector of bandwidths \eqn{\boldsymbol{h}}.
 }
 \examples{
 # TODO
