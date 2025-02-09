@@ -2,24 +2,28 @@
 % Please edit documentation in R/RcppExports.R
 \name{proj_polysph}
 \alias{proj_polysph}
-\title{Polyspherical projection}
+\title{Projection onto the polysphere}
 \usage{
 proj_polysph(x, ind_dj)
 }
 \arguments{
-\item{x}{a matrix of size \code{c(nx, sum(d) + r)} with the evaluation
-points.}
+\item{x}{a matrix of size \code{c(n, sum(d) + r)}.}
 
-\item{ind_dj}{\code{0}-based index separating the spheres. Computed using
-\code{\link{comp_ind_dj}}.}
+\item{ind_dj}{\code{0}-based index separating the blocks of spheres that
+is computed with \code{\link{comp_ind_dj}}.}
 }
 \value{
-TODO
+A matrix of size \code{c(n, sum(d) + r)} with the projected points.
 }
 \description{
-TODO
+Projects points on \eqn{\mathbb{R}^{d_1 + \cdots + d_r + r}}
+onto the polysphere \eqn{S^{d_1} \times \cdots \times S^{d_r}} by
+normalizing each block of \eqn{d_j} coordinates.
 }
 \examples{
-# TODO
+# Example on (S^1)^2
+d <- c(1, 1)
+x <- rbind(c(2, 0, 1, 1))
+polykde:::proj_polysph(x, ind_dj = comp_ind_dj(d))
 }
 \keyword{internal}

@@ -7,17 +7,20 @@
 bind_lists(lists, bind = "rbind")
 }
 \arguments{
-\item{lists}{lists whose entries are to be binded.}
+\item{lists}{lists whose entries are to be binded. Must have a common
+structure (same fields with the same dimensions).}
 
 \item{bind}{bind operator, either \code{"rbind"} or \code{"cbind"}.}
 }
 \value{
-TODO
+A list with the same structure as the input lists, but with the
+entries binded.
 }
 \description{
 Binds the entries of a list of lists by rows or columns.
 }
 \examples{
-# TODO
+lists <- list(list(1:3, 4:6), list(7:9, 10:12))
+polykde:::bind_lists(lists = lists, bind = "rbind")
 }
 \keyword{internal}

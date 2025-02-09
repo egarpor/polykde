@@ -10,10 +10,11 @@ sfp(t)
 \item{t}{numeric vector or matrix.}
 }
 \value{
-TODO
+The softplus function evaluated at \code{t}.
 }
 \description{
-Computes the softplus function in a numerically stable way.
+Computes the softplus function \eqn{\log(1+e^{t})} in a
+numerically stable way for large absolute values of \eqn{t}.
 }
 \examples{
 curve(log(polykde:::sfp(rbind(5 * (1 - x)))), from = -10, to = 10)

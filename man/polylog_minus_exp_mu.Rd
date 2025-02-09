@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{polylog_minus_exp_mu}
 \alias{polylog_minus_exp_mu}
-\title{Polylogarithm \eqn{\mathrm{Li}_s(-e^\mu)}}
+\title{Polylogarithm function with negative argument}
 \usage{
 polylog_minus_exp_mu(mu, s, upper = Inf, ...)
 }
@@ -29,6 +29,8 @@ the \href{https://www.gnu.org/software/gsl/}{GSL library} to compute
 Fermi--Dirac integrals are called. Otherwise, numerical integration is used.
 }
 \examples{
-# TODO
+polylog_minus_exp_mu(mu = 1:5, s = 1)
+polylog_minus_exp_mu(mu = 1, s = 1:5)
+polylog_minus_exp_mu(mu = 1:5, s = 1:5)
 }
 \keyword{internal}

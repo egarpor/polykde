@@ -1,7 +1,8 @@
 
 #' @title Stable computation of the softplus function
 #'
-#' @description Computes the softplus function in a numerically stable way.
+#' @description Computes the softplus function \eqn{\log(1+e^{t})} in a
+#' numerically stable way for large absolute values of \eqn{t}.
 #'
 #' @param t numeric vector or matrix.
 #' @return The softplus function evaluated at \code{t}.
@@ -22,27 +23,7 @@ softplus <- function(t) {
 }
 
 
-#' @title Polyspherical distance matrix
-#'
-#' @description Computes the pairwise polyspherical distances between the rows
-#' of a matrix.
-#'
-#' @inheritParams dist_polysph
-#' @return A symmetric matrix of distances of size \code{c(n, n)}.
-#' @examples
-#' # Example on S^2 x S^3 x S^1
-#' d <- c(2, 3, 1)
-#' ind_dj <- comp_ind_dj(d)
-#' x <- r_unif_polysph(n = 5, d = d)
-#' dd <- dist_polysph_matrix(x, ind_dj = ind_dj, std = FALSE)
-#' dd
-#'
-#' # Simple check
-#' i <- 1
-#' j <- 3
-#' dd[i, j]
-#' sqrt(acos(x[i, 1:3] %*% x[j, 1:3])^2 + acos(x[i, 4:7] %*% x[j, 4:7])^2 +
-#'        acos(x[i, 8:9] %*% x[j, 8:9])^2)
+#' @rdname dist_polysph
 #' @export
 dist_polysph_matrix <- function(x, ind_dj, norm_x = FALSE, norm_y = FALSE,
                                 std = TRUE) {
@@ -66,14 +47,24 @@ dist_polysph_matrix <- function(x, ind_dj, norm_x = FALSE, norm_y = FALSE,
 }
 
 
-#' @title Index of spheres
+#' @title Index of hyerpspheres on a polysphere
 #'
-#' @description Computes \code{ind_dj} TODO
+#' @description Given Cartesian coordinates of polyspherical data, computes
+#' the \code{0}-based indexes at which the Cartesian coordinates for each
+#' hypersphere start and end.
 #'
 #' @inheritParams kde_polysph
 #' @return A vector of length \code{sum(d) + 1}.
 #' @examples
-#' # TODO
+#' # Example on (S^1)^3
+#' d <- c(1, 1, 1)
+#' comp_ind_dj(d = d)
+#' comp_ind_dj(d = d) + 1
+#'
+#' # Example on S^1 x S^2
+#' d <- c(1, 2)
+#' comp_ind_dj(d = d)
+#' comp_ind_dj(d = d) + 1
 #' @export
 comp_ind_dj <- function(d) {
 
@@ -88,11 +79,14 @@ comp_ind_dj <- function(d) {
 #'
 #' @description Binds the entries of a list of lists by rows or columns.
 #'
-#' @param lists lists whose entries are to be binded.
+#' @param lists lists whose entries are to be binded. Must have a common
+#' structure (same fields with the same dimensions).
 #' @param bind bind operator, either \code{"rbind"} or \code{"cbind"}.
-#' @return TODO
+#' @return A list with the same structure as the input lists, but with the
+#' entries binded.
 #' @examples
-#' # TODO
+#' lists <- list(list(1:3, 4:6), list(7:9, 10:12))
+#' polykde:::bind_lists(lists = lists, bind = "rbind")
 #' @keywords internal
 bind_lists <- function(lists, bind = "rbind") {
 
@@ -114,7 +108,7 @@ bind_lists <- function(lists, bind = "rbind") {
 }
 
 
-#' @title Polylogarithm \eqn{\mathrm{Li}_s(-e^\mu)}
+#' @title Polylogarithm function with negative argument
 #'
 #' @description Computation of the polylogarithm \eqn{\mathrm{Li}_s(-e^\mu)}.
 #'
@@ -128,7 +122,9 @@ bind_lists <- function(lists, bind = "rbind") {
 #' @return A vector of length \code{length(mu)} or \code{length(s)} with the
 #' values of the polylogarithm.
 #' @examples
-#' # TODO
+#' polylog_minus_exp_mu(mu = 1:5, s = 1)
+#' polylog_minus_exp_mu(mu = 1, s = 1:5)
+#' polylog_minus_exp_mu(mu = 1:5, s = 1:5)
 #' @keywords internal
 polylog_minus_exp_mu <- function(mu, s, upper = Inf, ...) {
 
@@ -213,13 +209,14 @@ polylog_minus_exp_mu <- function(mu, s, upper = Inf, ...) {
 
 #' @title Computes the integral \eqn{J_{d, k}}
 #'
-#' @description Computes the integral \eqn{J_{d, k}=TODO}.
+#' @description Computes the integral \eqn{J_{d, k}=\int_0^\infty
+#' e^{2 \log(\log(1 + e^{k(1 - t)}))} t^{d / 2 - 1} dt}.
 #'
 #' @inheritParams eff_kern
 #' @inheritParams polylog_minus_exp_mu
-#' @return TODO
+#' @return A vector of length \code{length(d)} with the values of the integral.
 #' @examples
-#' # TODO
+#' polykde:::J_d_k(d = 1:5, k = 10)
 #' @keywords internal
 J_d_k <- function(d, k = 10, upper = Inf, ...) {
 

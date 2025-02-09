@@ -2,22 +2,25 @@
 % Please edit documentation in R/RcppExports.R
 \name{s}
 \alias{s}
-\title{Symmetrize a matrix A with (A+A')/2}
+\title{Symmetrize a matrix}
 \usage{
 s(A, add = FALSE)
 }
 \arguments{
-\item{A}{matrix.}
+\item{A}{a matrix.}
 
-\item{add}{return simply the addition A + A'? Defaults to \code{FALSE}}
+\item{add}{return simply the addition
+\eqn{\boldsymbol{A} + \boldsymbol{A}'}? Defaults to \code{FALSE}}
 }
 \value{
-TODO
+A symmetric matrix with the same dimensions as \code{A}.
 }
 \description{
-TODO
+Symmetrizes a matrix \eqn{\boldsymbol{A}} by returning
+\eqn{(\boldsymbol{A} + \boldsymbol{A}') / 2}.
 }
 \examples{
-# TODO
+A <- matrix(rnorm(4), nrow = 2, ncol = 2)
+polykde:::s(A)
 }
 \keyword{internal}

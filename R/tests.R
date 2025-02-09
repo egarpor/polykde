@@ -504,6 +504,7 @@ hom_test_poly <- function(X, d, labels,
 #'
 #' @param log_f,log_g logarithms of \eqn{f} and \eqn{g} evaluated in a Monte
 #' Carlo sample.
+#' @inheritParams kde_polysph
 #' @param bhatta compute the Bhattacharyya divergence (or coefficient) instead?
 #' @return A scalar with the estimated distance.
 #' @examples
@@ -515,12 +516,12 @@ hom_test_poly <- function(X, d, labels,
 #' x_mc <- r_unif_polysph(n = M, d = d)
 #' log_f <- d_vmf_polysph(x = x_mc, d = d, mu = mu, kappa = kappa, log = TRUE)
 #' log_g <- d_vmf_polysph(x = x_mc, d = d, mu = -mu, kappa = kappa, log = TRUE)
-#' polykde:::hd_mc(log_f = log_f, log_g = log_f)
-#' polykde:::hd_mc(log_f = log_f, log_g = log_g)
-#' polykde:::hd_mc(log_f = log_f, log_g = log_f, bhatta = TRUE)
-#' polykde:::hd_mc(log_f = log_f, log_g = log_g, bhatta = TRUE)
+#' polykde:::hd_mc(log_f = log_f, log_g = log_f, d = d)
+#' polykde:::hd_mc(log_f = log_f, log_g = log_g, d = d)
+#' polykde:::hd_mc(log_f = log_f, log_g = log_f, d = d, bhatta = TRUE)
+#' polykde:::hd_mc(log_f = log_f, log_g = log_g, d = d, bhatta = TRUE)
 #' @keywords internal
-hd_mc <- function(log_f, log_g, bhatta = FALSE) {
+hd_mc <- function(log_f, log_g, d, bhatta = FALSE) {
 
   # Hellinger distance: H(f, g) = \sqrt(1 - \int \sqrt(f(x) * g(x)) dx)
   # Bhattacharyya divergence: DB(f; g) = -\log(\int \sqrt(f(x) * g(x)) dx)

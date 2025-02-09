@@ -18,12 +18,13 @@ common dimension of each hypersphere (a scalar).}
 \code{upper}, \code{abs.tol}, \code{rel.tol}, etc.}
 }
 \value{
-TODO
+A vector of length \code{length(d)} with the values of the integral.
 }
 \description{
-Computes the integral \eqn{J_{d, k}=TODO}.
+Computes the integral \eqn{J_{d, k}=\int_0^\infty
+e^{2 \log(\log(1 + e^{k(1 - t)}))} t^{d / 2 - 1} dt}.
 }
 \examples{
-# TODO
+polykde:::J_d_k(d = 1:5, k = 10)
 }
 \keyword{internal}

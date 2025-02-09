@@ -12,10 +12,11 @@ arma::vec dist_polysph(arma::mat x, arma::mat y, arma::uvec ind_dj,
 
 //' @title Stable computation of the softplus function
 //'
-//' @description Computes the softplus function in a numerically stable way.
+//' @description Computes the softplus function \eqn{\log(1+e^{t})} in a
+//' numerically stable way for large absolute values of \eqn{t}.
 //'
 //' @inheritParams softplus
-//' @return TODO
+//' @return The softplus function evaluated at \code{t}.
 //' @examples
 //' curve(log(polykde:::sfp(rbind(5 * (1 - x)))), from = -10, to = 10)
 //' @keywords internal
@@ -29,16 +30,21 @@ arma::mat sfp(arma::mat t) {
 }
 
 
-//' @title Polyspherical projection
+//' @title Projection onto the polysphere
 //'
-//' @description TODO
+//' @description Projects points on \eqn{\mathbb{R}^{d_1 + \cdots + d_r + r}}
+//' onto the polysphere \eqn{S^{d_1} \times \cdots \times S^{d_r}} by
+//' normalizing each block of \eqn{d_j} coordinates.
 //'
-//' @inheritParams kde_polysph
-//' @param ind_dj \code{0}-based index separating the spheres. Computed using
-//' \code{\link{comp_ind_dj}}.
-//' @return TODO
+//' @param x a matrix of size \code{c(n, sum(d) + r)}.
+//' @param ind_dj \code{0}-based index separating the blocks of spheres that
+//' is computed with \code{\link{comp_ind_dj}}.
+//' @return A matrix of size \code{c(n, sum(d) + r)} with the projected points.
 //' @examples
-//' # TODO
+//' # Example on (S^1)^2
+//' d <- c(1, 1)
+//' x <- rbind(c(2, 0, 1, 1))
+//' polykde:::proj_polysph(x, ind_dj = comp_ind_dj(d))
 //' @keywords internal
 // [[Rcpp::export]]
 arma::mat proj_polysph(arma::mat x, arma::uvec ind_dj) {
@@ -74,18 +80,47 @@ arma::mat proj_polysph(arma::mat x, arma::uvec ind_dj) {
 
 //' @title Polyspherical distance
 //'
-//' @description TODO
+//' @description Computation of the distance between points \eqn{\boldsymbol{x}}
+//' and \eqn{\boldsymbol{y}} on the polysphere
+//' \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}:
+//' \deqn{\sqrt{\sum_{j=1}^r
+//' d_{\mathcal{S}^{d_j}}(\boldsymbol{x}_j, \boldsymbol{y}_j)^2},}
+//' where \eqn{d_{\mathcal{S}^{d_j}}(\boldsymbol{x}_j, \boldsymbol{y}_j)=
+//' \cos^{-1}(\boldsymbol{x}_j' \boldsymbol{y}_j)}.
 //'
-//' @param x a matrix of size \code{c(n, sum(d) + r)}.
-//' @param y either a matrix of the same dimension of \code{x} or a vector of
+//' @inheritParams proj_polysph
+//' @param y either a matrix of size \code{c(m, sum(d) + r)} or a vector of
 //' length \code{sum(d) + r}.
 //' @inheritParams proj_polysph
 //' @param norm_x,norm_y ensure a normalization of the data?
 //' @param std standardize distance to \eqn{[0,1]}? Uses that the maximum
 //' distance is \eqn{\sqrt{r}\pi}. Defaults to \code{TRUE}.
-//' @return TODO
+//' @return
+//' \itemize{
+//' \item{\code{dist_polysph}: a vector of size \code{n} with the distances
+//' between \code{x} and \code{y}.}
+//' \item{\code{dist_polysph_matrix}: a matrix of size \code{c(n, n)} with the
+//' pairwise distances of \code{x}.}
+//' \item{\code{dist_polysph_cross}: a matrix of distances of size
+//' \code{c(n, m)} with the cross distances between \code{x} and \code{y}.}
+//' }
 //' @examples
-//' # TODO
+//' # Example on S^2 x S^3 x S^1
+//' d <- c(2, 3, 1)
+//' ind_dj <- comp_ind_dj(d)
+//' n <- 3
+//' x <- r_unif_polysph(n = n, d = d)
+//' y <- r_unif_polysph(n = n, d = d)
+//'
+//' # Distances of x to y
+//' dist_polysph(x = x, y = y, ind_dj = ind_dj, std = FALSE)
+//' dist_polysph(x = x, y = y[1, , drop = FALSE], ind_dj = ind_dj, std = FALSE)
+//'
+//' # Pairwise distance matrix of x
+//' dist_polysph_matrix(x = x, ind_dj = ind_dj, std = FALSE)
+//'
+//' # Cross distances between x and y
+//' dist_polysph_cross(x = x, y = y, ind_dj = ind_dj, std = FALSE)
 //' @export
 // [[Rcpp::export]]
 arma::vec dist_polysph(arma::mat x, arma::mat y, arma::uvec ind_dj,
@@ -127,7 +162,7 @@ arma::vec dist_polysph(arma::mat x, arma::mat y, arma::uvec ind_dj,
 
   }
 
-  // Epsilon + one
+  // One + epsilon
   double e1 = 1.0 + 1e-15;
 
   // Product
@@ -168,16 +203,7 @@ arma::vec dist_polysph(arma::mat x, arma::mat y, arma::uvec ind_dj,
 }
 
 
-//' @title Cross polyspherical distance
-//'
-//' @description TODO
-//'
-//' @inheritParams dist_polysph
-//' @param y either a matrix of the same dimension of \code{x} or a vector of
-//' length \code{sum(d) + r}.
-//' @return TODO
-//' @examples
-//' # TODO
+//' @rdname dist_polysph
 //' @export
 // [[Rcpp::export]]
 arma::mat dist_polysph_cross(arma::mat x, arma::mat y, arma::uvec ind_dj,
@@ -231,15 +257,21 @@ arma::mat dist_polysph_cross(arma::mat x, arma::mat y, arma::uvec ind_dj,
 }
 
 
-//' @title Compute cube \eqn{X_i \diamond X_i'}
+//' @title Diamond cross-product
 //'
-//' @description TODO
+//' @description Given a matrix \eqn{\boldsymbol{X}} whose \eqn{n} rows are on a
+//' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}},
+//' the function computes the cube whose rows are
+//' \eqn{\boldsymbol{X}_i \diamond \boldsymbol{X}_i'}, \eqn{i = 1, \ldots, n},
+//' and \eqn{\diamond} is a block-by-block product.
 //'
 //' @inheritParams kde_polysph
 //' @inheritParams proj_polysph
-//' @return TODO
+//' @return An array of size \code{c(nrow(X), ncol(X), ncol(X))}.
 //' @examples
-//' # TODO
+//' d <- c(1, 2)
+//' X <- r_unif_polysph(n = 2, d = d)
+//' polykde:::diamond_crossprod(X = X, ind_dj = comp_ind_dj(d))
 //' @keywords internal
 // [[Rcpp::export]]
 arma::cube diamond_crossprod(arma::mat X, arma::uvec ind_dj) {
@@ -292,15 +324,18 @@ arma::cube diamond_crossprod(arma::mat X, arma::uvec ind_dj) {
 }
 
 
-//' @title Symmetrize a matrix A with (A+A')/2
+//' @title Symmetrize a matrix
 //'
-//' @description TODO
+//' @description Symmetrizes a matrix \eqn{\boldsymbol{A}} by returning
+//' \eqn{(\boldsymbol{A} + \boldsymbol{A}') / 2}.
 //'
-//' @param A matrix.
-//' @param add return simply the addition A + A'? Defaults to \code{FALSE}
-//' @return TODO
+//' @param A a matrix.
+//' @param add return simply the addition
+//' \eqn{\boldsymbol{A} + \boldsymbol{A}'}? Defaults to \code{FALSE}
+//' @return A symmetric matrix with the same dimensions as \code{A}.
 //' @examples
-//' # TODO
+//' A <- matrix(rnorm(4), nrow = 2, ncol = 2)
+//' polykde:::s(A)
 //' @keywords internal
 // [[Rcpp::export]]
 arma::mat s(arma::mat A, bool add = false) {
@@ -320,19 +355,24 @@ arma::mat s(arma::mat A, bool add = false) {
 
 //' @title Projection matrices \eqn{\boldsymbol{P}} and \eqn{\boldsymbol{A}}
 //'
-//' @description TODO
-//'
-//' @description The \eqn{jj}-block of \eqn{\boldsymbol{P}} is
+//' @description Computation of the projection matrices \eqn{\boldsymbol{P}}
+//' and \eqn{\boldsymbol{A}}. The \eqn{jj}-block of \eqn{\boldsymbol{P}} is
 //' \eqn{\boldsymbol{I}_{d_j} - \boldsymbol{x}_j \boldsymbol{x}_j'}. The
-//' \eqn{jj}-block of \eqn{\boldsymbol{A}} is
-//' \eqn{(\boldsymbol{x}_j' \boldsymbol{v}_j) \boldsymbol{I}_{d_j}}.
+//' \eqn{jj}-block of \eqn{\boldsymbol{A}} is \eqn{(\boldsymbol{x}_j'
+//' \boldsymbol{v}_j) \boldsymbol{I}_{d_j}}, \eqn{j=1,\ldots,r}.
 //'
 //' @param x,v row vectors of size \code{sum(d) + r}.
 //' @inheritParams proj_polysph
-//' @param orth return the orthogonal complement of \eqn{P}, \eqn{I - P}?
-//' @return TODO
+//' @param orth return the orthogonal complement of \eqn{\boldsymbol{P}},
+//' \eqn{\boldsymbol{I} - \boldsymbol{P}}? Defaults to \code{FALSE}.
+//' @return A list with the matrices \eqn{\boldsymbol{P}} and
+//' \eqn{\boldsymbol{A}}. Both matrices have size
+//' \code{c(sum(d) + r, sum(d) + r)}.
 //' @examples
-//' # TODO
+//' d <- c(1, 2)
+//' x <- r_unif_polysph(n = 1, d = d)
+//' v <- r_unif_polysph(n = 1, d = d)
+//' polykde:::AP(x = x, v = v, ind_dj = comp_ind_dj(d))
 //' @keywords internal
 // [[Rcpp::export]]
 Rcpp::List AP(arma::rowvec x, arma::rowvec v, arma::uvec ind_dj,
@@ -377,4 +417,3 @@ Rcpp::List AP(arma::rowvec x, arma::rowvec v, arma::uvec ind_dj,
   return Rcpp::List::create(Rcpp::Named("P") = P, Rcpp::Named("A") = A);
 
 }
-

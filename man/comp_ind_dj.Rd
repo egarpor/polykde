@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{comp_ind_dj}
 \alias{comp_ind_dj}
-\title{Index of spheres}
+\title{Index of hyerpspheres on a polysphere}
 \usage{
 comp_ind_dj(d)
 }
@@ -13,8 +13,18 @@ comp_ind_dj(d)
 A vector of length \code{sum(d) + 1}.
 }
 \description{
-Computes \code{ind_dj} TODO
+Given Cartesian coordinates of polyspherical data, computes
+the \code{0}-based indexes at which the Cartesian coordinates for each
+hypersphere start and end.
 }
 \examples{
-# TODO
+# Example on (S^1)^3
+d <- c(1, 1, 1)
+comp_ind_dj(d = d)
+comp_ind_dj(d = d) + 1
+
+# Example on S^1 x S^2
+d <- c(1, 2)
+comp_ind_dj(d = d)
+comp_ind_dj(d = d) + 1
 }

@@ -9,23 +9,28 @@ AP(x, v, ind_dj, orth = FALSE)
 \arguments{
 \item{x, v}{row vectors of size \code{sum(d) + r}.}
 
-\item{ind_dj}{\code{0}-based index separating the spheres. Computed using
-\code{\link{comp_ind_dj}}.}
+\item{ind_dj}{\code{0}-based index separating the blocks of spheres that
+is computed with \code{\link{comp_ind_dj}}.}
 
-\item{orth}{return the orthogonal complement of \eqn{P}, \eqn{I - P}?}
+\item{orth}{return the orthogonal complement of \eqn{\boldsymbol{P}},
+\eqn{\boldsymbol{I} - \boldsymbol{P}}? Defaults to \code{FALSE}.}
 }
 \value{
-TODO
+A list with the matrices \eqn{\boldsymbol{P}} and
+\eqn{\boldsymbol{A}}. Both matrices have size
+\code{c(sum(d) + r, sum(d) + r)}.
 }
 \description{
-TODO
-
-The \eqn{jj}-block of \eqn{\boldsymbol{P}} is
+Computation of the projection matrices \eqn{\boldsymbol{P}}
+and \eqn{\boldsymbol{A}}. The \eqn{jj}-block of \eqn{\boldsymbol{P}} is
 \eqn{\boldsymbol{I}_{d_j} - \boldsymbol{x}_j \boldsymbol{x}_j'}. The
-\eqn{jj}-block of \eqn{\boldsymbol{A}} is
-\eqn{(\boldsymbol{x}_j' \boldsymbol{v}_j) \boldsymbol{I}_{d_j}}.
+\eqn{jj}-block of \eqn{\boldsymbol{A}} is \eqn{(\boldsymbol{x}_j'
+\boldsymbol{v}_j) \boldsymbol{I}_{d_j}}, \eqn{j=1,\ldots,r}.
 }
 \examples{
-# TODO
+d <- c(1, 2)
+x <- r_unif_polysph(n = 1, d = d)
+v <- r_unif_polysph(n = 1, d = d)
+polykde:::AP(x = x, v = v, ind_dj = comp_ind_dj(d))
 }
 \keyword{internal}

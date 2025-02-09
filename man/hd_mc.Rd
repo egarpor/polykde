@@ -4,11 +4,13 @@
 \alias{hd_mc}
 \title{Hellinger distance between two densities via Monte Carlo}
 \usage{
-hd_mc(log_f, log_g, bhatta = FALSE)
+hd_mc(log_f, log_g, d, bhatta = FALSE)
 }
 \arguments{
 \item{log_f, log_g}{logarithms of \eqn{f} and \eqn{g} evaluated in a Monte
 Carlo sample.}
+
+\item{d}{dimensions vector, of size \code{r}.}
 
 \item{bhatta}{compute the Bhattacharyya divergence (or coefficient) instead?}
 }
@@ -32,9 +34,9 @@ kappa <- c(1, 5)
 x_mc <- r_unif_polysph(n = M, d = d)
 log_f <- d_vmf_polysph(x = x_mc, d = d, mu = mu, kappa = kappa, log = TRUE)
 log_g <- d_vmf_polysph(x = x_mc, d = d, mu = -mu, kappa = kappa, log = TRUE)
-polykde:::hd_mc(log_f = log_f, log_g = log_f)
-polykde:::hd_mc(log_f = log_f, log_g = log_g)
-polykde:::hd_mc(log_f = log_f, log_g = log_f, bhatta = TRUE)
-polykde:::hd_mc(log_f = log_f, log_g = log_g, bhatta = TRUE)
+polykde:::hd_mc(log_f = log_f, log_g = log_f, d = d)
+polykde:::hd_mc(log_f = log_f, log_g = log_g, d = d)
+polykde:::hd_mc(log_f = log_f, log_g = log_f, d = d, bhatta = TRUE)
+polykde:::hd_mc(log_f = log_f, log_g = log_g, d = d, bhatta = TRUE)
 }
 \keyword{internal}

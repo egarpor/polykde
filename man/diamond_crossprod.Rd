@@ -2,23 +2,29 @@
 % Please edit documentation in R/RcppExports.R
 \name{diamond_crossprod}
 \alias{diamond_crossprod}
-\title{Compute cube \eqn{X_i \diamond X_i'}}
+\title{Diamond cross-product}
 \usage{
 diamond_crossprod(X, ind_dj)
 }
 \arguments{
 \item{X}{a matrix of size \code{c(n, sum(d) + r)} with the sample.}
 
-\item{ind_dj}{\code{0}-based index separating the spheres. Computed using
-\code{\link{comp_ind_dj}}.}
+\item{ind_dj}{\code{0}-based index separating the blocks of spheres that
+is computed with \code{\link{comp_ind_dj}}.}
 }
 \value{
-TODO
+An array of size \code{c(nrow(X), ncol(X), ncol(X))}.
 }
 \description{
-TODO
+Given a matrix \eqn{\boldsymbol{X}} whose \eqn{n} rows are on a
+polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}},
+the function computes the cube whose rows are
+\eqn{\boldsymbol{X}_i \diamond \boldsymbol{X}_i'}, \eqn{i = 1, \ldots, n},
+and \eqn{\diamond} is a block-by-block product.
 }
 \examples{
-# TODO
+d <- c(1, 2)
+X <- r_unif_polysph(n = 2, d = d)
+polykde:::diamond_crossprod(X = X, ind_dj = comp_ind_dj(d))
 }
 \keyword{internal}
