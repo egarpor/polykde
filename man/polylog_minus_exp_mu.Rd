@@ -29,8 +29,8 @@ the \href{https://www.gnu.org/software/gsl/}{GSL library} to compute
 Fermi--Dirac integrals are called. Otherwise, numerical integration is used.
 }
 \examples{
-polylog_minus_exp_mu(mu = 1:5, s = 1)
-polylog_minus_exp_mu(mu = 1, s = 1:5)
-polylog_minus_exp_mu(mu = 1:5, s = 1:5)
+polykde:::polylog_minus_exp_mu(mu = 1:5, s = 1)
+polykde:::polylog_minus_exp_mu(mu = 1, s = 1:5)
+polykde:::polylog_minus_exp_mu(mu = 1:5, s = 1:5)
 }
 \keyword{internal}

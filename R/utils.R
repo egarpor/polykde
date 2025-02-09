@@ -122,9 +122,9 @@ bind_lists <- function(lists, bind = "rbind") {
 #' @return A vector of length \code{length(mu)} or \code{length(s)} with the
 #' values of the polylogarithm.
 #' @examples
-#' polylog_minus_exp_mu(mu = 1:5, s = 1)
-#' polylog_minus_exp_mu(mu = 1, s = 1:5)
-#' polylog_minus_exp_mu(mu = 1:5, s = 1:5)
+#' polykde:::polylog_minus_exp_mu(mu = 1:5, s = 1)
+#' polykde:::polylog_minus_exp_mu(mu = 1, s = 1:5)
+#' polykde:::polylog_minus_exp_mu(mu = 1:5, s = 1:5)
 #' @keywords internal
 polylog_minus_exp_mu <- function(mu, s, upper = Inf, ...) {
 
