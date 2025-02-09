@@ -49,7 +49,13 @@ view_srep(base, dirs, bdry, radii, show_base = TRUE, show_base_pt = TRUE,
 
 \item{...}{TODO}
 }
+\value{
+TODO
+}
 \description{
-s-rep viewer
+TODO
+}
+\examples{
+# TODO
 }
 \keyword{internal}

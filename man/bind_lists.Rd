@@ -11,7 +11,13 @@ bind_lists(lists, bind = "rbind")
 
 \item{bind}{bind operator, either \code{"rbind"} or \code{"cbind"}.}
 }
+\value{
+TODO
+}
 \description{
-Merge a list of lists
+Binds the entries of a list of lists by rows or columns.
+}
+\examples{
+# TODO
 }
 \keyword{internal}

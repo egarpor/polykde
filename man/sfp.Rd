@@ -9,8 +9,11 @@ sfp(t)
 \arguments{
 \item{t}{numeric vector or matrix.}
 }
+\value{
+TODO
+}
 \description{
-Stable computation of the softplus function
+Computes the softplus function in a numerically stable way.
 }
 \examples{
 curve(log(polykde:::sfp(rbind(5 * (1 - x)))), from = -10, to = 10)

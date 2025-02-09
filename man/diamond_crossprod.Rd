@@ -12,7 +12,13 @@ diamond_crossprod(X, ind_dj)
 \item{ind_dj}{\code{0}-based index separating the spheres. Computed using
 \code{\link{comp_ind_dj}}.}
 }
+\value{
+TODO
+}
 \description{
-Compute cube \eqn{X_i \diamond X_i'}
+TODO
+}
+\examples{
+# TODO
 }
 \keyword{internal}

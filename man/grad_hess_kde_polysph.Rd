@@ -50,6 +50,12 @@ for Epa, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}}; \code{3} for softplus.}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 }
+\value{
+TODO
+}
 \description{
-Gradient and Hessian of the polyspherical kde
+TODO
+}
+\examples{
+# TODO
 }

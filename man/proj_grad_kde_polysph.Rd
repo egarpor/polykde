@@ -48,6 +48,12 @@ Prevents the Euler algorithm to "surf the ridge". Defaults to \code{TRUE}.}
 \item{sparse}{use a sparse eigendecomposition of the Hessian? Defaults to
 \code{FALSE}.}
 }
+\value{
+TODO
+}
 \description{
-Projected gradient of the polyspherical kde
+TODO
+}
+\examples{
+# TODO
 }

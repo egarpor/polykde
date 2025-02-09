@@ -36,6 +36,12 @@ either \code{"min"} (minimizer of the cross-validation loss) or \code{"1se"}
 
 \item{...}{further parameters passed to \code{\link{bw_cv_kre_polysph}}.}
 }
+\value{
+TODO
+}
 \description{
-Index a ridge curve, creating the smoothed and indexed ridge
+TODO
+}
+\examples{
+# TODO
 }

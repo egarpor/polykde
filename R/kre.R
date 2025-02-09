@@ -87,7 +87,7 @@ kre_polysph <- function(x, X, Y, d, h, p = 0) {
 #' @param plot_cv plot the cross-validation loss curve? Defaults to \code{TRUE}.
 #' @param fast use the faster and equivalent version of the cross-validation
 #' loss? Defaults to \code{TRUE}.
-#' @details A similar output to \code{glmnet}'s \code{\link[=glmnet]{cv.glmnet}}
+#' @details A similar output to \code{glmnet}'s \code{\link[glmnet]{cv.glmnet}}
 #' is returned.
 #' @return A list with the following fields:
 #' \item{h_min}{the bandwidth that minimizes the cross-validation loss.}

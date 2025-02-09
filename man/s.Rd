@@ -11,7 +11,13 @@ s(A, add = FALSE)
 
 \item{add}{return simply the addition A + A'? Defaults to \code{FALSE}}
 }
+\value{
+TODO
+}
 \description{
-Symmetrize a matrix A with (A+A')/2
+TODO
+}
+\examples{
+# TODO
 }
 \keyword{internal}

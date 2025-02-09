@@ -13,7 +13,13 @@ points.}
 \item{ind_dj}{\code{0}-based index separating the spheres. Computed using
 \code{\link{comp_ind_dj}}.}
 }
+\value{
+TODO
+}
 \description{
-Polyspherical projection
+TODO
+}
+\examples{
+# TODO
 }
 \keyword{internal}

@@ -16,7 +16,13 @@ interp_polysph(x, y, ind_dj, N = 1)
 
 \item{N}{TODO}
 }
+\value{
+TODO
+}
 \description{
-Interpolation on the polysphere
+TODO
+}
+\examples{
+# TODO
 }
 \keyword{internal}

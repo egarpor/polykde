@@ -21,7 +21,7 @@ const double log_M_PI = std::log(M_PI);
 //' @title Polyspherical kernel density estimator
 //'
 //' @description Computes the kernel density estimator for data on the
-//' polysphere \eqn{S^{d_1} \times \cdots \times S^{d_r}}.
+//' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
 //'
 //' @param x a matrix of size \code{c(nx, sum(d) + r)} with the evaluation
 //' points.
@@ -45,6 +45,9 @@ const double log_M_PI = std::log(M_PI);
 //' @param kernel_type type of kernel employed: \code{1} for product kernel
 //' (default); \code{2} for spherically symmetric kernel.
 //' @param k softplus kernel parameter. Defaults to \code{10.0}.
+//' @return TODO
+//' @examples
+//' # TODO
 //' @export
 // [[Rcpp::export]]
 arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,

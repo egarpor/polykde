@@ -13,7 +13,7 @@ softplus(t)
 The softplus function evaluated at \code{t}.
 }
 \description{
-Stable computation of the softplus function
+Computes the softplus function in a numerically stable way.
 }
 \examples{
 h <- 0.1

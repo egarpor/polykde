@@ -25,12 +25,17 @@ const double log_M_PI = std::log(M_PI);
 
 //' @title Gradient and Hessian of the polyspherical kde
 //'
+//' @description TODO
+//'
 //' @inheritParams kde_polysph
 //' @param projected compute the \emph{projected} gradient and Hessian that
 //' accounts for the radial projection? Defaults to \code{TRUE}.
 //' @param proj_alt alternative projection. Defaults to \code{TRUE}.
 //' @param norm_grad_hess normalize the gradient and Hessian dividing by the
 //' kde? Defaults to \code{FALSE}.
+//' @return TODO
+//' @examples
+//' # TODO
 //' @export
 // [[Rcpp::export]]
 Rcpp::List grad_hess_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
@@ -451,13 +456,17 @@ Rcpp::List grad_hess_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
 
 //' @title Projected gradient of the polyspherical kde
 //'
+//' @description TODO
+//'
 //' @inheritParams kde_polysph
 //' @inheritParams grad_hess_kde_polysph
 //' @param fix_u1 ensure the \eqn{u_1} vector is different from \eqn{x}?
 //' Prevents the Euler algorithm to "surf the ridge". Defaults to \code{TRUE}.
 //' @param sparse use a sparse eigendecomposition of the Hessian? Defaults to
 //' \code{FALSE}.
-//' @export
+//' @return TODO
+//' @examples
+//' # TODO
 // [[Rcpp::export]]
 Rcpp::List proj_grad_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
                                  arma::vec h, Rcpp::NumericVector weights =

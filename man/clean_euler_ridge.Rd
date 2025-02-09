@@ -15,6 +15,12 @@ clean_euler_ridge(e, X, p_out = NULL)
 \item{p_out}{proportion of outliers to remove. Defaults to \code{NULL} (no
 cleaning).}
 }
+\value{
+TODO
+}
 \description{
-Clean ridge points coming from spurious fits
+TODO
+}
+\examples{
+# TODO
 }

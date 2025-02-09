@@ -41,7 +41,7 @@ polyspherical-on-scalar regression. It computes both the bandwidth that
 minimizes the cross-validation loss and its "one standard error" variant.
 }
 \details{
-A similar output to \code{glmnet}'s \code{\link[=glmnet]{cv.glmnet}}
+A similar output to \code{glmnet}'s \code{\link[glmnet]{cv.glmnet}}
 is returned.
 }
 \examples{

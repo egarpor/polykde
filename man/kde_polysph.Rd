@@ -50,7 +50,13 @@ for Epa, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}}; \code{3} for softplus.}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 }
+\value{
+TODO
+}
 \description{
 Computes the kernel density estimator for data on the
-polysphere \eqn{S^{d_1} \times \cdots \times S^{d_r}}.
+polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
+}
+\examples{
+# TODO
 }

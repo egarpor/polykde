@@ -16,7 +16,13 @@ interp_srep(X, ind_dj, ord, L = NULL)
 
 \item{L}{TODO}
 }
+\value{
+TODO
+}
 \description{
-Movie weighted by distances
+TODO
+}
+\examples{
+# TODO
 }
 \keyword{internal}

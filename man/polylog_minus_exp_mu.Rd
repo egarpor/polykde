@@ -16,12 +16,19 @@ polylog_minus_exp_mu(mu, s, upper = Inf, ...)
 \item{...}{further parameters passed to \code{\link{integrate}}, such as
 \code{upper}, \code{abs.tol}, \code{rel.tol}, etc.}
 }
+\value{
+A vector of length \code{length(mu)} or \code{length(s)} with the
+values of the polylogarithm.
+}
 \description{
-Polylogarithm \eqn{\mathrm{Li}_s(-e^\mu)}
+Computation of the polylogarithm \eqn{\mathrm{Li}_s(-e^\mu)}.
 }
 \details{
 If \code{s} is an integer, 1/2, 3/2, or 5/2, then routines from
 the \href{https://www.gnu.org/software/gsl/}{GSL library} to compute
 Fermi--Dirac integrals are called. Otherwise, numerical integration is used.
+}
+\examples{
+# TODO
 }
 \keyword{internal}

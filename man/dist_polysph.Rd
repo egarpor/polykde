@@ -20,6 +20,12 @@ length \code{sum(d) + r}.}
 \item{std}{standardize distance to \eqn{[0,1]}? Uses that the maximum
 distance is \eqn{\sqrt{r}\pi}. Defaults to \code{TRUE}.}
 }
+\value{
+TODO
+}
 \description{
-Polyspherical distance
+TODO
+}
+\examples{
+# TODO
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{AP}
 \alias{AP}
-\title{Projection matrices P and A}
+\title{Projection matrices \eqn{\boldsymbol{P}} and \eqn{\boldsymbol{A}}}
 \usage{
 AP(x, v, ind_dj, orth = FALSE)
 }
@@ -14,8 +14,18 @@ AP(x, v, ind_dj, orth = FALSE)
 
 \item{orth}{return the orthogonal complement of \eqn{P}, \eqn{I - P}?}
 }
+\value{
+TODO
+}
 \description{
-The \eqn{jj}-block of \eqn{P} is \eqn{I_{d_j} - x_j x_j'}. The
-\eqn{jj}-block of \eqn{A} is \eqn{(x_j' * v_j) * I_{d_j}}.
+TODO
+
+The \eqn{jj}-block of \eqn{\boldsymbol{P}} is
+\eqn{\boldsymbol{I}_{d_j} - \boldsymbol{x}_j \boldsymbol{x}_j'}. The
+\eqn{jj}-block of \eqn{\boldsymbol{A}} is
+\eqn{(\boldsymbol{x}_j' \boldsymbol{v}_j) \boldsymbol{I}_{d_j}}.
+}
+\examples{
+# TODO
 }
 \keyword{internal}

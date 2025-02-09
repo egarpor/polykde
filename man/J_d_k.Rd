@@ -17,7 +17,13 @@ common dimension of each hypersphere (a scalar).}
 \item{...}{further parameters passed to \code{\link{integrate}}, such as
 \code{upper}, \code{abs.tol}, \code{rel.tol}, etc.}
 }
+\value{
+TODO
+}
 \description{
-Computes the integral \eqn{J_{d, k}}
+Computes the integral \eqn{J_{d, k}=TODO}.
+}
+\examples{
+# TODO
 }
 \keyword{internal}

@@ -1,9 +1,14 @@
 
 #' @title Parallel Euler algorithm
 #'
+#' @description TODO
+#'
 #' @inheritParams euler_ridge
 #' @param ... further parameters passed to \code{\link{euler_ridge}}.
 #' @param cores cores to use. Defaults to \code{1}.
+#' @return TODO
+#' @examples
+#' # TODO
 #' @export
 parallel_euler_ridge <- function(x, X, d, h, h_euler, N = 1e3, eps = 1e-5,
                                  keep_paths = FALSE, cores = 1, ...) {
@@ -84,10 +89,15 @@ parallel_euler_ridge <- function(x, X, d, h, h_euler, N = 1e3, eps = 1e-5,
 
 #' @title Blockwise Euler algorithm
 #'
+#' @description TODO
+#'
 #' @param ind_blocks indexes of the blocks, a vector or length \code{r}.
 #' @inheritParams euler_ridge
 #' @inheritParams parallel_euler_ridge
 #' @param ... further parameters passed to \code{\link{euler_ridge}}.
+#' @return TODO
+#' @examples
+#' # TODO
 #' @export
 block_euler_ridge <- function(x, X, d, h, h_euler, ind_blocks, N = 1e3,
                               eps = 1e-5, keep_paths = FALSE, cores = 1, ...) {
@@ -219,11 +229,16 @@ block_euler_ridge <- function(x, X, d, h, h_euler, ind_blocks, N = 1e3,
 
 #' @title Clean ridge points coming from spurious fits
 #'
+#' @description TODO
+#'
 #' @param e outcome from \code{\link{euler_ridge}} or
 #' \code{\link{parallel_euler_ridge}}.
 #' @param p_out proportion of outliers to remove. Defaults to \code{NULL} (no
 #' cleaning).
 #' @inheritParams euler_ridge
+#' @return TODO
+#' @examples
+#' # TODO
 #' @export
 clean_euler_ridge <- function(e, X, p_out = NULL) {
 
@@ -268,6 +283,8 @@ clean_euler_ridge <- function(e, X, p_out = NULL) {
 
 #' @title Index a ridge curve, creating the smoothed and indexed ridge
 #'
+#' @description TODO
+#'
 #' @param endpoints end points of the ridge algorithm to be indexed.
 #' @inheritParams euler_ridge
 #' @param l_index length of the grid index used for finding projections.
@@ -283,6 +300,9 @@ clean_euler_ridge <- function(e, X, p_out = NULL) {
 #' (the "one standard error rule", smoother). Defaults to \code{"1se"}.
 #' @inheritParams kre_polysph
 #' @param ... further parameters passed to \code{\link{bw_cv_kre_polysph}}.
+#' @return TODO
+#' @examples
+#' # TODO
 #' @export
 index_ridge <- function(endpoints, X, d, l_index = 1e3, f_index = 2,
                         probs_scores = seq(0, 1, l = 101), verbose = FALSE,

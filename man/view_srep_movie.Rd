@@ -28,7 +28,13 @@ view_srep_movie(avg_base, avg_radii, avg_dirs, moving_spokes, X, ord,
 
 \item{...}{TODO}
 }
+\value{
+TODO
+}
 \description{
-View s-reps across time
+TODO
+}
+\examples{
+# TODO
 }
 \keyword{internal}

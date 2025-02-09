@@ -66,6 +66,12 @@ Prevents the Euler algorithm to "surf the ridge". Defaults to \code{TRUE}.}
 \item{show_prog_j}{display a progress bar for \code{N}? Defaults to
 \code{FALSE}.}
 }
+\value{
+TODO
+}
 \description{
-Euler step for density ridge estimation
+TODO
+}
+\examples{
+# TODO
 }

@@ -12,7 +12,10 @@ arma::vec dist_polysph(arma::mat x, arma::mat y, arma::uvec ind_dj,
 
 //' @title Stable computation of the softplus function
 //'
+//' @description Computes the softplus function in a numerically stable way.
+//'
 //' @inheritParams softplus
+//' @return TODO
 //' @examples
 //' curve(log(polykde:::sfp(rbind(5 * (1 - x)))), from = -10, to = 10)
 //' @keywords internal
@@ -28,9 +31,14 @@ arma::mat sfp(arma::mat t) {
 
 //' @title Polyspherical projection
 //'
+//' @description TODO
+//'
 //' @inheritParams kde_polysph
 //' @param ind_dj \code{0}-based index separating the spheres. Computed using
 //' \code{\link{comp_ind_dj}}.
+//' @return TODO
+//' @examples
+//' # TODO
 //' @keywords internal
 // [[Rcpp::export]]
 arma::mat proj_polysph(arma::mat x, arma::uvec ind_dj) {
@@ -66,6 +74,8 @@ arma::mat proj_polysph(arma::mat x, arma::uvec ind_dj) {
 
 //' @title Polyspherical distance
 //'
+//' @description TODO
+//'
 //' @param x a matrix of size \code{c(n, sum(d) + r)}.
 //' @param y either a matrix of the same dimension of \code{x} or a vector of
 //' length \code{sum(d) + r}.
@@ -73,6 +83,9 @@ arma::mat proj_polysph(arma::mat x, arma::uvec ind_dj) {
 //' @param norm_x,norm_y ensure a normalization of the data?
 //' @param std standardize distance to \eqn{[0,1]}? Uses that the maximum
 //' distance is \eqn{\sqrt{r}\pi}. Defaults to \code{TRUE}.
+//' @return TODO
+//' @examples
+//' # TODO
 //' @export
 // [[Rcpp::export]]
 arma::vec dist_polysph(arma::mat x, arma::mat y, arma::uvec ind_dj,
@@ -157,9 +170,14 @@ arma::vec dist_polysph(arma::mat x, arma::mat y, arma::uvec ind_dj,
 
 //' @title Cross polyspherical distance
 //'
+//' @description TODO
+//'
 //' @inheritParams dist_polysph
 //' @param y either a matrix of the same dimension of \code{x} or a vector of
 //' length \code{sum(d) + r}.
+//' @return TODO
+//' @examples
+//' # TODO
 //' @export
 // [[Rcpp::export]]
 arma::mat dist_polysph_cross(arma::mat x, arma::mat y, arma::uvec ind_dj,
@@ -215,8 +233,13 @@ arma::mat dist_polysph_cross(arma::mat x, arma::mat y, arma::uvec ind_dj,
 
 //' @title Compute cube \eqn{X_i \diamond X_i'}
 //'
+//' @description TODO
+//'
 //' @inheritParams kde_polysph
 //' @inheritParams proj_polysph
+//' @return TODO
+//' @examples
+//' # TODO
 //' @keywords internal
 // [[Rcpp::export]]
 arma::cube diamond_crossprod(arma::mat X, arma::uvec ind_dj) {
@@ -271,8 +294,13 @@ arma::cube diamond_crossprod(arma::mat X, arma::uvec ind_dj) {
 
 //' @title Symmetrize a matrix A with (A+A')/2
 //'
+//' @description TODO
+//'
 //' @param A matrix.
 //' @param add return simply the addition A + A'? Defaults to \code{FALSE}
+//' @return TODO
+//' @examples
+//' # TODO
 //' @keywords internal
 // [[Rcpp::export]]
 arma::mat s(arma::mat A, bool add = false) {
@@ -290,14 +318,21 @@ arma::mat s(arma::mat A, bool add = false) {
 }
 
 
-//' @title Projection matrices P and A
+//' @title Projection matrices \eqn{\boldsymbol{P}} and \eqn{\boldsymbol{A}}
 //'
-//' @description The \eqn{jj}-block of \eqn{P} is \eqn{I_{d_j} - x_j x_j'}. The
-//' \eqn{jj}-block of \eqn{A} is \eqn{(x_j' * v_j) * I_{d_j}}.
+//' @description TODO
+//'
+//' @description The \eqn{jj}-block of \eqn{\boldsymbol{P}} is
+//' \eqn{\boldsymbol{I}_{d_j} - \boldsymbol{x}_j \boldsymbol{x}_j'}. The
+//' \eqn{jj}-block of \eqn{\boldsymbol{A}} is
+//' \eqn{(\boldsymbol{x}_j' \boldsymbol{v}_j) \boldsymbol{I}_{d_j}}.
 //'
 //' @param x,v row vectors of size \code{sum(d) + r}.
 //' @inheritParams proj_polysph
 //' @param orth return the orthogonal complement of \eqn{P}, \eqn{I - P}?
+//' @return TODO
+//' @examples
+//' # TODO
 //' @keywords internal
 // [[Rcpp::export]]
 Rcpp::List AP(arma::rowvec x, arma::rowvec v, arma::uvec ind_dj,

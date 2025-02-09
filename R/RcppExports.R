@@ -3,6 +3,8 @@
 
 #' @title Euler step for density ridge estimation
 #'
+#' @description TODO
+#'
 #' @inheritParams kde_polysph
 #' @inheritParams proj_grad_kde_polysph
 #' @param h_euler vector of size \code{r} with the advance steps in the Euler
@@ -15,6 +17,9 @@
 #' \code{TRUE}.
 #' @param show_prog_j display a progress bar for \code{N}? Defaults to
 #' \code{FALSE}.
+#' @return TODO
+#' @examples
+#' # TODO
 #' @export
 euler_ridge <- function(x, X, d, h, h_euler = as.numeric( c()), weights = as.numeric( c()), wrt_unif = FALSE, normalized = TRUE, norm_x = FALSE, norm_X = FALSE, kernel = 1L, kernel_type = 1L, k = 10.0, N = 1e3L, eps = 1e-5, keep_paths = FALSE, proj_alt = TRUE, fix_u1 = TRUE, sparse = FALSE, show_prog = TRUE, show_prog_j = FALSE) {
     .Call(`_polykde_euler_ridge`, x, X, d, h, h_euler, weights, wrt_unif, normalized, norm_x, norm_X, kernel, kernel_type, k, N, eps, keep_paths, proj_alt, fix_u1, sparse, show_prog, show_prog_j)
@@ -22,12 +27,17 @@ euler_ridge <- function(x, X, d, h, h_euler = as.numeric( c()), weights = as.num
 
 #' @title Gradient and Hessian of the polyspherical kde
 #'
+#' @description TODO
+#'
 #' @inheritParams kde_polysph
 #' @param projected compute the \emph{projected} gradient and Hessian that
 #' accounts for the radial projection? Defaults to \code{TRUE}.
 #' @param proj_alt alternative projection. Defaults to \code{TRUE}.
 #' @param norm_grad_hess normalize the gradient and Hessian dividing by the
 #' kde? Defaults to \code{FALSE}.
+#' @return TODO
+#' @examples
+#' # TODO
 #' @export
 grad_hess_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), projected = TRUE, proj_alt = TRUE, norm_grad_hess = FALSE, log = FALSE, wrt_unif = FALSE, normalized = TRUE, norm_x = FALSE, norm_X = FALSE, kernel = 1L, kernel_type = 1L, k = 10.0) {
     .Call(`_polykde_grad_hess_kde_polysph`, x, X, d, h, weights, projected, proj_alt, norm_grad_hess, log, wrt_unif, normalized, norm_x, norm_X, kernel, kernel_type, k)
@@ -35,13 +45,17 @@ grad_hess_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), projec
 
 #' @title Projected gradient of the polyspherical kde
 #'
+#' @description TODO
+#'
 #' @inheritParams kde_polysph
 #' @inheritParams grad_hess_kde_polysph
 #' @param fix_u1 ensure the \eqn{u_1} vector is different from \eqn{x}?
 #' Prevents the Euler algorithm to "surf the ridge". Defaults to \code{TRUE}.
 #' @param sparse use a sparse eigendecomposition of the Hessian? Defaults to
 #' \code{FALSE}.
-#' @export
+#' @return TODO
+#' @examples
+#' # TODO
 proj_grad_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), wrt_unif = FALSE, normalized = TRUE, norm_x = FALSE, norm_X = FALSE, kernel = 1L, kernel_type = 1L, k = 10.0, proj_alt = TRUE, fix_u1 = TRUE, sparse = FALSE) {
     .Call(`_polykde_proj_grad_kde_polysph`, x, X, d, h, weights, wrt_unif, normalized, norm_x, norm_X, kernel, kernel_type, k, proj_alt, fix_u1, sparse)
 }
@@ -49,7 +63,7 @@ proj_grad_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), wrt_un
 #' @title Polyspherical kernel density estimator
 #'
 #' @description Computes the kernel density estimator for data on the
-#' polysphere \eqn{S^{d_1} \times \cdots \times S^{d_r}}.
+#' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
 #'
 #' @param x a matrix of size \code{c(nx, sum(d) + r)} with the evaluation
 #' points.
@@ -73,6 +87,9 @@ proj_grad_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), wrt_un
 #' @param kernel_type type of kernel employed: \code{1} for product kernel
 #' (default); \code{2} for spherically symmetric kernel.
 #' @param k softplus kernel parameter. Defaults to \code{10.0}.
+#' @return TODO
+#' @examples
+#' # TODO
 #' @export
 kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), log = FALSE, wrt_unif = FALSE, normalized = TRUE, intrinsic = FALSE, norm_x = FALSE, norm_X = FALSE, kernel = 1L, kernel_type = 1L, k = 10.0) {
     .Call(`_polykde_kde_polysph`, x, X, d, h, weights, log, wrt_unif, normalized, intrinsic, norm_x, norm_X, kernel, kernel_type, k)
@@ -86,7 +103,10 @@ log_cv_kde_polysph <- function(X, d, h, weights = as.numeric( c()), wrt_unif = F
 
 #' @title Stable computation of the softplus function
 #'
+#' @description Computes the softplus function in a numerically stable way.
+#'
 #' @inheritParams softplus
+#' @return TODO
 #' @examples
 #' curve(log(polykde:::sfp(rbind(5 * (1 - x)))), from = -10, to = 10)
 #' @keywords internal
@@ -96,15 +116,22 @@ sfp <- function(t) {
 
 #' @title Polyspherical projection
 #'
+#' @description TODO
+#'
 #' @inheritParams kde_polysph
 #' @param ind_dj \code{0}-based index separating the spheres. Computed using
 #' \code{\link{comp_ind_dj}}.
+#' @return TODO
+#' @examples
+#' # TODO
 #' @keywords internal
 proj_polysph <- function(x, ind_dj) {
     .Call(`_polykde_proj_polysph`, x, ind_dj)
 }
 
 #' @title Polyspherical distance
+#'
+#' @description TODO
 #'
 #' @param x a matrix of size \code{c(n, sum(d) + r)}.
 #' @param y either a matrix of the same dimension of \code{x} or a vector of
@@ -113,6 +140,9 @@ proj_polysph <- function(x, ind_dj) {
 #' @param norm_x,norm_y ensure a normalization of the data?
 #' @param std standardize distance to \eqn{[0,1]}? Uses that the maximum
 #' distance is \eqn{\sqrt{r}\pi}. Defaults to \code{TRUE}.
+#' @return TODO
+#' @examples
+#' # TODO
 #' @export
 dist_polysph <- function(x, y, ind_dj, norm_x = FALSE, norm_y = FALSE, std = TRUE) {
     .Call(`_polykde_dist_polysph`, x, y, ind_dj, norm_x, norm_y, std)
@@ -120,9 +150,14 @@ dist_polysph <- function(x, y, ind_dj, norm_x = FALSE, norm_y = FALSE, std = TRU
 
 #' @title Cross polyspherical distance
 #'
+#' @description TODO
+#'
 #' @inheritParams dist_polysph
 #' @param y either a matrix of the same dimension of \code{x} or a vector of
 #' length \code{sum(d) + r}.
+#' @return TODO
+#' @examples
+#' # TODO
 #' @export
 dist_polysph_cross <- function(x, y, ind_dj, norm_x = FALSE, norm_y = FALSE, std = TRUE) {
     .Call(`_polykde_dist_polysph_cross`, x, y, ind_dj, norm_x, norm_y, std)
@@ -130,8 +165,13 @@ dist_polysph_cross <- function(x, y, ind_dj, norm_x = FALSE, norm_y = FALSE, std
 
 #' @title Compute cube \eqn{X_i \diamond X_i'}
 #'
+#' @description TODO
+#'
 #' @inheritParams kde_polysph
 #' @inheritParams proj_polysph
+#' @return TODO
+#' @examples
+#' # TODO
 #' @keywords internal
 diamond_crossprod <- function(X, ind_dj) {
     .Call(`_polykde_diamond_crossprod`, X, ind_dj)
@@ -139,21 +179,33 @@ diamond_crossprod <- function(X, ind_dj) {
 
 #' @title Symmetrize a matrix A with (A+A')/2
 #'
+#' @description TODO
+#'
 #' @param A matrix.
 #' @param add return simply the addition A + A'? Defaults to \code{FALSE}
+#' @return TODO
+#' @examples
+#' # TODO
 #' @keywords internal
 s <- function(A, add = FALSE) {
     .Call(`_polykde_s`, A, add)
 }
 
-#' @title Projection matrices P and A
+#' @title Projection matrices \eqn{\boldsymbol{P}} and \eqn{\boldsymbol{A}}
 #'
-#' @description The \eqn{jj}-block of \eqn{P} is \eqn{I_{d_j} - x_j x_j'}. The
-#' \eqn{jj}-block of \eqn{A} is \eqn{(x_j' * v_j) * I_{d_j}}.
+#' @description TODO
+#'
+#' @description The \eqn{jj}-block of \eqn{\boldsymbol{P}} is
+#' \eqn{\boldsymbol{I}_{d_j} - \boldsymbol{x}_j \boldsymbol{x}_j'}. The
+#' \eqn{jj}-block of \eqn{\boldsymbol{A}} is
+#' \eqn{(\boldsymbol{x}_j' \boldsymbol{v}_j) \boldsymbol{I}_{d_j}}.
 #'
 #' @param x,v row vectors of size \code{sum(d) + r}.
 #' @inheritParams proj_polysph
 #' @param orth return the orthogonal complement of \eqn{P}, \eqn{I - P}?
+#' @return TODO
+#' @examples
+#' # TODO
 #' @keywords internal
 AP <- function(x, v, ind_dj, orth = FALSE) {
     .Call(`_polykde_AP`, x, v, ind_dj, orth)

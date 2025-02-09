@@ -13,6 +13,8 @@ comp_ind_dj(d)
 A vector of length \code{sum(d) + 1}.
 }
 \description{
-Computes \code{ind_dj}
-A short description...
+Computes \code{ind_dj} TODO
+}
+\examples{
+# TODO
 }

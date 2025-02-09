@@ -33,6 +33,12 @@ method. Set internally as \code{h} if not provided.}
 
 \item{...}{further parameters passed to \code{\link{euler_ridge}}.}
 }
+\value{
+TODO
+}
 \description{
-Blockwise Euler algorithm
+TODO
+}
+\examples{
+# TODO
 }

@@ -1,6 +1,8 @@
 
 #' @title Stable computation of the softplus function
 #'
+#' @description Computes the softplus function in a numerically stable way.
+#'
 #' @param t numeric vector or matrix.
 #' @return The softplus function evaluated at \code{t}.
 #' @examples
@@ -66,11 +68,12 @@ dist_polysph_matrix <- function(x, ind_dj, norm_x = FALSE, norm_y = FALSE,
 
 #' @title Index of spheres
 #'
-#' @description Computes \code{ind_dj}
-#' A short description...
+#' @description Computes \code{ind_dj} TODO
 #'
 #' @inheritParams kde_polysph
 #' @return A vector of length \code{sum(d) + 1}.
+#' @examples
+#' # TODO
 #' @export
 comp_ind_dj <- function(d) {
 
@@ -83,8 +86,13 @@ comp_ind_dj <- function(d) {
 
 #' @title Merge a list of lists
 #'
+#' @description Binds the entries of a list of lists by rows or columns.
+#'
 #' @param lists lists whose entries are to be binded.
 #' @param bind bind operator, either \code{"rbind"} or \code{"cbind"}.
+#' @return TODO
+#' @examples
+#' # TODO
 #' @keywords internal
 bind_lists <- function(lists, bind = "rbind") {
 
@@ -108,6 +116,8 @@ bind_lists <- function(lists, bind = "rbind") {
 
 #' @title Polylogarithm \eqn{\mathrm{Li}_s(-e^\mu)}
 #'
+#' @description Computation of the polylogarithm \eqn{\mathrm{Li}_s(-e^\mu)}.
+#'
 #' @param mu vector with exponents of the negative argument.
 #' @param s vector with indexes of the polylogarithm.
 #' @inheritParams eff_kern
@@ -115,6 +125,10 @@ bind_lists <- function(lists, bind = "rbind") {
 #' @details If \code{s} is an integer, 1/2, 3/2, or 5/2, then routines from
 #' the \href{https://www.gnu.org/software/gsl/}{GSL library} to compute
 #' Fermi--Dirac integrals are called. Otherwise, numerical integration is used.
+#' @return A vector of length \code{length(mu)} or \code{length(s)} with the
+#' values of the polylogarithm.
+#' @examples
+#' # TODO
 #' @keywords internal
 polylog_minus_exp_mu <- function(mu, s, upper = Inf, ...) {
 
@@ -198,8 +212,14 @@ polylog_minus_exp_mu <- function(mu, s, upper = Inf, ...) {
 
 
 #' @title Computes the integral \eqn{J_{d, k}}
+#'
+#' @description Computes the integral \eqn{J_{d, k}=TODO}.
+#'
 #' @inheritParams eff_kern
 #' @inheritParams polylog_minus_exp_mu
+#' @return TODO
+#' @examples
+#' # TODO
 #' @keywords internal
 J_d_k <- function(d, k = 10, upper = Inf, ...) {
 

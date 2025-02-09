@@ -24,6 +24,8 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
 
 //' @title Euler step for density ridge estimation
 //'
+//' @description TODO
+//'
 //' @inheritParams kde_polysph
 //' @inheritParams proj_grad_kde_polysph
 //' @param h_euler vector of size \code{r} with the advance steps in the Euler
@@ -36,6 +38,9 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
 //' \code{TRUE}.
 //' @param show_prog_j display a progress bar for \code{N}? Defaults to
 //' \code{FALSE}.
+//' @return TODO
+//' @examples
+//' # TODO
 //' @export
 // [[Rcpp::export]]
 Rcpp::List euler_ridge(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,

@@ -1,10 +1,15 @@
 
 #' @title Interpolation on the polysphere
 #'
+#' @description TODO
+#'
 #' @param x TODO
 #' @param y TODO
 #' @inheritParams proj_polysph
 #' @param N TODO
+#' @return TODO
+#' @examples
+#' # TODO
 #' @keywords internal
 interp_polysph <- function(x, y, ind_dj, N = 1) {
 
@@ -24,10 +29,15 @@ interp_polysph <- function(x, y, ind_dj, N = 1) {
 
 #' @title Movie weighted by distances
 #'
+#' @description TODO
+#'
 #' @param X TODO
 #' @inheritParams proj_polysph
 #' @param ord TODO
 #' @param L TODO
+#' @return TODO
+#' @examples
+#' # TODO
 #' @keywords internal
 interp_srep <- function(X, ind_dj, ord, L = NULL) {
 
@@ -68,6 +78,8 @@ interp_srep <- function(X, ind_dj, ord, L = NULL) {
 
 #' @title s-rep viewer
 #'
+#' @description TODO
+#'
 #' @param base TODO
 #' @param dirs TODO
 #' @param bdry TODO
@@ -86,6 +98,9 @@ interp_srep <- function(X, ind_dj, ord, L = NULL) {
 #' @param alpha_ashape3d_base,alpha_ashape3d_bdry TODO
 #' @param lit TODO
 #' @param ... TODO
+#' @return TODO
+#' @examples
+#' # TODO
 #' @keywords internal
 view_srep <- function(base, dirs, bdry, radii, show_base = TRUE,
                       show_base_pt = TRUE, show_bdry = TRUE,
@@ -230,6 +245,8 @@ view_srep <- function(base, dirs, bdry, radii, show_base = TRUE,
 
 #' @title View s-reps across time
 #'
+#' @description TODO
+#'
 #' @param avg_base TODO
 #' @param avg_radii TODO
 #' @param avg_dirs TODO
@@ -239,6 +256,9 @@ view_srep <- function(base, dirs, bdry, radii, show_base = TRUE,
 #' @param L TODO
 #' @param static TODO
 #' @param ... TODO
+#' @return TODO
+#' @examples
+#' # TODO
 #' @keywords internal
 view_srep_movie <- function(avg_base, avg_radii, avg_dirs, moving_spokes,
                             X, ord, col_pal = grDevices::rainbow, L = NULL,
