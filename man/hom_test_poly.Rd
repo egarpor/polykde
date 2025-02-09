@@ -45,6 +45,9 @@ integrals in the Jensen--Shannon distance.}
 \item{cv_jsd}{use cross-validation to approximate the Jensen--Shannon
 distance? Does not require Monte Carlo.}
 }
+\value{
+TODO
+}
 \description{
 Homogeneity test for two polyspherical samples
 }

@@ -2,20 +2,17 @@
 % Please edit documentation in R/kre.R
 \name{kre_polysph}
 \alias{kre_polysph}
-\alias{bw_cv_kre_polysph}
 \title{Local polynomial estimator for polyspherical-on-scalar regression}
 \usage{
 kre_polysph(x, X, Y, d, h, p = 0)
-
-bw_cv_kre_polysph(X, Y, d, p = 0, h_grid = bw.nrd(X) * 10^seq(-2, 2, l =
-  100), plot_cv = TRUE, fast = TRUE)
 }
 \arguments{
-\item{x}{a vector of size \code{n} with the evaluation points.}
+\item{x}{a vector of size \code{nx} with the evaluation points.}
 
 \item{X}{a vector of size \code{n} with the predictor sample.}
 
-\item{Y}{a matrix of size \code{c(n, sum(d) + r)} with the response sample.}
+\item{Y}{a matrix of size \code{c(n, sum(d) + r)} with the response sample
+on the polysphere.}
 
 \item{d}{dimensions vector, of size \code{r}.}
 
@@ -23,15 +20,26 @@ bw_cv_kre_polysph(X, Y, d, p = 0, h_grid = bw.nrd(X) * 10^seq(-2, 2, l =
 
 \item{p}{degree of local fit, either \code{0} or \code{1}. Defaults to
 \code{0}.}
-
-\item{h_grid}{bandwidth grid where to optimize the cross-validation loss.
-Defaults to \code{bw.nrd(X) * 10^seq(-1, 1, l = 100)}.}
-
-\item{plot_cv}{plot the cross-validation loss curve? Defaults to \code{TRUE}.}
-
-\item{fast}{use the faster and equivalent version of the cross-validation
-loss? Defaults to \code{TRUE}.}
+}
+\value{
+A vector of size \code{nx} with the estimated regression curve
+evaluated at \code{x}.
 }
 \description{
-Local polynomial estimator for polyspherical-on-scalar regression
+Computes a local constant or local linear estimator with
+polyspherical response and scalar predictor.
+}
+\examples{
+x_grid <- seq(-0.25, 1.25, l = 200)
+n <- 50
+X <- seq(0, 1, l = n)
+Y <- r_path_s2r(n = n, r = 1, sigma = 0.1, spiral = TRUE)[, , 1]
+h0 <- bw_cv_kre_polysph(X = X, Y = Y, d = 2, p = 0, plot_cv = FALSE)$h_1se
+sc3 <- scatterplot3d::scatterplot3d(Y, pch = 16, xlim = c(-1, 1),
+                                    ylim = c(-1, 1), zlim = c(-1, 1),
+                                    xlab = "", ylab = "", zlab = "")
+sc3$points3d(kre_polysph(x = x_grid, X = X, Y = Y, d = 2, h = h0, p = 0),
+             pch = 16, type = "l", col = 2, lwd = 2)
+sc3$points3d(kre_polysph(x = x_grid, X = X, Y = Y, d = 2, h = h0, p = 1),
+             pch = 16, type = "l", col = 3, lwd = 2)
 }

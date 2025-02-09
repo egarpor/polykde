@@ -12,6 +12,12 @@ sample for approximating the integral \eqn{\int \sqrt{f(x) * g(x)} dx}.}
 
 \item{bhatta}{compute the Bhattacharyya divergence (or coefficient) instead?}
 }
+\value{
+TODO
+}
 \description{
 Hellinger distance via Monte Carlo
+}
+\examples{
+# TODO
 }

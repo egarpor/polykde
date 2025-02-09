@@ -23,6 +23,7 @@
 #' the Jensen--Shannon divergence. This statistic is bounded in \eqn{[0, 1]}.
 #' The \code{"hd"} statistic computes a monotonic transformation of the
 #' Hellinger distance, which is the Bhattacharyya divergence (or coefficient).
+#' @return TODO
 #' @examples
 #' ## Two-sample case
 #' \donttest{
@@ -485,6 +486,9 @@ hom_test_poly <- function(X, d, labels,
 #' @param log_f,log_g logarithms of the pdfs f and g evaluated in a Monte Carlo
 #' sample for approximating the integral \eqn{\int \sqrt{f(x) * g(x)} dx}.
 #' @param bhatta compute the Bhattacharyya divergence (or coefficient) instead?
+#' @return TODO
+#' @examples
+#' # TODO
 #' @export
 hd_mc <- function(log_f, log_g, bhatta = FALSE) {
 
