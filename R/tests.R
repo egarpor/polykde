@@ -1,29 +1,40 @@
 
-#' @title Homogeneity test for two polyspherical samples
+#' @title Homogeneity test for several polyspherical samples
+#'
+#' @description Permutation tests for the equality of distributions of two or
+#' \eqn{k} samples of data on \eqn{\mathcal{S}^{d_1} \times \cdots \times
+#' \mathcal{S}^{d_k}}. The Jensen--Shannon distance is used to construct a test
+#' statistic measuring the discrepancy between the \eqn{k} kernel density
+#' estimators. Tests based on the mean and scatter matrices are also available,
+#' but for only two samples (\eqn{k=2}).
+#'
 #' @inheritParams kde_polysph
 #' @param labels vector with \code{k} different levels indicating the group.
 #' @param type kind of test to be performed: \code{"mean"}, a simple test
 #' for the equality of both means (non-omnibus for testing homogeneity);
 #' \code{"scatter"}, a simple test for the equality of both scatter matrices
-#' (non-omnibus for testing homogeneity); \code{"hd"}/\code{"jsd"} a test
-#' comparing the kernel density estimators for both groups using the Hellinger
-#' distance/Jensen--Shannon distance.
-#' @param B number of permutations to use.
+#' (non-omnibus for testing homogeneity); \code{"jsd"} (default), a test
+#' comparing the kernel density estimators for \eqn{k} groups using the
+#' Jensen--Shannon distance.
+#' @param B number of permutations to use. Defaults to \code{1e3}.
 #' @param M number of Monte Carlo replicates to use when approximating the
-#' Hellinger/Jensen--Shannon distance.
+#' Hellinger/Jensen--Shannon distance. Defaults to \code{1e4}.
 #' @param cv_jsd use cross-validation to approximate the Jensen--Shannon
-#' distance? Does not require Monte Carlo.
+#' distance? Does not require Monte Carlo. Defaults to \code{TRUE}.
 #' @param plot_boot flag to display a graphical output of the test decision.
+#' Defaults to \code{FALSE}.
 #' @param seed_jsd seed for the Monte Carlo simulations used to estimate the
 #' integrals in the Jensen--Shannon distance.
-#' @details The \code{"mean"} statistic measures the maximum (chordal) distance
+#' @details Only \code{type = "jsd"} is available for \eqn{k > 2}.
+#'
+#' The \code{"mean"} statistic measures the maximum (chordal) distance
 #' between the estimated group means. This statistic is bounded in \eqn{[0, 1]}.
 #' The \code{"var"} statistic measures the maximum affine invariant Riemannian
 #' metric between the estimated scatter matrices. The \code{"jsd"} statistic is
 #' the Jensen--Shannon divergence. This statistic is bounded in \eqn{[0, 1]}.
 #' The \code{"hd"} statistic computes a monotonic transformation of the
 #' Hellinger distance, which is the Bhattacharyya divergence (or coefficient).
-#' @return TODO
+#' @return An object of class \code{"htest"}.
 #' @examples
 #' ## Two-sample case
 #' \donttest{
@@ -32,12 +43,12 @@
 #' X1 <- rotasym::r_vMF(n = n[1], mu = c(0, 0, 1), kappa = 1)
 #' X2 <- rotasym::r_vMF(n = n[2], mu = c(0, 0, 1), kappa = 1)
 #' hom_test_poly(X = rbind(X1, X2), labels = rep(1:2, times = n),
-#'               d = 2, type = "jsd", h = 0.5, cv_jsd = 1)
+#'               d = 2, type = "jsd", h = 0.5)
 #'
 #' # H0 does not hold
 #' X2 <- rotasym::r_vMF(n = n[2], mu = c(0, 1, 0), kappa = 2)
 #' hom_test_poly(X = rbind(X1, X2), labels = rep(1:2, times = n),
-#'               d = 2, type = "jsd", h = 0.5, cv_jsd = 1)
+#'               d = 2, type = "jsd", h = 0.5)
 #'
 #' ## k-sample case
 #'
@@ -47,16 +58,16 @@
 #' X2 <- rotasym::r_vMF(n = n[2], mu = c(0, 0, 1), kappa = 1)
 #' X3 <- rotasym::r_vMF(n = n[3], mu = c(0, 0, 1), kappa = 1)
 #' hom_test_poly(X = rbind(X1, X2, X3), labels = rep(1:3, times = n),
-#'               d = 2, type = "jsd", h = 0.5, cv_jsd = 1)
+#'               d = 2, type = "jsd", h = 0.5)
 #'
 #' # H0 does not hold
 #' X3 <- rotasym::r_vMF(n = n[3], mu = c(0, 1, 0), kappa = 2)
 #' hom_test_poly(X = rbind(X1, X2, X3), labels = rep(1:3, times = n),
-#'               d = 2, type = "jsd", h = 0.5, cv_jsd = 1)
+#'               d = 2, type = "jsd", h = 0.5)
 #' }
 #' @export
 hom_test_poly <- function(X, d, labels,
-                          type = c("mean", "scatter", "jsd", "hd")[1],
+                          type = c("mean", "scatter", "jsd", "hd")[3],
                           h = NULL, kernel = 1, kernel_type = 1, k = 10,
                           B = 1e3, M = 1e4, plot_boot = FALSE, seed_jsd = NULL,
                           cv_jsd = TRUE) {
@@ -482,29 +493,56 @@ hom_test_poly <- function(X, d, labels,
 }
 
 
-#' @title Hellinger distance via Monte Carlo
-#' @param log_f,log_g logarithms of the pdfs f and g evaluated in a Monte Carlo
-#' sample for approximating the integral \eqn{\int \sqrt{f(x) * g(x)} dx}.
+#' @title Hellinger distance between two densities via Monte Carlo
+#'
+#' @description Computes the Hellinger distance
+#' \deqn{H(f, g) = \sqrt(1 - \int_{\mathcal{S}^{d_1} \times \ldots \times
+#' \mathcal{S}^{d_k}} \sqrt(f(\boldsymbol{x}) g(\boldsymbol{x}))
+#' d\boldsymbol{x})} between two densities \eqn{f} and \eqn{g} on
+#' \eqn{\mathcal{S}^{d_1} \times \ldots \times \mathcal{S}^{d_k}} via
+#' Monte Carlo.
+#'
+#' @param log_f,log_g logarithms of \eqn{f} and \eqn{g} evaluated in a Monte
+#' Carlo sample.
 #' @param bhatta compute the Bhattacharyya divergence (or coefficient) instead?
-#' @return TODO
+#' @return A scalar with the estimated distance.
 #' @examples
-#' # TODO
-#' @export
+#' # Example with von Mises--Fisher distributions
+#' M <- 1e3
+#' d <- c(1, 3)
+#' mu <- r_unif_polysph(n = 1, d = d)
+#' kappa <- c(1, 5)
+#' x_mc <- r_unif_polysph(n = M, d = d)
+#' log_f <- d_vmf_polysph(x = x_mc, d = d, mu = mu, kappa = kappa, log = TRUE)
+#' log_g <- d_vmf_polysph(x = x_mc, d = d, mu = -mu, kappa = kappa, log = TRUE)
+#' polykde:::hd_mc(log_f = log_f, log_g = log_f)
+#' polykde:::hd_mc(log_f = log_f, log_g = log_g)
+#' polykde:::hd_mc(log_f = log_f, log_g = log_f, bhatta = TRUE)
+#' polykde:::hd_mc(log_f = log_f, log_g = log_g, bhatta = TRUE)
+#' @keywords internal
 hd_mc <- function(log_f, log_g, bhatta = FALSE) {
 
   # Hellinger distance: H(f, g) = \sqrt(1 - \int \sqrt(f(x) * g(x)) dx)
   # Bhattacharyya divergence: DB(f; g) = -\log(\int \sqrt(f(x) * g(x)) dx)
-  # H(f, g) = \sqrt(1 - \exp(-DB(f; g)))
+  # H(f, g) = \sqrt(1 - \int \sqrt(f(x) * g(x)) dx)
+  #         = \sqrt(1 - \exp(\log(\int \sqrt(f(x) * g(x)) dx)))
+  #         = \sqrt(1 - \exp(-DB(f; g)))
+  # DB(f; g) = -\log(\int \sqrt(f(x) * g(x)) dx)
+  #          = -\log(\int \exp((\log(f(x)) + \log(g(x))) / 2) dx)
+  #          ≈ -\log(w / M * \sum_i \exp((\log(f(X_i)) + \log(g(X_i))) / 2))
+  #          = \log(M / w) -
+  #            \log(\sum_i \exp((\log(f(X_i)) + \log(g(X_i))) / 2))
 
   # Bhattacharyya divergence
   M <- length(log_f)
   stopifnot(M == length(log_g))
-  logs <- 0.5 * (log_f + log_g) - log(M)
+  logs <- 0.5 * (log_f + log_g)
   max_log <- max(logs)
-  bhatta_div <- -(max_log + sum(exp(logs - max_log)))
+  bhatta_div <- log(M) - sum(rotasym::w_p(p = d + 1, log = TRUE)) -
+    (max_log + log(sum(exp(logs - max_log))))
 
   # Hellinger distance
-  hellin_dis <- sqrt(1 + exp(-bhatta_div))
+  hellin_dis <- sqrt(1 - exp(-bhatta_div))
   return(ifelse(bhatta, bhatta_div, hellin_dis))
 
 }

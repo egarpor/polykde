@@ -2,9 +2,9 @@
 % Please edit documentation in R/tests.R
 \name{hom_test_poly}
 \alias{hom_test_poly}
-\title{Homogeneity test for two polyspherical samples}
+\title{Homogeneity test for several polyspherical samples}
 \usage{
-hom_test_poly(X, d, labels, type = c("mean", "scatter", "jsd", "hd")[1],
+hom_test_poly(X, d, labels, type = c("mean", "scatter", "jsd", "hd")[3],
   h = NULL, kernel = 1, kernel_type = 1, k = 10, B = 1000,
   M = 10000, plot_boot = FALSE, seed_jsd = NULL, cv_jsd = TRUE)
 }
@@ -18,9 +18,9 @@ hom_test_poly(X, d, labels, type = c("mean", "scatter", "jsd", "hd")[1],
 \item{type}{kind of test to be performed: \code{"mean"}, a simple test
 for the equality of both means (non-omnibus for testing homogeneity);
 \code{"scatter"}, a simple test for the equality of both scatter matrices
-(non-omnibus for testing homogeneity); \code{"hd"}/\code{"jsd"} a test
-comparing the kernel density estimators for both groups using the Hellinger
-distance/Jensen--Shannon distance.}
+(non-omnibus for testing homogeneity); \code{"jsd"} (default), a test
+comparing the kernel density estimators for \eqn{k} groups using the
+Jensen--Shannon distance.}
 
 \item{h}{bandwidth vector, of size \code{r}.}
 
@@ -32,26 +32,34 @@ for Epa, \eqn{L(t) = (1 - t)1_{\{0 \le t \le 1\}}}; \code{3} for softplus.}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 
-\item{B}{number of permutations to use.}
+\item{B}{number of permutations to use. Defaults to \code{1e3}.}
 
 \item{M}{number of Monte Carlo replicates to use when approximating the
-Hellinger/Jensen--Shannon distance.}
+Hellinger/Jensen--Shannon distance. Defaults to \code{1e4}.}
 
-\item{plot_boot}{flag to display a graphical output of the test decision.}
+\item{plot_boot}{flag to display a graphical output of the test decision.
+Defaults to \code{FALSE}.}
 
 \item{seed_jsd}{seed for the Monte Carlo simulations used to estimate the
 integrals in the Jensen--Shannon distance.}
 
 \item{cv_jsd}{use cross-validation to approximate the Jensen--Shannon
-distance? Does not require Monte Carlo.}
+distance? Does not require Monte Carlo. Defaults to \code{TRUE}.}
 }
 \value{
-TODO
+An object of class \code{"htest"}.
 }
 \description{
-Homogeneity test for two polyspherical samples
+Permutation tests for the equality of distributions of two or
+\eqn{k} samples of data on \eqn{\mathcal{S}^{d_1} \times \cdots \times
+\mathcal{S}^{d_k}}. The Jensen--Shannon distance is used to construct a test
+statistic measuring the discrepancy between the \eqn{k} kernel density
+estimators. Tests based on the mean and scatter matrices are also available,
+but for only two samples (\eqn{k=2}).
 }
 \details{
+Only \code{type = "jsd"} is available for \eqn{k > 2}.
+
 The \code{"mean"} statistic measures the maximum (chordal) distance
 between the estimated group means. This statistic is bounded in \eqn{[0, 1]}.
 The \code{"var"} statistic measures the maximum affine invariant Riemannian
@@ -68,12 +76,12 @@ n <- c(50, 100)
 X1 <- rotasym::r_vMF(n = n[1], mu = c(0, 0, 1), kappa = 1)
 X2 <- rotasym::r_vMF(n = n[2], mu = c(0, 0, 1), kappa = 1)
 hom_test_poly(X = rbind(X1, X2), labels = rep(1:2, times = n),
-              d = 2, type = "jsd", h = 0.5, cv_jsd = 1)
+              d = 2, type = "jsd", h = 0.5)
 
 # H0 does not hold
 X2 <- rotasym::r_vMF(n = n[2], mu = c(0, 1, 0), kappa = 2)
 hom_test_poly(X = rbind(X1, X2), labels = rep(1:2, times = n),
-              d = 2, type = "jsd", h = 0.5, cv_jsd = 1)
+              d = 2, type = "jsd", h = 0.5)
 
 ## k-sample case
 
@@ -83,11 +91,11 @@ X1 <- rotasym::r_vMF(n = n[1], mu = c(0, 0, 1), kappa = 1)
 X2 <- rotasym::r_vMF(n = n[2], mu = c(0, 0, 1), kappa = 1)
 X3 <- rotasym::r_vMF(n = n[3], mu = c(0, 0, 1), kappa = 1)
 hom_test_poly(X = rbind(X1, X2, X3), labels = rep(1:3, times = n),
-              d = 2, type = "jsd", h = 0.5, cv_jsd = 1)
+              d = 2, type = "jsd", h = 0.5)
 
 # H0 does not hold
 X3 <- rotasym::r_vMF(n = n[3], mu = c(0, 1, 0), kappa = 2)
 hom_test_poly(X = rbind(X1, X2, X3), labels = rep(1:3, times = n),
-              d = 2, type = "jsd", h = 0.5, cv_jsd = 1)
+              d = 2, type = "jsd", h = 0.5)
 }
 }

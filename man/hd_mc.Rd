@@ -2,22 +2,39 @@
 % Please edit documentation in R/tests.R
 \name{hd_mc}
 \alias{hd_mc}
-\title{Hellinger distance via Monte Carlo}
+\title{Hellinger distance between two densities via Monte Carlo}
 \usage{
 hd_mc(log_f, log_g, bhatta = FALSE)
 }
 \arguments{
-\item{log_f, log_g}{logarithms of the pdfs f and g evaluated in a Monte Carlo
-sample for approximating the integral \eqn{\int \sqrt{f(x) * g(x)} dx}.}
+\item{log_f, log_g}{logarithms of \eqn{f} and \eqn{g} evaluated in a Monte
+Carlo sample.}
 
 \item{bhatta}{compute the Bhattacharyya divergence (or coefficient) instead?}
 }
 \value{
-TODO
+A scalar with the estimated distance.
 }
 \description{
-Hellinger distance via Monte Carlo
+Computes the Hellinger distance
+\deqn{H(f, g) = \sqrt(1 - \int_{\mathcal{S}^{d_1} \times \ldots \times
+\mathcal{S}^{d_k}} \sqrt(f(\boldsymbol{x}) g(\boldsymbol{x}))
+d\boldsymbol{x})} between two densities \eqn{f} and \eqn{g} on
+\eqn{\mathcal{S}^{d_1} \times \ldots \times \mathcal{S}^{d_k}} via
+Monte Carlo.
 }
 \examples{
-# TODO
+# Example with von Mises--Fisher distributions
+M <- 1e3
+d <- c(1, 3)
+mu <- r_unif_polysph(n = 1, d = d)
+kappa <- c(1, 5)
+x_mc <- r_unif_polysph(n = M, d = d)
+log_f <- d_vmf_polysph(x = x_mc, d = d, mu = mu, kappa = kappa, log = TRUE)
+log_g <- d_vmf_polysph(x = x_mc, d = d, mu = -mu, kappa = kappa, log = TRUE)
+polykde:::hd_mc(log_f = log_f, log_g = log_f)
+polykde:::hd_mc(log_f = log_f, log_g = log_g)
+polykde:::hd_mc(log_f = log_f, log_g = log_f, bhatta = TRUE)
+polykde:::hd_mc(log_f = log_f, log_g = log_g, bhatta = TRUE)
 }
+\keyword{internal}
