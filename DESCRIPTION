@@ -32,7 +32,6 @@ Imports:
 Suggests:
     alphashape3d,
     DirStats,
-    extraDistr,
     FixedPoint,
     ks,
     manipulate,

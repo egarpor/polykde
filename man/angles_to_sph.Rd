@@ -28,7 +28,7 @@ Transforms the angles \eqn{(\theta_1,\ldots,\theta_d)} in
 \deqn{(\cos(x_1),\sin(x_1)\cos(x_2),\sin(x_1)\sin(x_2)\cos(x_3),\ldots,
 \sin(x_1)\cdots\sin(x_{d-1})\cos(x_d),
 \sin(x_1)\cdots\sin(x_{d-1})\sin(x_d))}
-of the hypersphere \eqn{\mathcal{S}^{d}}, and viceversa.
+of the hypersphere \eqn{\mathcal{S}^{d}}, and vice versa.
 }
 \examples{
 # Check changes of coordinates

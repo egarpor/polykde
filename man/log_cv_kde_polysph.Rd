@@ -29,6 +29,8 @@ and include it in the kernel density estimator. Defaults to \code{TRUE}.}
 \item{intrinsic}{use the intrinsic distance, instead of the
 extrinsic-chordal distance, in the kernel? Defaults to \code{FALSE}.}
 
+\item{norm_X}{ensure a normalization of the data? Defaults to \code{FALSE}.}
+
 \item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
 \code{2} for Epanechnikov; \code{3} for softplus.}
 
@@ -36,9 +38,6 @@ extrinsic-chordal distance, in the kernel? Defaults to \code{FALSE}.}
 (default); \code{2} for spherically symmetric kernel.}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
-
-\item{norm_x, norm_X}{ensure a normalization of the data? Defaults to
-\code{FALSE}.}
 }
 \value{
 A column vector of size \code{c(n, 1)}.

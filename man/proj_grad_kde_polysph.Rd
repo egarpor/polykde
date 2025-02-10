@@ -54,9 +54,9 @@ A list with the following components:
 \item{eta}{a matrix of size \code{c(nx, sum(d) + r)} with the
 projected gradient evaluated at \code{x}.}
 \item{u1}{a matrix of size \code{c(nx, sum(d) + r)} with the
-first filtered Hessian eigenvector evaluated at \code{x}.}
+first non-null Hessian eigenvector evaluated at \code{x}.}
 \item{lamb_norm}{a matrix of size \code{c(nx, sum(d) + r)} with the
-eigenvalues of the Hessian evaluated at \code{x}.}
+Hessian eigenvalues (largest to smallest) evaluated at \code{x}.}
 }
 \description{
 Computes the projected gradient

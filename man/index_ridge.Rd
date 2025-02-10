@@ -37,11 +37,57 @@ either \code{"min"} (minimizer of the cross-validation loss) or \code{"1se"}
 \item{...}{further parameters passed to \code{\link{bw_cv_kre_polysph}}.}
 }
 \value{
-TODO
+A list with the following fields:
+\item{scores_X}{TODO.}
+\item{projs_X}{TODO.}
+\item{ord_X}{TODO.}
+\item{scores_grid}{TODO.}
+\item{ridge_grid}{TODO.}
+\item{mds_index}{TODO.}
+\item{ridge_fun}{TODO.}
+\item{h}{TODO.}
+\item{probs_scores}{TODO.}
 }
 \description{
-TODO
+Indexing of an unordered collection of points defining the
+estimated density ridge curve. The indexing is done by a multidimensional
+scaling map to the real line, while the smoothing is done by local polynomial
+regression for polyspherical-on-scalar regression.
 }
 \examples{
+## Test on S^2
+
+# Sample
+r <- 1
+d <- 2
+n <- 50
+ind_dj <- comp_ind_dj(d = d)
+set.seed(987204452)
+X <- r_path_s2r(n = n, r = r, spiral = FALSE, Theta = cbind(c(1, 0, 0)),
+                sigma = 0.2)[, , 1]
+col_X <- rep(gray(0), n)
+col_X_alp <- rep(gray(0, alpha = 0.25), n)
+
+# Euler
+h_rid <- 0.5
+h_eu <- h_rid^2
+N <- 30
+eps <- 1e-6
+X0 <- r_unif_polysph(n = n, d = d)
+Y <- euler_ridge(x = X0, X = X, d = d, h = h_rid, h_euler = h_eu,
+                 N = N, eps = eps, keep_paths = TRUE)
+ind_rid <- index_ridge(endpoints = Y$ridge_y, X = X, d = d)
 # TODO
+
+# Visualization
+i <- N # Between 1 and N
+sc3 <- scatterplot3d::scatterplot3d(Y$paths[, , 1], color = col_X_alp,
+                                    pch = 19, xlim = c(-1, 1),
+                                    ylim = c(-1, 1), zlim = c(-1, 1),
+                                    xlab = "x", ylab = "y", zlab = "z")
+sc3$points3d(rbind(Y$paths[, , i]), col = col_X, pch = 16, cex = 0.75)
+invisible(sapply(seq_len(nrow(Y$paths)), function(k) {
+  sc3$points3d(t(Y$paths[k, , ]), col = col_X_alp[k], type = "l")
+}))
+sc3$points3d(ind_rid$ridge_fun(seq(0, 1, l = 10)), col = "red", pch = 16, cex = 1.5, type = "l")
 }

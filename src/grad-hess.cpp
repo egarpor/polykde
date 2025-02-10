@@ -492,9 +492,9 @@ Rcpp::List grad_hess_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
 //' \item{eta}{a matrix of size \code{c(nx, sum(d) + r)} with the
 //' projected gradient evaluated at \code{x}.}
 //' \item{u1}{a matrix of size \code{c(nx, sum(d) + r)} with the
-//' first filtered Hessian eigenvector evaluated at \code{x}.}
+//' first non-null Hessian eigenvector evaluated at \code{x}.}
 //' \item{lamb_norm}{a matrix of size \code{c(nx, sum(d) + r)} with the
-//' eigenvalues of the Hessian evaluated at \code{x}.}
+//' Hessian eigenvalues (largest to smallest) evaluated at \code{x}.}
 //' @examples
 //' # Simple check on (S^1)^2
 //' n <- 3
@@ -504,6 +504,7 @@ Rcpp::List grad_hess_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
 //' h <- c(0.2, 0.2)
 //' X <- r_vmf_polysph(n = n, d = d, mu = mu, kappa = kappa)
 //' proj_grad_kde_polysph(x = X, X = X, d = d, h = h)
+//' @export
 // [[Rcpp::export]]
 Rcpp::List proj_grad_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
                                  arma::vec h, Rcpp::NumericVector weights =

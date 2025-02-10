@@ -27,7 +27,7 @@ Assumed to be of unit norm by blocks of coordinates in the rows.}
 }
 \description{
 Obtain the angular coordinates of points on a polysphere
-\eqn{\mathcal{S}^{d_1}\times\cdots\times\mathcal{S}^{d_r}}, and viceversa.
+\eqn{\mathcal{S}^{d_1}\times\cdots\times\mathcal{S}^{d_r}}, and vice versa.
 }
 \examples{
 # Check changes of coordinates

@@ -86,7 +86,7 @@ The three functions return a list with the following fields:
 \item{ridge_y}{a matrix of size \code{c(nx, sum(d) + r)} with the end
 points of Euler algorithm defining the estimated ridge.}
 \item{lamb_norm_y}{a matrix of size \code{c(nx, sum(d) + r)} with the
-first filtered Hessian eigenvalue at end points.}
+Hessian eigenvalues (largest to smallest) evaluated at end points.}
 \item{log_dens_y}{a column vector of size \code{c(nx, 1)} with the
 logarithm of the density at end points.}
 \item{paths}{an array of size \code{c(nx, sum(d) + r, N + 1)} containing
@@ -97,7 +97,7 @@ points for the Euler algorithm.}
 required for each point.}
 \item{conv}{a column vector of size \code{c(nx, 1)} with convergence flags.}
 \item{d}{vector \code{d}.}
-\item{h}{bandwdith used for the kernel density estimator.}
+\item{h}{bandwidth used for the kernel density estimator.}
 \item{error}{a column vector of size \code{c(nx, 1)} indicating if errors
 were found for each path.}
 }
@@ -116,13 +116,14 @@ of hyperspheres, instead of jointly in the whole polysphere. This function
 requires that all the dimensions are the same.
 }
 \examples{
-## Test on S^2
+## Test on S^2 with a small circle trend
 
 # Sample
 r <- 1
 d <- 2
 n <- 50
 ind_dj <- comp_ind_dj(d = d)
+set.seed(987204452)
 X <- r_path_s2r(n = n, r = r, spiral = FALSE, Theta = cbind(c(1, 0, 0)),
                 sigma = 0.35)[, , 1]
 col_X_alp <- viridis::viridis(n, alpha = 0.25)
@@ -136,19 +137,15 @@ eps <- 1e-6
 Y <- euler_ridge(x = X, X = X, d = d, h = h_rid, h_euler = h_eu,
                  N = N, eps = eps, keep_paths = TRUE)
 Y
-\donttest{
-# Dynamic visualization
-manipulate::manipulate({
 
-  sc3 <- scatterplot3d::scatterplot3d(Y$paths[, , 1], color = col_X_alp,
-                                      pch = 19, xlim = c(-1, 1),
-                                      ylim = c(-1, 1), zlim = c(-1, 1),
-                                      xlab = "x", ylab = "y", zlab = "z")
-  sc3$points3d(rbind(Y$paths[, , i]), col = col_X, pch = 16, cex = 0.75)
-  invisible(sapply(seq_len(nrow(Y$paths)), function(k) {
-    sc3$points3d(t(Y$paths[k, , ]), col = col_X_alp[k], type = "l")
-  }))
-
-}, i = manipulate::slider(1, dim(Y$paths)[3]))
-}
+# Visualization
+i <- N # Between 1 and N
+sc3 <- scatterplot3d::scatterplot3d(Y$paths[, , 1], color = col_X_alp,
+                                    pch = 19, xlim = c(-1, 1),
+                                    ylim = c(-1, 1), zlim = c(-1, 1),
+                                    xlab = "x", ylab = "y", zlab = "z")
+sc3$points3d(rbind(Y$paths[, , i]), col = col_X, pch = 16, cex = 0.75)
+invisible(sapply(seq_len(nrow(Y$paths)), function(k) {
+  sc3$points3d(t(Y$paths[k, , ]), col = col_X_alp[k], type = "l")
+}))
 }

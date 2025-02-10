@@ -47,7 +47,7 @@ dist_polysph_matrix <- function(x, ind_dj, norm_x = FALSE, norm_y = FALSE,
 }
 
 
-#' @title Index of hyerpspheres on a polysphere
+#' @title Index of hyperspheres on a polysphere
 #'
 #' @description Given Cartesian coordinates of polyspherical data, computes
 #' the \code{0}-based indexes at which the Cartesian coordinates for each

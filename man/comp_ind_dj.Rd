@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{comp_ind_dj}
 \alias{comp_ind_dj}
-\title{Index of hyerpspheres on a polysphere}
+\title{Index of hyperspheres on a polysphere}
 \usage{
 comp_ind_dj(d)
 }

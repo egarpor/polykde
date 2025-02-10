@@ -4,7 +4,7 @@
 #' @description Transforms the angles \eqn{(\theta_1,\ldots,\theta_p)} in
 #' \eqn{[-\pi,\pi)^d} into the Cartesian coordinates
 #' \deqn{(\cos(x_1), \sin(x_1),\ldots,\cos(x_d), \sin(x_d))}
-#' of the torus \eqn{(\mathcal{S}^1)^d}, and viceversa.
+#' of the torus \eqn{(\mathcal{S}^1)^d}, and vice versa.
 #'
 #' @param theta matrix of size \code{c(n, d)} with the angles.
 #' @param x matrix of size \code{c(n, 2 * d)} with the Cartesian coordinates on
@@ -75,7 +75,7 @@ torus_to_angles <- function(x) {
 #' \deqn{(\cos(x_1),\sin(x_1)\cos(x_2),\sin(x_1)\sin(x_2)\cos(x_3),\ldots,
 #' \sin(x_1)\cdots\sin(x_{d-1})\cos(x_d),
 #' \sin(x_1)\cdots\sin(x_{d-1})\sin(x_d))}
-#' of the hypersphere \eqn{\mathcal{S}^{d}}, and viceversa.
+#' of the hypersphere \eqn{\mathcal{S}^{d}}, and vice versa.
 #'
 #' @param theta matrix of size \code{c(n, d)} with the angles.
 #' @param x matrix of size \code{c(n, d + 1)} with the Cartesian coordinates
@@ -161,7 +161,7 @@ sph_to_angles <- function(x) {
 #' polysphere
 #'
 #' @description Obtain the angular coordinates of points on a polysphere
-#' \eqn{\mathcal{S}^{d_1}\times\cdots\times\mathcal{S}^{d_r}}, and viceversa.
+#' \eqn{\mathcal{S}^{d_1}\times\cdots\times\mathcal{S}^{d_r}}, and vice versa.
 #'
 #' @param x matrix of size \code{c(n, sum(d + 1))} with the Cartesian
 #' coordinates on \eqn{\mathcal{S}^{d_1}\times\cdots\times\mathcal{S}^{d_r}}.

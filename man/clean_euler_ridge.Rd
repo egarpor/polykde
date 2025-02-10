@@ -16,11 +16,49 @@ clean_euler_ridge(e, X, p_out = NULL)
 cleaning).}
 }
 \value{
-TODO
+A list with the same structure as that returned by
+\code{\link{euler_ridge}}, but with the spurious points. The removed points
+are informed in the \code{removed} field.
 }
 \description{
-TODO
+Remove points from the ridge that are spurious. The cleaning is
+done by removing end points in the Euler algorithm that did not converge,
+do not have a negative second eigenvalue, or are in low-density regions.
 }
 \examples{
-# TODO
+## Test on S^2 with some spurious end points
+
+# Sample
+r <- 1
+d <- 2
+n <- 50
+ind_dj <- comp_ind_dj(d = d)
+set.seed(987202226)
+X <- r_path_s2r(n = n, r = r, spiral = FALSE, Theta = cbind(c(1, 0, 0)),
+                sigma = 0.2)[, , 1]
+col_X <- rep(gray(0), n)
+col_X_alp <- rep(gray(0, alpha = 0.25), n)
+
+# Euler
+h_rid <- 0.5
+h_eu <- h_rid^2
+N <- 30
+eps <- 1e-6
+X0 <- r_unif_polysph(n = n, d = d)
+Y <- euler_ridge(x = X0, X = X, d = d, h = h_rid, h_euler = h_eu,
+                 N = N, eps = eps, keep_paths = TRUE)
+Y_removed <- clean_euler_ridge(e = Y, X = X)$removed
+col_X[Y_removed] <- 2
+col_X_alp[Y_removed] <- 2
+
+# Visualization
+i <- N # Between 1 and N
+sc3 <- scatterplot3d::scatterplot3d(Y$paths[, , 1], color = col_X_alp,
+                                    pch = 19, xlim = c(-1, 1),
+                                    ylim = c(-1, 1), zlim = c(-1, 1),
+                                    xlab = "x", ylab = "y", zlab = "z")
+sc3$points3d(rbind(Y$paths[, , i]), col = col_X, pch = 16, cex = 0.75)
+invisible(sapply(seq_len(nrow(Y$paths)), function(k) {
+  sc3$points3d(t(Y$paths[k, , ]), col = col_X_alp[k], type = "l")
+}))
 }

@@ -21,7 +21,7 @@ A matrix of size \code{c(length(r), length(r))}.
 \description{
 Computes the curvature matrix
 \eqn{\boldsymbol{R}(\boldsymbol{\kappa})} of a product of von Mises--Fisher
-densities on the polyspher. This curvature is used in the rule-of-thumb
+densities on the polysphere. This curvature is used in the rule-of-thumb
 selector \code{\link{bw_rot_polysph}}.
 }
 \examples{

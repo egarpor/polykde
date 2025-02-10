@@ -388,8 +388,7 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
 //' \eqn{i = 1, \ldots, n.}
 //'
 //' @inheritParams kde_polysph
-//' @param norm_x,norm_X ensure a normalization of the data? Defaults to
-//' \code{FALSE}.
+//' @param norm_X ensure a normalization of the data? Defaults to \code{FALSE}.
 //' @return A column vector of size \code{c(n, 1)}.
 //' @examples
 //' # Simple check on S^1 x S^2
