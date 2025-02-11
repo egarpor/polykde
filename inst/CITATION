@@ -1,0 +1,35 @@
+
+year <- sub("-.*", "", meta$Date)
+note <- paste("R package version", meta$Version)
+
+citHeader("To cite polykde in publications use:")
+
+bibentry(
+  bibtype      = "Manual",
+  title        = "{polykde}: Polyspherical Kernel Density Estimation",
+  author       = c(person(given = "Eduardo", family = "García-Portugués")),
+  year         = year,
+  note         = note,
+  url          = "https://CRAN.R-project.org/package=polykde",
+  textVersion  =
+  paste(paste0("García-Portugués, E. (", year, ")."),
+        "polykde: Polyspherical Kernel Density Estimation.",
+        paste0(note, "."), "https://CRAN.R-project.org/package=polykde")
+)
+
+bibentry(
+  bibtype      = "Article",
+  title        = "Kernel density estimation with polyspherical data and its applications",
+  author       = c(person(given = "Eduardo", family = "García-Portugués"),
+                   person(given = "Andrea", family = "Meilán-Vila")),
+  journal      = "arXiv:2411.04166",
+  year         = "2024",
+  volume       = "",
+  number       = "",
+  pages        = "",
+  url          = "https://doi.org/10.48550/arXiv.2411.04166",
+  textVersion  =
+  paste("García-Portugués, E. and Meilán-Vila, A. (2024).",
+        "Kernel density estimation with polyspherical data and its applications.",
+        "arXiv:2411.04166. https://doi.org/10.48550/arXiv.2411.04166")
+)

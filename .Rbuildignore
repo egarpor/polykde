@@ -1,0 +1,11 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^README$
+^README.*$
+^replication
+^CRAN-RELEASE$
+^cran-comments\.md$
+^LICENSE\.md$
+^\.github$
+^CRAN-SUBMISSION$
+.DS_Store
