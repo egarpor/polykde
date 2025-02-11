@@ -22,7 +22,7 @@
 #' @param show_prog_j display a progress bar for \code{N}? Defaults to
 #' \code{FALSE}.
 #' @param ind_blocks indexes of the blocks, a vector or length \code{r}.
-#' @param ... further parameters passed to \code{\link{euler_ridge}}.
+#' @param ... further arguments passed to \code{\link{euler_ridge}}.
 #' @param cores cores to use. Defaults to \code{1}.
 #' @details \code{euler_ridge} is the main function to perform density ridge
 #' estimation through the Euler algorithm from the starting values \code{x}
@@ -79,9 +79,11 @@
 #'                                     ylim = c(-1, 1), zlim = c(-1, 1),
 #'                                     xlab = "x", ylab = "y", zlab = "z")
 #' sc3$points3d(rbind(Y$paths[, , i]), col = col_X, pch = 16, cex = 0.75)
-#' invisible(sapply(seq_len(nrow(Y$paths)), function(k) {
+#' for (k in seq_len(nrow(Y$paths))) {
+#'
 #'   sc3$points3d(t(Y$paths[k, , ]), col = col_X_alp[k], type = "l")
-#' }))
+#'
+#' }
 #' @export
 euler_ridge <- function(x, X, d, h, h_euler = as.numeric( c()), weights = as.numeric( c()), wrt_unif = FALSE, normalized = TRUE, norm_x = FALSE, norm_X = FALSE, kernel = 1L, kernel_type = 1L, k = 10.0, N = 1e3L, eps = 1e-5, keep_paths = FALSE, proj_alt = TRUE, fix_u1 = TRUE, sparse = FALSE, show_prog = TRUE, show_prog_j = FALSE) {
     .Call(`_polykde_euler_ridge`, x, X, d, h, h_euler, weights, wrt_unif, normalized, norm_x, norm_X, kernel, kernel_type, k, N, eps, keep_paths, proj_alt, fix_u1, sparse, show_prog, show_prog_j)

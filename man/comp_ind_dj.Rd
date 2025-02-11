@@ -10,7 +10,7 @@ comp_ind_dj(d)
 \item{d}{vector of size \code{r} with dimensions.}
 }
 \value{
-A vector of length \code{sum(d) + 1}.
+A vector of size \code{sum(d) + 1}.
 }
 \description{
 Given Cartesian coordinates of polyspherical data, computes

@@ -13,11 +13,11 @@ polylog_minus_exp_mu(mu, s, upper = Inf, ...)
 
 \item{upper}{upper limit of integration.}
 
-\item{...}{further parameters passed to \code{\link{integrate}}, such as
+\item{...}{further arguments passed to \code{\link{integrate}}, such as
 \code{upper}, \code{abs.tol}, \code{rel.tol}, etc.}
 }
 \value{
-A vector of length \code{length(mu)} or \code{length(s)} with the
+A vector of size \code{length(mu)} or \code{length(s)} with the
 values of the polylogarithm.
 }
 \description{

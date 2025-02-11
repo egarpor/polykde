@@ -20,7 +20,7 @@
 #' @param ... further arguments passed to \code{\link{optim}}
 #' (if \code{ncores = 1}) or \code{\link[optimParallel]{optimParallel}}
 #' (if \code{ncores > 1}).
-#' @return A list as \code{\link[=stats]{optim}} or
+#' @return A list as \code{\link[stats]{optim}} or
 #' \code{\link[optimParallel]{optimParallel}} output. In particular, the
 #' optimal bandwidth is stored in \code{par}.
 #' @examples
@@ -228,7 +228,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 #' @param deriv derivative order to perform the upscaling. Defaults to \code{0}.
 #' @param kappa estimate of the concentration parameters. Computed if not
 #' provided (default).
-#' @param ... further parameters passed to \code{\link[=stats]{nlm}}.
+#' @param ... further arguments passed to \code{\link[stats]{nlm}}.
 #' @details The selector assumes that the density curvature matrix
 #' \eqn{\boldsymbol{R}} of the unknown density is approximable by that of a
 #' product of von Mises--Fisher densities,
@@ -236,7 +236,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 #' concentration parameters \eqn{\boldsymbol{\kappa}} is done by maximum
 #' likelihood.
 #' @return A list with entries \code{bw} (optimal bandwidth) and \code{opt},
-#' the latter containing the output of \code{\link[=stats]{nlm}}.
+#' the latter containing the output of \code{\link[stats]{nlm}}.
 #' @examples
 #' # Simple check
 #' n <- 100
@@ -458,7 +458,7 @@ curv_vmf_polysph <- function(kappa, d, log = FALSE) {
 #'
 #' @inheritParams kde_polysph
 #' @inheritParams bw_rot_polysph
-#' @return A vector of length \code{r} with the marginal optimal bandwidths.
+#' @return A vector of size \code{r} with the marginal optimal bandwidths.
 #' @examples
 #' # Comparison of marginal and joint bandwidths
 #' n <- 100

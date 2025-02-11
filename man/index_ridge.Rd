@@ -2,14 +2,16 @@
 % Please edit documentation in R/euler.R
 \name{index_ridge}
 \alias{index_ridge}
-\title{Index a ridge curve, creating the smoothed and indexed ridge}
+\title{Index a ridge curve, creating the Smoothed and Indexed Estimated
+Ridge (SIER)}
 \usage{
 index_ridge(endpoints, X, d, l_index = 1000, f_index = 2,
   probs_scores = seq(0, 1, l = 101), verbose = FALSE, type_bwd = c("1se",
   "min")[1], p = 0, ...)
 }
 \arguments{
-\item{endpoints}{end points of the ridge algorithm to be indexed.}
+\item{endpoints}{a matrix of size \code{c(nx, sum(d) + r)} with the end
+points of the ridge algorithm to be indexed.}
 
 \item{X}{a matrix of size \code{c(n, sum(d) + r)} with the sample.}
 
@@ -34,19 +36,24 @@ either \code{"min"} (minimizer of the cross-validation loss) or \code{"1se"}
 \item{p}{degree of local fit, either \code{0} or \code{1}. Defaults to
 \code{0}.}
 
-\item{...}{further parameters passed to \code{\link{bw_cv_kre_polysph}}.}
+\item{...}{further arguments passed to \code{\link{bw_cv_kre_polysph}}.}
 }
 \value{
 A list with the following fields:
-\item{scores_X}{TODO.}
-\item{projs_X}{TODO.}
-\item{ord_X}{TODO.}
-\item{scores_grid}{TODO.}
-\item{ridge_grid}{TODO.}
-\item{mds_index}{TODO.}
-\item{ridge_fun}{TODO.}
-\item{h}{TODO.}
-\item{probs_scores}{TODO.}
+\item{scores_X}{a vector of size \code{n} with the SIER scores for \code{X}.}
+\item{projs_X}{a matrix of size \code{c(n, sum(d) + r)} with the
+projections of \code{X} onto the SIER.}
+\item{ord_X}{a vector of size \code{n} with the ordering of \code{X} induced
+by the SIER scores.}
+\item{scores_grid}{a vector of size \code{length(probs_scores)} with score
+quantiles associated to the probabilities \code{probs_scores}.}
+\item{ridge_grid}{a vector of size \code{length(probs_scores)} with the
+SIER evaluated at \code{scores_grid}.}
+\item{mds_index}{a vector of size \code{nx} with the multidimensional
+scaling indexes.}
+\item{ridge_fun}{a function that parametrizes the SIER.}
+\item{h}{bandwidth used for the local polynomial regression.}
+\item{probs_scores}{object \code{probs_scores}.}
 }
 \description{
 Indexing of an unordered collection of points defining the
@@ -54,40 +61,63 @@ estimated density ridge curve. The indexing is done by a multidimensional
 scaling map to the real line, while the smoothing is done by local polynomial
 regression for polyspherical-on-scalar regression.
 }
+\details{
+Indexing is designed to work with collection of ridge points that
+admit a linear ordering, so that mapping to the real line by multidimensional
+scaling is adequate. The indexing will not work properly if the ridge points
+define a closed curve.
+}
 \examples{
-## Test on S^2
+## Test on (S^1)^2
 
 # Sample
-r <- 1
-d <- 2
-n <- 50
+set.seed(132121)
+r <- 2
+d <- rep(1, r)
+n <- 200
 ind_dj <- comp_ind_dj(d = d)
-set.seed(987204452)
-X <- r_path_s2r(n = n, r = r, spiral = FALSE, Theta = cbind(c(1, 0, 0)),
-                sigma = 0.2)[, , 1]
-col_X <- rep(gray(0), n)
-col_X_alp <- rep(gray(0, alpha = 0.25), n)
+Th <- matrix(runif(n = n * (r - 1), min = -pi / 2, max = pi / 2),
+             nrow = n, ncol = r - 1)
+Th[, r - 1] <- sort(Th[, r - 1])
+Th <- cbind(Th, sdetorus::toPiInt(
+  pi + Th[, r - 1] + runif(n = n, min = -pi / 4, max = pi / 4)))
+X <- angles_to_torus(Th)
+col_X_alp <- viridis::viridis(n, alpha = 0.25)
+col_X <- viridis::viridis(n)
 
 # Euler
-h_rid <- 0.5
+h_rid <- rep(0.75, r)
 h_eu <- h_rid^2
-N <- 30
+N <- 200
 eps <- 1e-6
-X0 <- r_unif_polysph(n = n, d = d)
-Y <- euler_ridge(x = X0, X = X, d = d, h = h_rid, h_euler = h_eu,
+Y <- euler_ridge(x = X, X = X, d = d, h = h_rid, h_euler = h_eu,
                  N = N, eps = eps, keep_paths = TRUE)
-ind_rid <- index_ridge(endpoints = Y$ridge_y, X = X, d = d)
-# TODO
 
 # Visualization
 i <- N # Between 1 and N
-sc3 <- scatterplot3d::scatterplot3d(Y$paths[, , 1], color = col_X_alp,
-                                    pch = 19, xlim = c(-1, 1),
-                                    ylim = c(-1, 1), zlim = c(-1, 1),
-                                    xlab = "x", ylab = "y", zlab = "z")
-sc3$points3d(rbind(Y$paths[, , i]), col = col_X, pch = 16, cex = 0.75)
-invisible(sapply(seq_len(nrow(Y$paths)), function(k) {
-  sc3$points3d(t(Y$paths[k, , ]), col = col_X_alp[k], type = "l")
-}))
-sc3$points3d(ind_rid$ridge_fun(seq(0, 1, l = 10)), col = "red", pch = 16, cex = 1.5, type = "l")
+plot(rbind(torus_to_angles(Y$paths[, , 1])), col = col_X_alp, pch = 19,
+     axes = FALSE, xlim = c(-pi, pi), ylim = c(-pi, pi),
+     xlab = "", ylab = "")
+points(rbind(torus_to_angles(Y$paths[, , i])), col = col_X, pch = 16,
+       cex = 0.75)
+sdetorus::torusAxis(1:2)
+for (k in seq_len(nrow(Y$paths))) {
+
+  xy <- torus_to_angles(t(Y$paths[k, , ]))
+  sdetorus::linesTorus(x = xy[, 1], y = xy[, 2], col = col_X_alp[k])
+
+}
+
+# SIER
+ind_rid <- index_ridge(endpoints = Y$ridge_y, X = X, d = d,
+                       probs_scores = seq(0, 1, l = 50))
+xy <- torus_to_angles(ind_rid$ridge_grid)
+sdetorus::linesTorus(x = xy[, 1], y = xy[, 2], col = 2, lwd = 2)
+points(torus_to_angles(ind_rid$ridge_fun(quantile(ind_rid$scores_grid))),
+       col = 4, pch = 19)
+
+# Scores
+plot(density(ind_rid$scores_X), type = "l", xlab = "Scores",
+     ylab = "Density", main = "Scores density")
+for (i in 1:n) rug(ind_rid$scores_X[i], col = col_X[i])
 }

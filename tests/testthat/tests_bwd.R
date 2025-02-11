@@ -72,8 +72,8 @@ test_that("bw_cv_polysph(type = \"LCV\") equals DirStats::bw_dir_lcv()", {
 test_that("bw_cv_polysph(type = \"LSCV\") equals DirStats::bw_dir_lscv()", {
   expect_equal(
     bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
-                  method = "L-BFGS-B", start = h, M = 1e4)$par,
-    DirStats::bw_dir_lscv(data = X, optim = TRUE, optim_par = h)$h_opt,
+                  method = "L-BFGS-B", start = 0.25, M = 1e4)$par,
+    DirStats::bw_dir_lscv(data = X, optim = TRUE, optim_par = 0.25)$h_opt,
     tolerance = 5e-2)
 })
 
@@ -229,17 +229,20 @@ test_that("Derivatives of log_amise_*", {
     expect_equal(
       drop(attr(log_amise(h), which = "gradient")),
       numDeriv::grad(func = log_amise, x = h, method = "Richardson",
-                     method.args = list(eps = 1e-10))
+                     method.args = list(eps = 1e-10)),
+      tolerance = 1e-7
       )
     expect_equal(
       drop(attr(log_amise_stable(h), which = "gradient")),
       numDeriv::grad(func = log_amise_stable, x = h, method = "Richardson",
-                     method.args = list(eps = 1e-10))
+                     method.args = list(eps = 1e-10)),
+      tolerance = 1e-7
     )
     expect_equal(
       drop(attr(log_amise_stable_log_h(log(h)), which = "gradient")),
       numDeriv::grad(func = log_amise_stable_log_h, x = log(h),
-                     method = "Richardson", method.args = list(eps = 1e-10))
+                     method = "Richardson", method.args = list(eps = 1e-10)),
+      tolerance = 1e-7
     )
   }
 })

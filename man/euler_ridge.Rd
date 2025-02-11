@@ -77,7 +77,7 @@ Prevents the Euler algorithm to "surf the ridge". Defaults to \code{TRUE}.}
 
 \item{cores}{cores to use. Defaults to \code{1}.}
 
-\item{...}{further parameters passed to \code{\link{euler_ridge}}.}
+\item{...}{further arguments passed to \code{\link{euler_ridge}}.}
 
 \item{ind_blocks}{indexes of the blocks, a vector or length \code{r}.}
 }
@@ -145,7 +145,9 @@ sc3 <- scatterplot3d::scatterplot3d(Y$paths[, , 1], color = col_X_alp,
                                     ylim = c(-1, 1), zlim = c(-1, 1),
                                     xlab = "x", ylab = "y", zlab = "z")
 sc3$points3d(rbind(Y$paths[, , i]), col = col_X, pch = 16, cex = 0.75)
-invisible(sapply(seq_len(nrow(Y$paths)), function(k) {
+for (k in seq_len(nrow(Y$paths))) {
+
   sc3$points3d(t(Y$paths[k, , ]), col = col_X_alp[k], type = "l")
-}))
+
+}
 }

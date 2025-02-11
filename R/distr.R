@@ -8,7 +8,7 @@
 #'
 #' @inheritParams kde_polysph
 #' @inheritParams r_vmf_polysph
-#' @return A vector of length \code{nx} with the evaluated density.
+#' @return A vector of size \code{nx} with the evaluated density.
 #' @examples
 #' # Simple check of integration on S^1 x S^2
 #' d <- c(1, 2)
@@ -31,7 +31,7 @@ d_vmf_polysph <- function(x, d, mu, kappa, log = FALSE) {
 #' @description Computes the density of the uniform density on the polysphere.
 #'
 #' @inheritParams kde_polysph
-#' @return A vector of length \code{nx} with the evaluated density.
+#' @return A vector of size \code{nx} with the evaluated density.
 #' @examples
 #' # Simple check of integration on S^1 x S^2
 #' d <- c(1, 2)

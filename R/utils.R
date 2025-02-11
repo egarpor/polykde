@@ -54,7 +54,7 @@ dist_polysph_matrix <- function(x, ind_dj, norm_x = FALSE, norm_y = FALSE,
 #' hypersphere start and end.
 #'
 #' @inheritParams kde_polysph
-#' @return A vector of length \code{sum(d) + 1}.
+#' @return A vector of size \code{sum(d) + 1}.
 #' @examples
 #' # Example on (S^1)^3
 #' d <- c(1, 1, 1)
@@ -119,7 +119,7 @@ bind_lists <- function(lists, bind = "rbind") {
 #' @details If \code{s} is an integer, 1/2, 3/2, or 5/2, then routines from
 #' the \href{https://www.gnu.org/software/gsl/}{GSL library} to compute
 #' Fermi--Dirac integrals are called. Otherwise, numerical integration is used.
-#' @return A vector of length \code{length(mu)} or \code{length(s)} with the
+#' @return A vector of size \code{length(mu)} or \code{length(s)} with the
 #' values of the polylogarithm.
 #' @examples
 #' polykde:::polylog_minus_exp_mu(mu = 1:5, s = 1)
@@ -214,7 +214,7 @@ polylog_minus_exp_mu <- function(mu, s, upper = Inf, ...) {
 #'
 #' @inheritParams eff_kern
 #' @inheritParams polylog_minus_exp_mu
-#' @return A vector of length \code{length(d)} with the values of the integral.
+#' @return A vector of size \code{length(d)} with the values of the integral.
 #' @examples
 #' polykde:::J_d_k(d = 1:5, k = 10)
 #' @keywords internal

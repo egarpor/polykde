@@ -88,15 +88,15 @@ for (a in seq(0, 1, l = 4)) {
 }
 
 # All tests detect
-hom_test_poly(X = samp$X[samp$labels %in% c(1, 2), ], d = 2,
-              labels = samp$labels[samp$labels %in% c(1, 2)],
-              type = "mean", plot_boot = TRUE)
-hom_test_poly(X = samp$X[samp$labels %in% c(1, 2), ], d = 2,
-              labels = samp$labels[samp$labels %in% c(1, 2)],
-              type = "scatter", plot_boot = TRUE)
-hom_test_poly(X = samp$X[samp$labels %in% c(1, 2), ], d = 2,
-              labels = samp$labels[samp$labels %in% c(1, 2)],
-              type = "jsd", h = 0.25, B = 100, plot_boot = TRUE)
+hom_test_polysph(X = samp$X[samp$labels %in% c(1, 2), ], d = 2,
+                 labels = samp$labels[samp$labels %in% c(1, 2)],
+                 type = "mean", plot_boot = TRUE)
+hom_test_polysph(X = samp$X[samp$labels %in% c(1, 2), ], d = 2,
+                 labels = samp$labels[samp$labels %in% c(1, 2)],
+                 type = "scatter", plot_boot = TRUE)
+hom_test_polysph(X = samp$X[samp$labels %in% c(1, 2), ], d = 2,
+                 labels = samp$labels[samp$labels %in% c(1, 2)],
+                 type = "jsd", h = 0.25, B = 100, plot_boot = TRUE)
 
 ## Simulations
 
@@ -164,9 +164,9 @@ for (j in seq_len(len_a)) {
       set.seed(k, kind = "Mersenne-Twister")
       samp_hyp_a <- r_hyp_a(n1 = n1, n2 = n2, n3 = n3, d = d,
                             r = r, a = a[j])
-      hom_test_poly(X = samp_hyp_a$X, d = dd, labels = samp_hyp_a$labels,
-                    type = type, h = h_test, B = 1, plot_boot = FALSE, M = 1e4,
-                    cv_jsd = 1)
+      hom_test_polysph(X = samp_hyp_a$X, d = dd, labels = samp_hyp_a$labels,
+                       type = type, h = h_test, B = 1, plot_boot = FALSE,
+                       M = 1e4, cv_jsd = 1)
 
     }
   })

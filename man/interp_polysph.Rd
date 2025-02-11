@@ -4,25 +4,25 @@
 \alias{interp_polysph}
 \title{Interpolation on the polysphere}
 \usage{
-interp_polysph(x, y, ind_dj, N = 1)
+interp_polysph(x, y, ind_dj, N = 10)
 }
 \arguments{
-\item{x}{TODO}
+\item{x}{a vector of size \code{sum(d) + r} with the begin point.}
 
-\item{y}{TODO}
+\item{y}{a vector of size \code{sum(d) + r} with the end point.}
 
 \item{ind_dj}{\code{0}-based index separating the blocks of spheres that
 is computed with \code{\link{comp_ind_dj}}.}
 
-\item{N}{TODO}
+\item{N}{number of points in the sequence. Defaults to \code{10}.}
 }
 \value{
-TODO
+A matrix of size \code{c(N, sum(d) + r)} with the interpolation.
 }
 \description{
-TODO
+Creates a sequence of points on the polysphere linearly
+interpolating between two points extrinsically.
 }
 \examples{
-# TODO
+interp_polysph(x = c(1, 0), y = c(0, 1), ind_dj = comp_ind_dj(d = 1))
 }
-\keyword{internal}

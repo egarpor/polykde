@@ -19,7 +19,7 @@ r_g_kern(n, d, h, kernel = "1", k = 10)
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 }
 \value{
-A vector of length \code{n}.
+A vector of size \code{n}.
 }
 \description{
 Simulation from the angular density function of an isotropic

@@ -43,7 +43,7 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
 //' @param show_prog_j display a progress bar for \code{N}? Defaults to
 //' \code{FALSE}.
 //' @param ind_blocks indexes of the blocks, a vector or length \code{r}.
-//' @param ... further parameters passed to \code{\link{euler_ridge}}.
+//' @param ... further arguments passed to \code{\link{euler_ridge}}.
 //' @param cores cores to use. Defaults to \code{1}.
 //' @details \code{euler_ridge} is the main function to perform density ridge
 //' estimation through the Euler algorithm from the starting values \code{x}
@@ -100,9 +100,11 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
 //'                                     ylim = c(-1, 1), zlim = c(-1, 1),
 //'                                     xlab = "x", ylab = "y", zlab = "z")
 //' sc3$points3d(rbind(Y$paths[, , i]), col = col_X, pch = 16, cex = 0.75)
-//' invisible(sapply(seq_len(nrow(Y$paths)), function(k) {
+//' for (k in seq_len(nrow(Y$paths))) {
+//'
 //'   sc3$points3d(t(Y$paths[k, , ]), col = col_X_alp[k], type = "l")
-//' }))
+//'
+//' }
 //' @export
 // [[Rcpp::export]]
 Rcpp::List euler_ridge(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,

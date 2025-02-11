@@ -321,7 +321,7 @@ hess_L <- function(x, y, h, kernel = 1, k = 10) {
 #'
 #' @inheritParams r_unif_polysph
 #' @inheritParams kde_polysph
-#' @return A vector of length \code{n}.
+#' @return A vector of size \code{n}.
 #' @examples
 #' hist(r_g_kern(n = 1e3, d = 2, h = 1, kernel = "1"), breaks = 30,
 #'      probability = TRUE, main = "", xlim = c(-1, 1))
@@ -446,7 +446,7 @@ r_g_kern <- function(n, d, h, kernel = "1", k = 10) {
 #' @param kernel_ref_type type of the reference kernel. Must be either
 #' \code{"prod"} (product kernel) or \code{"sph"} (spherically symmetric kernel,
 #' default).
-#' @param ... further parameters passed to \code{\link{integrate}}, such as
+#' @param ... further arguments passed to \code{\link{integrate}}, such as
 #' \code{upper}, \code{abs.tol}, \code{rel.tol}, etc.
 #' @param bias,squared flags parameters for computing the numerator constants
 #' in the bias and variance constants.

@@ -199,12 +199,12 @@ for (a in seq(0, 1, l = 3)) {
 }
 
 # All tests are blind except JSD
-hom_test_poly(X = samp$X, d = 2, labels = samp$labels, type = "mean",
-              plot_boot = TRUE)
-hom_test_poly(X = samp$X, d = 2, labels = samp$labels, type = "scatter",
-              plot_boot = TRUE)
-hom_test_poly(X = samp$X, d = 2, labels = samp$labels, type = "jsd", B = 100,
-              plot_boot = TRUE)
+hom_test_polysph(X = samp$X, d = 2, labels = samp$labels, type = "mean",
+                 plot_boot = TRUE)
+hom_test_polysph(X = samp$X, d = 2, labels = samp$labels, type = "scatter",
+                 plot_boot = TRUE)
+hom_test_polysph(X = samp$X, d = 2, labels = samp$labels, type = "jsd", B = 100,
+                 plot_boot = TRUE)
 
 ## Simulations
 
@@ -290,9 +290,9 @@ for (j in seq_len(len_a)) {
                            r_hyp_a(n1 = n1, n2 = n2, d = d, a = a[j]),
                            r_hyp_a(n1 = n1, n2 = n2, d = d,
                                    F_inv_kappa2 = F_inv_kappa2, a = a[j]))
-      hom_test_poly(X = samp_hyp_a$X, d = d, labels = samp_hyp_a$labels,
-                    type = type, h = h_test, B = 1, plot_boot = FALSE, M = 1e4,
-                    cv_jsd = 1)
+      hom_test_polysph(X = samp_hyp_a$X, d = d, labels = samp_hyp_a$labels,
+                       type = type, h = h_test, B = 1, plot_boot = FALSE,
+                       M = 1e4, cv_jsd = 1)
 
     }
   })

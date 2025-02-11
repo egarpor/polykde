@@ -45,7 +45,7 @@ estimation? Defaults to \code{FALSE}.}
 (if \code{ncores > 1}).}
 }
 \value{
-A list as \code{\link[=stats]{optim}} or
+A list as \code{\link[stats]{optim}} or
 \code{\link[optimParallel]{optimParallel}} output. In particular, the
 optimal bandwidth is stored in \code{par}.
 }

@@ -35,11 +35,11 @@ upscaled. If \code{upscale = 2}, then also the kernel constant is upscaled.}
 \item{kappa}{estimate of the concentration parameters. Computed if not
 provided (default).}
 
-\item{...}{further parameters passed to \code{\link[=stats]{nlm}}.}
+\item{...}{further arguments passed to \code{\link[stats]{nlm}}.}
 }
 \value{
 A list with entries \code{bw} (optimal bandwidth) and \code{opt},
-the latter containing the output of \code{\link[=stats]{nlm}}.
+the latter containing the output of \code{\link[stats]{nlm}}.
 }
 \description{
 Computes the rule-of-thumb bandwidth for the polyspherical

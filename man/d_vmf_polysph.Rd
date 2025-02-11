@@ -22,7 +22,7 @@ concentrations.}
 \item{log}{compute the logarithm of the density? Defaults to \code{FALSE}.}
 }
 \value{
-A vector of length \code{nx} with the evaluated density.
+A vector of size \code{nx} with the evaluated density.
 }
 \description{
 Computes the density of the product of von Mises--Fisher

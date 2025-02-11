@@ -104,25 +104,25 @@ H_0_cv3 - (p[1] * H_1_cv3 + p[2] * H_2_cv3) - sum(log(p) * p)
 -sum(log(p) * p)
 
 test_that("Jensen--Shannon distance with Monte Carlo and k = 2", {
-  expect_equal(unname(hom_test_poly(X = X, d = d, labels = labels, type = "jsd",
-                                    h = h1, B = 1, M = M,
-                                    cv_jsd = 123)$statistic),
+  expect_equal(unname(hom_test_polysph(X = X, d = d, labels = labels,
+                                       type = "jsd", h = h1, B = 1, M = M,
+                                       cv_jsd = 123)$statistic),
                H_0 - (p[1] * H_1 + p[2] * H_2),
                tolerance = 5e-2)
 })
 
 test_that("Jensen--Shannon distance with cv_jsd = 1 and k = 2", {
   skip("Unstable")
-  expect_equal(unname(hom_test_poly(X = X, d = d, labels = labels, type = "jsd",
-                                    h = h1, B = 1, M = M,
-                                    cv_jsd = 1)$statistic),
+  expect_equal(unname(hom_test_polysph(X = X, d = d, labels = labels,
+                                       type = "jsd", h = h1, B = 1, M = M,
+                                       cv_jsd = 1)$statistic),
                H_0_cv - (p[1] * H_1_cv + p[2] * H_2_cv))
 })
 
 test_that("Jensen--Shannon distance with cv_jsd = 2 and k = 2", {
-  expect_equal(unname(hom_test_poly(X = X, d = d, labels = labels, type = "jsd",
-                                    h = h1, B = 1, M = M,
-                                    cv_jsd = 2)$statistic),
+  expect_equal(unname(hom_test_polysph(X = X, d = d, labels = labels,
+                                       type = "jsd", h = h1, B = 1, M = M,
+                                       cv_jsd = 2)$statistic),
                H_0_n - (p[1] * H_1_n + p[2] * H_2_n))
 })
 
@@ -189,24 +189,88 @@ H_0_cv <- -mean(c(log(p[1] * exp(log_cv_kde_polysph(X = X1, d = d, h = h1)) +
 
 test_that("Jensen--Shannon distance with Monte Carlo and k = 3", {
   skip("Unstable")
-  expect_equal(unname(hom_test_poly(X = X, d = d, labels = labels, type = "jsd",
-                                    h = h1, B = 1, M = M,
-                                    cv_jsd = 123)$statistic),
+  expect_equal(unname(hom_test_polysph(X = X, d = d, labels = labels,
+                                       type = "jsd", h = h1, B = 1, M = M,
+                                       cv_jsd = 123)$statistic),
                H_0 - (p[1] * H_1 + p[2] * H_2 + p[3] * H_3),
                tolerance = 1e-2)
 })
 
 test_that("Jensen--Shannon distance with cv_jsd = 1 and k = 3", {
   skip("Unstable")
-  expect_equal(unname(hom_test_poly(X = X, d = d, labels = labels, type = "jsd",
-                                    h = h1, B = 1, M = M,
-                                    cv_jsd = 1)$statistic),
+  expect_equal(unname(hom_test_polysph(X = X, d = d, labels = labels,
+                                       type = "jsd", h = h1, B = 1, M = M,
+                                       cv_jsd = 1)$statistic),
                H_0_cv - (p[1] * H_1_cv + p[2] * H_2_cv + p[3] * H_3_cv))
 })
 
 test_that("Jensen--Shannon distance with cv_jsd = 2 and k = 3", {
-  expect_equal(unname(hom_test_poly(X = X, d = d, labels = labels, type = "jsd",
-                                    h = h1, B = 1, M = M,
-                                    cv_jsd = 2)$statistic),
+  expect_equal(unname(hom_test_polysph(X = X, d = d, labels = labels,
+                                       type = "jsd", h = h1, B = 1, M = M,
+                                       cv_jsd = 2)$statistic),
                H_0_n - (p[1] * H_1_n + p[2] * H_2_n + p[3] * H_3_n))
+})
+
+## Test H0 and H1
+
+test_that("Tests do not reject H_0 when it is true", {
+
+  d <- 1
+  n <- 100
+  h <- 0.5
+  B <- 50
+  mu <- c(rep(0, d), 1)
+  kappa <- 2
+  X_1 <- r_vmf_polysph(n = n, mu = mu, d = d, kappa = kappa)
+  X_2 <- r_vmf_polysph(n = n, mu = mu, d = d, kappa = kappa)
+  pval_jsd <- hom_test_polysph(X = rbind(X_1, X_2), d = d,
+                               labels = rep(1:2, each = n), type = "jsd",
+                               h = h, B = B)$p.value
+  pval_mea <- hom_test_polysph(X = rbind(X_1, X_2), d = d,
+                               labels = rep(1:2, each = n), type = "mean",
+                               B = B)$p.value
+  pval_sca <- hom_test_polysph(X = rbind(X_1, X_2), d = d,
+                               labels = rep(1:2, each = n), type = "scatter",
+                               B = B)$p.value
+  pval_hel <- hom_test_polysph(X = rbind(X_1, X_2), d = d,
+                               labels = rep(1:2, each = n), type = "hd",
+                               h = h, B = B)$p.value
+
+  expect_gt(pval_jsd, 0.05)
+  expect_gt(pval_mea, 0.05)
+  expect_gt(pval_sca, 0.05)
+  expect_gt(pval_hel, 0.05)
+
+})
+
+test_that("Tests reject H_0 when it is false", {
+
+  d <- 1
+  n <- 100
+  h <- 0.5
+  B <- 50
+  mu1 <- c(rep(0, d), 1)
+  mu2 <- c(1, rep(0, d))
+  kappa1 <- 2
+  kappa2 <- 5
+  X_1 <- r_vmf_polysph(n = n, mu = mu1, d = d, kappa = kappa1)
+  X_2 <- r_vmf_polysph(n = n, mu = mu2, d = d, kappa = kappa2)
+  pval_jsd <- hom_test_polysph(X = rbind(X_1, X_2), d = d,
+                               labels = rep(1:2, each = n), type = "jsd",
+                               h = h, B = B)$p.value
+  pval_mea <- hom_test_polysph(X = rbind(X_1, X_2), d = d,
+                               labels = rep(1:2, each = n), type = "mean",
+                               B = B)$p.value
+  pval_sca <- hom_test_polysph(X = rbind(X_1, X_2), d = d,
+                               labels = rep(1:2, each = n), type = "scatter",
+                               B = B)$p.value
+  pval_hel <- hom_test_polysph(X = rbind(X_1, X_2), d = d,
+                               labels = rep(1:2, each = n), type = "hd",
+                               h = h, B = B)$p.value
+
+  expect_lt(pval_jsd, 0.05)
+  expect_lt(pval_mea, 0.05)
+  expect_lt(pval_sca, 0.05)
+  expect_lt(pval_hel, 0.05)
+
 })

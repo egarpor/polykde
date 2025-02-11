@@ -12,7 +12,8 @@ Carlo sample.}
 
 \item{d}{vector of size \code{r} with dimensions.}
 
-\item{bhatta}{compute the Bhattacharyya divergence (or coefficient) instead?}
+\item{bhatta}{compute the Bhattacharyya divergence (or coefficient) instead?
+Defaults to \code{FALSE}.}
 }
 \value{
 A scalar with the estimated distance.

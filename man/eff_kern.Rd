@@ -41,7 +41,7 @@ same codification as the \code{kernel}. Defaults to \code{"2"}.}
 \code{"prod"} (product kernel) or \code{"sph"} (spherically symmetric kernel,
 default).}
 
-\item{...}{further parameters passed to \code{\link{integrate}}, such as
+\item{...}{further arguments passed to \code{\link{integrate}}, such as
 \code{upper}, \code{abs.tol}, \code{rel.tol}, etc.}
 
 \item{h}{vector of size \code{r} with bandwidths.}

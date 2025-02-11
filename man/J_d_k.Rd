@@ -14,11 +14,11 @@ common dimension of each hypersphere (a scalar).}
 
 \item{upper}{upper limit of integration.}
 
-\item{...}{further parameters passed to \code{\link{integrate}}, such as
+\item{...}{further arguments passed to \code{\link{integrate}}, such as
 \code{upper}, \code{abs.tol}, \code{rel.tol}, etc.}
 }
 \value{
-A vector of length \code{length(d)} with the values of the integral.
+A vector of size \code{length(d)} with the values of the integral.
 }
 \description{
 Computes the integral \eqn{J_{d, k}=\int_0^\infty

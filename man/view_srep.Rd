@@ -7,55 +7,71 @@
 view_srep(base, dirs, bdry, radii, show_base = TRUE, show_base_pt = TRUE,
   show_bdry = TRUE, show_bdry_pt = TRUE, show_seg = TRUE,
   col_base = "red", col_bndy = "blue", col_seg = "green",
-  static = FALSE, texts = NULL, cex_base = ifelse(static, 0.5, 6),
+  static = TRUE, texts = NULL, cex_base = ifelse(static, 0.5, 6),
   cex_bdry = ifelse(static, 1, 8), lwd_seg = ifelse(static, 1, 2),
   cex_texts = 1, alpha_base = 0.1, alpha_bdry = 0.15, r_texts = 1.25,
-  alpha_ashape3d_base = 100, alpha_ashape3d_bdry = 5, lit = FALSE, ...)
+  alpha_ashape3d_base = NULL, alpha_ashape3d_bdry = NULL, lit = FALSE,
+  ...)
 }
 \arguments{
-\item{base}{TODO}
+\item{base}{base points, a matrix of size \code{c(nx, 3)}.}
 
-\item{dirs}{TODO}
+\item{dirs}{directions of spokes, a matrix of size \code{c(nx, 3)} with
+unit vectors.}
 
-\item{bdry}{TODO}
+\item{bdry}{boundary points, a matrix of size \code{c(nx, 3)}.}
 
-\item{radii}{TODO}
+\item{radii}{radii of spokes, a vector of size \code{nx}.}
 
-\item{show_base, show_base_pt}{TODO}
+\item{show_base, show_base_pt}{show base and base grid? Default to
+\code{TRUE}.}
 
-\item{show_bdry, show_bdry_pt}{TODO}
+\item{show_bdry, show_bdry_pt}{show boundary and boundary grid? Default to
+\code{TRUE}.}
 
-\item{show_seg}{TODO}
+\item{show_seg}{show segments?}
 
-\item{col_base, col_bndy, col_seg}{TODO}
+\item{col_base, col_bndy, col_seg}{colors for the base, boundary, and segments.
+Default to \code{"red"}, \code{"blue"}, and \code{"green"}, respectively.}
 
-\item{static}{TODO}
+\item{static}{use static (\code{\link[scatterplot3d]{scatterplot3d}}) or
+interactive (\code{\link[rgl]{plot3d}}) plot? Default to \code{TRUE}.}
 
-\item{texts}{TODO}
+\item{texts}{add text labels? If given, it should be a vector of size
+\code{nx} with the labels. Defaults to \code{NULL}.}
 
-\item{cex_base, cex_bdry}{TODO}
+\item{cex_base, cex_bdry}{size of the base and boundary points.}
 
-\item{lwd_seg}{TODO}
+\item{lwd_seg}{width of the segments.}
 
-\item{cex_texts}{TODO}
+\item{cex_texts}{size of the text labels. Defaults to \code{1}.}
 
-\item{alpha_base, alpha_bdry}{TODO}
+\item{alpha_base, alpha_bdry}{transparencies for base and boundary. Default to
+\code{0.1} and \code{0.15}, respectively.}
 
-\item{r_texts}{TODO}
+\item{r_texts}{magnification of the radius to separate the text labels.
+Defaults to \code{1.25}.}
 
-\item{alpha_ashape3d_base, alpha_ashape3d_bdry}{TODO}
+\item{alpha_ashape3d_base, alpha_ashape3d_bdry}{alpha parameters for
+\code{\link[alphashape3d]{ashape3d}}. Default to \code{NULL}.}
 
-\item{lit}{TODO}
+\item{lit}{lit parameter passed to \code{\link[rgl]{material3d}}.}
 
-\item{...}{TODO}
+\item{...}{further arguments to be passed to \code{\link[rgl]{plot3d}} or
+\code{\link[scatterplot3d]{scatterplot3d}}.}
 }
 \value{
-TODO
+Creates a static or interactive plot.
 }
 \description{
-TODO
+Plots an s-rep object based on its three-dimensional base,
+spokes, and boundary.
 }
 \examples{
-# TODO
+base <- r_unif_polysph(n = 50, d = 2)
+dirs <- base
+radii <- runif(nrow(base), min = 0.5, max = 1)
+bdry <- base + radii * dirs
+view_srep(base = base, dirs = dirs, bdry = bdry, radii = radii,
+          texts = 1:50, xlim = c(-2, 2), ylim = c(-2, 2), zlim = c(-2, 2))
 }
-\keyword{internal}

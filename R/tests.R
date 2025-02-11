@@ -10,12 +10,12 @@
 #'
 #' @inheritParams kde_polysph
 #' @param labels vector with \code{k} different levels indicating the group.
-#' @param type kind of test to be performed: \code{"mean"}, a simple test
-#' for the equality of both means (non-omnibus for testing homogeneity);
-#' \code{"scatter"}, a simple test for the equality of both scatter matrices
-#' (non-omnibus for testing homogeneity); \code{"jsd"} (default), a test
+#' @param type kind of test to be performed: \code{"jsd"} (default), a test
 #' comparing the kernel density estimators for \eqn{k} groups using the
-#' Jensen--Shannon distance.
+#' Jensen--Shannon distance; \code{"mean"}, a simple test for the equality of
+#' two means (non-omnibus for testing homogeneity); \code{"scatter"}, a simple
+#' test for the equality of two scatter matrices; \code{"hd"}, a test comparing
+#' the kernel density estimators for two groups using the Hellinger distance.
 #' @param B number of permutations to use. Defaults to \code{1e3}.
 #' @param M number of Monte Carlo replicates to use when approximating the
 #' Hellinger/Jensen--Shannon distance. Defaults to \code{1e4}.
@@ -27,11 +27,11 @@
 #' integrals in the Jensen--Shannon distance.
 #' @details Only \code{type = "jsd"} is able to deal with \eqn{k > 2}.
 #'
-#' The \code{"mean"} statistic measures the maximum (chordal) distance
-#' between the estimated group means. This statistic is bounded in \eqn{[0, 1]}.
-#' The \code{"var"} statistic measures the maximum affine invariant Riemannian
-#' metric between the estimated scatter matrices. The \code{"jsd"} statistic is
-#' the Jensen--Shannon divergence. This statistic is bounded in \eqn{[0, 1]}.
+#' The \code{"jsd"} statistic is the Jensen--Shannon divergence. This statistic
+#' is bounded in \eqn{[0, 1]}. The \code{"mean"} statistic measures the maximum
+#' (chordal) distance between the estimated group means. This statistic is
+#' bounded in \eqn{[0, 1]}. The \code{"scatter"} statistic measures the maximum
+#' affine invariant Riemannian metric between the estimated scatter matrices.
 #' The \code{"hd"} statistic computes a monotonic transformation of the
 #' Hellinger distance, which is the Bhattacharyya divergence (or coefficient).
 #' @return An object of class \code{"htest"}.
@@ -42,13 +42,13 @@
 #' n <- c(50, 100)
 #' X1 <- rotasym::r_vMF(n = n[1], mu = c(0, 0, 1), kappa = 1)
 #' X2 <- rotasym::r_vMF(n = n[2], mu = c(0, 0, 1), kappa = 1)
-#' hom_test_poly(X = rbind(X1, X2), labels = rep(1:2, times = n),
-#'               d = 2, type = "jsd", h = 0.5)
+#' hom_test_polysph(X = rbind(X1, X2), labels = rep(1:2, times = n),
+#'                  d = 2, type = "jsd", h = 0.5)
 #'
 #' # H0 does not hold
 #' X2 <- rotasym::r_vMF(n = n[2], mu = c(0, 1, 0), kappa = 2)
-#' hom_test_poly(X = rbind(X1, X2), labels = rep(1:2, times = n),
-#'               d = 2, type = "jsd", h = 0.5)
+#' hom_test_polysph(X = rbind(X1, X2), labels = rep(1:2, times = n),
+#'                  d = 2, type = "jsd", h = 0.5)
 #'
 #' ## k-sample case
 #'
@@ -57,20 +57,20 @@
 #' X1 <- rotasym::r_vMF(n = n[1], mu = c(0, 0, 1), kappa = 1)
 #' X2 <- rotasym::r_vMF(n = n[2], mu = c(0, 0, 1), kappa = 1)
 #' X3 <- rotasym::r_vMF(n = n[3], mu = c(0, 0, 1), kappa = 1)
-#' hom_test_poly(X = rbind(X1, X2, X3), labels = rep(1:3, times = n),
-#'               d = 2, type = "jsd", h = 0.5)
+#' hom_test_polysph(X = rbind(X1, X2, X3), labels = rep(1:3, times = n),
+#'                  d = 2, type = "jsd", h = 0.5)
 #'
 #' # H0 does not hold
 #' X3 <- rotasym::r_vMF(n = n[3], mu = c(0, 1, 0), kappa = 2)
-#' hom_test_poly(X = rbind(X1, X2, X3), labels = rep(1:3, times = n),
-#'               d = 2, type = "jsd", h = 0.5)
+#' hom_test_polysph(X = rbind(X1, X2, X3), labels = rep(1:3, times = n),
+#'                  d = 2, type = "jsd", h = 0.5)
 #' }
 #' @export
-hom_test_poly <- function(X, d, labels,
-                          type = c("mean", "scatter", "jsd", "hd")[3],
-                          h = NULL, kernel = 1, kernel_type = 1, k = 10,
-                          B = 1e3, M = 1e4, plot_boot = FALSE, seed_jsd = NULL,
-                          cv_jsd = TRUE) {
+hom_test_polysph <- function(X, d, labels,
+                             type = c("jsd", "mean", "scatter", "hd")[1],
+                             h = NULL, kernel = 1, kernel_type = 1, k = 10,
+                             B = 1e3, M = 1e4, plot_boot = FALSE,
+                             seed_jsd = NULL, cv_jsd = TRUE) {
 
   # Dimensions and sample sizes
   r <- length(d)
@@ -400,24 +400,26 @@ hom_test_poly <- function(X, d, labels,
         # Permute labels by perm_index
         perm_labels <- labels[perm_index]
 
+        # Two samples
+        X1 <- X[perm_labels == labels_levels[1], , drop = FALSE]
+        X2 <- X[perm_labels == labels_levels[2], , drop = FALSE]
+
         # Log kdes
-        log_kde_1 <- kde_polysph(x = mc_samp, X = X[perm_labels, ], d = d,
-                                 h = h, kernel = kernel,
-                                 kernel_type = kernel_type, k = k, log = TRUE,
-                                 wrt_unif = TRUE)
-        log_kde_2 <- kde_polysph(x = mc_samp, X = X[!perm_labels, ], d = d,
-                                 h = h, kernel = kernel,
-                                 kernel_type = kernel_type, k = k, log = TRUE,
-                                 wrt_unif = TRUE)
+        log_kde_1 <- kde_polysph(x = mc_samp, X = X1, d = d, h = h,
+                                 kernel = kernel, kernel_type = kernel_type,
+                                 k = k, log = TRUE, wrt_unif = TRUE)
+        log_kde_2 <- kde_polysph(x = mc_samp, X = X2, d = d, h = h,
+                                 kernel = kernel, kernel_type = kernel_type,
+                                 k = k, log = TRUE, wrt_unif = TRUE)
 
         # Distance
-        hd_mc(log_f = log_kde_1, log_g = log_kde_2, bhatta = TRUE)
+        hd_mc(log_f = log_kde_1, log_g = log_kde_2, d = d, bhatta = TRUE)
 
       }
 
     } else {
 
-      stop("\"type\" must be \"means\", \"hd\" or \"jsd\".")
+      stop("\"type\" must be \"jsd\", \"mean\", \"scatter\" or \"hd\".")
 
     }
 
@@ -506,6 +508,7 @@ hom_test_poly <- function(X, d, labels,
 #' Carlo sample.
 #' @inheritParams kde_polysph
 #' @param bhatta compute the Bhattacharyya divergence (or coefficient) instead?
+#' Defaults to \code{FALSE}.
 #' @return A scalar with the estimated distance.
 #' @examples
 #' # Example with von Mises--Fisher distributions
@@ -542,8 +545,7 @@ hd_mc <- function(log_f, log_g, d, bhatta = FALSE) {
   bhatta_div <- log(M) - sum(rotasym::w_p(p = d + 1, log = TRUE)) -
     (max_log + log(sum(exp(logs - max_log))))
 
-  # Hellinger distance
-  hellin_dis <- sqrt(1 - exp(-bhatta_div))
-  return(ifelse(bhatta, bhatta_div, hellin_dis))
+  # Hellinger distance?
+  return(ifelse(bhatta, bhatta_div, sqrt(1 - exp(-bhatta_div))))
 
 }

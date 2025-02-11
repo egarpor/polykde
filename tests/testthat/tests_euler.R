@@ -1,13 +1,14 @@
 
-r <- rpois(1, lambda = 15) + 1
-d <- rep(sample(1:10, size = 1), r)
-h <- runif(r, min = 0.2)
-X <- r_unif_polysph(n = 3, d = d)
-x <- r_unif_polysph(n = 2, d = d)
-ind_blocks <- sample(1:3, size = r, replace = TRUE)
-ind_blocks <- as.numeric(as.factor(ind_blocks))
-
 test_that("Reordering of blocks works in block_euler_ridge()", {
+
+  r <- rpois(1, lambda = 15) + 1
+  d <- rep(sample(1:10, size = 1), r)
+  h <- runif(r, min = 0.2)
+  X <- r_unif_polysph(n = 3, d = d)
+  x <- r_unif_polysph(n = 2, d = d)
+  ind_blocks <- sample(1:3, size = r, replace = TRUE)
+  ind_blocks <- as.numeric(as.factor(ind_blocks))
+  ind_dj <- comp_ind_dj(d = d)
   res <- block_euler_ridge(x = x, X = X, d = d, h = h,
                            h_euler = h, ind_blocks = ind_blocks,
                            N = 1, keep_paths = TRUE,
@@ -16,6 +17,38 @@ test_that("Reordering of blocks works in block_euler_ridge()", {
   expect_equal(d, res$d)
   expect_equal(x, res$start_x)
   expect_equal(x, res$paths[, , 1])
+
+})
+
+test_that("clean_euler_ridge does not return error", {
+
+  d <- 2
+  X <- r_unif_polysph(n = 30, d = d)
+  h_rid <- 0.5
+  h_eu <- h_rid^2
+  N <- 30
+  eps <- 1e-6
+  Y <- euler_ridge(x = X, X = X, d = d, h = h_rid, h_euler = h_eu,
+                   N = N, eps = eps, keep_paths = TRUE)
+  expect_no_error(clean_euler_ridge(e = Y, X = X))
+  expect_no_error(clean_euler_ridge(e = Y, X = X, p_out = 0.1))
+
+})
+
+test_that("index_ridge does not return error", {
+
+  d <- 2
+  X <- r_unif_polysph(n = 30, d = d)
+  h_rid <- 0.5
+  h_eu <- h_rid^2
+  N <- 30
+  eps <- 1e-6
+  Y <- euler_ridge(x = X, X = X, d = d, h = h_rid, h_euler = h_eu,
+                   N = N, eps = eps, keep_paths = TRUE)
+  expect_no_error(index_ridge(endpoints = Y$ridge_y, X = X, d = d))
+  expect_no_error(index_ridge(endpoints = Y$ridge_y, X = X, d = d,
+                              verbose = TRUE))
+
 })
 
 # Transformation functions
