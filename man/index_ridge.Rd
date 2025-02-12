@@ -27,7 +27,7 @@ projections. Defaults to \code{2}, which is twice the range of MDS indexes.}
 \code{probs_scores}-quantiles of the scores. Defaults to
 \code{seq(0, 1, l = 101)}.}
 
-\item{verbose}{show diagnostic plots?}
+\item{verbose}{show diagnostic plots? Defaults to \code{FALSE}.}
 
 \item{type_bwd}{type of cross-validation bandwidth for Nadaraya--Watson,
 either \code{"min"} (minimizer of the cross-validation loss) or \code{"1se"}

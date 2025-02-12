@@ -37,8 +37,9 @@ minimal cross-validation loss.}
 }
 \description{
 Computes least squares cross-validation bandwidths for kernel
-polyspherical-on-scalar regression. It computes both the bandwidth that
-minimizes the cross-validation loss and its "one standard error" variant.
+regression estimation with polyspherical response and scalar predictor.
+It computes both the bandwidth that minimizes the cross-validation loss and
+its "one standard error" variant.
 }
 \details{
 A similar output to \code{glmnet}'s \code{\link[glmnet]{cv.glmnet}}

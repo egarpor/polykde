@@ -28,7 +28,8 @@ d_vmf_polysph <- function(x, d, mu, kappa, log = FALSE) {
 
 #' @title Density of the uniform distribution on the polysphere
 #'
-#' @description Computes the density of the uniform density on the polysphere.
+#' @description Computes the density of the uniform distribution on the
+#' polysphere.
 #'
 #' @inheritParams kde_polysph
 #' @return A vector of size \code{nx} with the evaluated density.

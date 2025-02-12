@@ -23,7 +23,8 @@ length \code{sum(d) + r}.}
 \item{ind_dj}{\code{0}-based index separating the blocks of spheres that
 is computed with \code{\link{comp_ind_dj}}.}
 
-\item{norm_x, norm_y}{ensure a normalization of the data?}
+\item{norm_x, norm_y}{ensure a normalization of the data? Default to
+\code{FALSE}.}
 
 \item{std}{standardize distance to \eqn{[0,1]}? Uses that the maximum
 distance is \eqn{\sqrt{r}\pi}. Defaults to \code{TRUE}.}

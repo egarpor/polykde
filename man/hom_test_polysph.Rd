@@ -52,7 +52,7 @@ An object of class \code{"htest"}.
 \description{
 Permutation tests for the equality of distributions of two or
 \eqn{k} samples of data on \eqn{\mathcal{S}^{d_1} \times \cdots \times
-\mathcal{S}^{d_k}}. The Jensen--Shannon distance is used to construct a test
+\mathcal{S}^{d_r}}. The Jensen--Shannon distance is used to construct a test
 statistic measuring the discrepancy between the \eqn{k} kernel density
 estimators. Tests based on the mean and scatter matrices are also available,
 but for only two samples (\eqn{k=2}).

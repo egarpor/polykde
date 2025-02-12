@@ -72,7 +72,7 @@ torus_to_angles <- function(x) {
 #'
 #' @description Transforms the angles \eqn{(\theta_1,\ldots,\theta_d)} in
 #' \eqn{[0,\pi)^{d-1}\times[-\pi,\pi)} into the Cartesian coordinates
-#' \deqn{(\cos(x_1),\sin(x_1)\cos(x_2),\sin(x_1)\sin(x_2)\cos(x_3),\ldots,
+#' \deqn{(\cos(x_1),\sin(x_1)\cos(x_2),\ldots,
 #' \sin(x_1)\cdots\sin(x_{d-1})\cos(x_d),
 #' \sin(x_1)\cdots\sin(x_{d-1})\sin(x_d))}
 #' of the hypersphere \eqn{\mathcal{S}^{d}}, and vice versa.

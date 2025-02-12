@@ -42,7 +42,7 @@ Defaults to \code{0}.}
 \item{kernel_type}{type of kernel employed: \code{1} for product kernel
 (default); \code{2} for spherically symmetric kernel.}
 
-\item{log}{compute the logarithm of the constant?}
+\item{log}{compute the logarithm of the constant? Defaults to \code{FALSE}.}
 
 \item{intrinsic}{consider the intrinsic distance? Defaults to \code{FALSE}.}
 

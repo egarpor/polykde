@@ -30,8 +30,8 @@ interp_polysph <- function(x, y, ind_dj, N = 10) {
 
 #' @title s-rep viewer
 #'
-#' @description Plots an s-rep object based on its three-dimensional base,
-#' spokes, and boundary.
+#' @description Plots a skeletal representation (s-rep) object based on its
+#' three-dimensional base, spokes, and boundary.
 #'
 #' @param base base points, a matrix of size \code{c(nx, 3)}.
 #' @param dirs directions of spokes, a matrix of size \code{c(nx, 3)} with
@@ -42,7 +42,7 @@ interp_polysph <- function(x, y, ind_dj, N = 10) {
 #' \code{TRUE}.
 #' @param show_bdry,show_bdry_pt show boundary and boundary grid? Default to
 #' \code{TRUE}.
-#' @param show_seg show segments?
+#' @param show_seg show segments? Defaults to \code{TRUE}.
 #' @param col_base,col_bndy,col_seg colors for the base, boundary, and segments.
 #' Default to \code{"red"}, \code{"blue"}, and \code{"green"}, respectively.
 #' @param static use static (\code{\link[scatterplot3d]{scatterplot3d}}) or

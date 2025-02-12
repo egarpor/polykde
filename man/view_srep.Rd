@@ -29,7 +29,7 @@ unit vectors.}
 \item{show_bdry, show_bdry_pt}{show boundary and boundary grid? Default to
 \code{TRUE}.}
 
-\item{show_seg}{show segments?}
+\item{show_seg}{show segments? Defaults to \code{TRUE}.}
 
 \item{col_base, col_bndy, col_seg}{colors for the base, boundary, and segments.
 Default to \code{"red"}, \code{"blue"}, and \code{"green"}, respectively.}
@@ -64,8 +64,8 @@ Defaults to \code{1.25}.}
 Creates a static or interactive plot.
 }
 \description{
-Plots an s-rep object based on its three-dimensional base,
-spokes, and boundary.
+Plots a skeletal representation (s-rep) object based on its
+three-dimensional base, spokes, and boundary.
 }
 \examples{
 base <- r_unif_polysph(n = 50, d = 2)
