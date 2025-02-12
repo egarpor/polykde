@@ -23,13 +23,13 @@ The folder `/replication` contains the scripts to replicate the
 simulations and numerical experiments of the Supplementary Material
 (SM):
 
--   The script `kde_sims.R` reproduces the asymptotic normality
-    experiment in Section B.1 of the SM.
--   The script `kde_efic.R` computes the kernel efficiency table in
-    Section B.2 of the SM.
--   The two scripts `jsd-sims-k2-S2.R` and `jsd-sims-k3-S10^2.R`
-    reproduce two simulation experiments for the *k*-sample test in
-    Section B.3 of the SM.
+- The script `kde_sims.R` reproduces the asymptotic normality experiment
+  in Section B.1 of the SM.
+- The script `kde_efic.R` computes the kernel efficiency table in
+  Section B.2 of the SM.
+- The two scripts `jsd-sims-k2-S2.R` and `jsd-sims-k3-S10^2.R` reproduce
+  two simulation experiments for the $k$-sample test in Section B.3 of
+  the SM.
 
 ## References
 
