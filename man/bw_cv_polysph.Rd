@@ -29,11 +29,13 @@ the LSCV loss.}
 
 \item{start}{staring value for \code{h}.}
 
-\item{na.rm}{remove \code{NA}s in the objective function?}
+\item{na.rm}{remove \code{NA}s in the objective function? Defaults to
+\code{FALSE}.}
 
-\item{ncores}{number of cores used during the optimization.}
+\item{ncores}{number of cores used during the optimization. Defaults to
+\code{1}.}
 
-\item{h_min}{minimum h enforced (componentwise).}
+\item{h_min}{minimum h enforced (componentwise). Defaults to \code{0}.}
 
 \item{upscale}{rescale the resulting bandwidths to work for derivative
 estimation? Defaults to \code{FALSE}.}

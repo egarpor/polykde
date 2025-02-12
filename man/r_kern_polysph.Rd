@@ -25,7 +25,7 @@ on \eqn{\mathcal{S}^{d_j}}.}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 
-\item{norm_mu}{ensure a normalization of \code{mu}?}
+\item{norm_mu}{ensure a normalization of \code{mu}? Defaults to \code{FALSE}.}
 }
 \description{
 Simulates from the distribution defined by a kernel on the

@@ -18,7 +18,8 @@ points.}
 A vector of size \code{nx} with the evaluated density.
 }
 \description{
-Computes the density of the uniform density on the polysphere.
+Computes the density of the uniform distribution on the
+polysphere.
 }
 \examples{
 # Simple check of integration on S^1 x S^2

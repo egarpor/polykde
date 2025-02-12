@@ -328,7 +328,7 @@ clean_euler_ridge <- function(e, X, p_out = NULL) {
 #' @param probs_scores probabilities for indexing the ridge on the
 #' \code{probs_scores}-quantiles of the scores. Defaults to
 #' \code{seq(0, 1, l = 101)}.
-#' @param verbose show diagnostic plots?
+#' @param verbose show diagnostic plots? Defaults to \code{FALSE}.
 #' @param type_bwd type of cross-validation bandwidth for Nadaraya--Watson,
 #' either \code{"min"} (minimizer of the cross-validation loss) or \code{"1se"}
 #' (the "one standard error rule", smoother). Defaults to \code{"1se"}.

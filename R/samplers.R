@@ -82,7 +82,7 @@ r_vmf_polysph <- function(n, d, mu, kappa, normalize_mu = FALSE) {
 #'
 #' @param mu a vector of size \code{sum(d) + r} with the concatenated means
 #' on \eqn{\mathcal{S}^{d_j}}.
-#' @param norm_mu ensure a normalization of \code{mu}?
+#' @param norm_mu ensure a normalization of \code{mu}? Defaults to \code{FALSE}.
 #' @inheritParams r_unif_polysph
 #' @inheritParams kde_polysph
 #' @details Simulation for non-von Mises--Fisher spherically symmetric kernels
@@ -368,8 +368,8 @@ r_kde_polysph <- function(n, X, d, h, kernel = 1, kernel_type = 1, k = 10,
 
 #' @title Samplers of one-dimensional modes of variation for polyspherical data
 #'
-#' @description Functions for sampling data on \eqn{(\mathcal{S}^d)^r} for
-#' \eqn{d=1,2} using one-dimensional modes of variation.
+#' @description Functions for sampling data on \eqn{(\mathcal{S}^d)^r}, for
+#' \eqn{d=1,2}, using one-dimensional modes of variation.
 #'
 #' @param n sample size.
 #' @param r number of spheres in the polysphere \eqn{(\mathcal{S}^d)^r}.

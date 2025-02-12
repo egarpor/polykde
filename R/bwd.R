@@ -11,9 +11,11 @@
 #' @param M Monte Carlo samples to use for approximating the integral in
 #' the LSCV loss.
 #' @param start staring value for \code{h}.
-#' @param na.rm remove \code{NA}s in the objective function?
-#' @param ncores number of cores used during the optimization.
-#' @param h_min minimum h enforced (componentwise).
+#' @param na.rm remove \code{NA}s in the objective function? Defaults to
+#' \code{FALSE}.
+#' @param ncores number of cores used during the optimization. Defaults to
+#' \code{1}.
+#' @param h_min minimum h enforced (componentwise). Defaults to \code{0}.
 #' @inheritParams bw_rot_polysph
 #' @param upscale rescale the resulting bandwidths to work for derivative
 #' estimation? Defaults to \code{FALSE}.

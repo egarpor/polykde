@@ -92,7 +92,8 @@ arma::mat proj_polysph(arma::mat x, arma::uvec ind_dj) {
 //' @param y either a matrix of size \code{c(m, sum(d) + r)} or a vector of
 //' length \code{sum(d) + r}.
 //' @inheritParams proj_polysph
-//' @param norm_x,norm_y ensure a normalization of the data?
+//' @param norm_x,norm_y ensure a normalization of the data? Default to
+//' \code{FALSE}.
 //' @param std standardize distance to \eqn{[0,1]}? Uses that the maximum
 //' distance is \eqn{\sqrt{r}\pi}. Defaults to \code{TRUE}.
 //' @return

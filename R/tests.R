@@ -3,7 +3,7 @@
 #'
 #' @description Permutation tests for the equality of distributions of two or
 #' \eqn{k} samples of data on \eqn{\mathcal{S}^{d_1} \times \cdots \times
-#' \mathcal{S}^{d_k}}. The Jensen--Shannon distance is used to construct a test
+#' \mathcal{S}^{d_r}}. The Jensen--Shannon distance is used to construct a test
 #' statistic measuring the discrepancy between the \eqn{k} kernel density
 #' estimators. Tests based on the mean and scatter matrices are also available,
 #' but for only two samples (\eqn{k=2}).
@@ -499,9 +499,9 @@ hom_test_polysph <- function(X, d, labels,
 #'
 #' @description Computes the Hellinger distance
 #' \deqn{H(f, g) = \sqrt(1 - \int_{\mathcal{S}^{d_1} \times \ldots \times
-#' \mathcal{S}^{d_k}} \sqrt(f(\boldsymbol{x}) g(\boldsymbol{x}))
+#' \mathcal{S}^{d_r}} \sqrt(f(\boldsymbol{x}) g(\boldsymbol{x}))
 #' d\boldsymbol{x})} between two densities \eqn{f} and \eqn{g} on
-#' \eqn{\mathcal{S}^{d_1} \times \ldots \times \mathcal{S}^{d_k}} via
+#' \eqn{\mathcal{S}^{d_1} \times \ldots \times \mathcal{S}^{d_r}} via
 #' Monte Carlo.
 #'
 #' @param log_f,log_g logarithms of \eqn{f} and \eqn{g} evaluated in a Monte

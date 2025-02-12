@@ -23,7 +23,7 @@ A vector of size \code{n}.
 }
 \description{
 Simulation from the angular density function of an isotropic
-kernel on \eqn{\mathcal{S}^d}.
+kernel on the hypersphere \eqn{\mathcal{S}^d}.
 }
 \examples{
 hist(r_g_kern(n = 1e3, d = 2, h = 1, kernel = "1"), breaks = 30,

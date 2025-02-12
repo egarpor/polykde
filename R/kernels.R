@@ -15,7 +15,7 @@
 #' Defaults to \code{0}.
 #' @param inc_sfp include \code{softplus(k)} in the constant? Defaults to
 #' \code{TRUE}.
-#' @param log compute the logarithm of the constant?
+#' @param log compute the logarithm of the constant? Defaults to \code{FALSE}.
 #' @inheritParams L
 #' @param intrinsic consider the intrinsic distance? Defaults to \code{FALSE}.
 #' @param y center of the kernel.
@@ -317,7 +317,7 @@ hess_L <- function(x, y, h, kernel = 1, k = 10) {
 #' @title Sample from the angular kernel density
 #'
 #' @description Simulation from the angular density function of an isotropic
-#' kernel on \eqn{\mathcal{S}^d}.
+#' kernel on the hypersphere \eqn{\mathcal{S}^d}.
 #'
 #' @inheritParams r_unif_polysph
 #' @inheritParams kde_polysph

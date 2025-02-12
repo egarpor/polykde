@@ -21,9 +21,9 @@ A scalar with the estimated distance.
 \description{
 Computes the Hellinger distance
 \deqn{H(f, g) = \sqrt(1 - \int_{\mathcal{S}^{d_1} \times \ldots \times
-\mathcal{S}^{d_k}} \sqrt(f(\boldsymbol{x}) g(\boldsymbol{x}))
+\mathcal{S}^{d_r}} \sqrt(f(\boldsymbol{x}) g(\boldsymbol{x}))
 d\boldsymbol{x})} between two densities \eqn{f} and \eqn{g} on
-\eqn{\mathcal{S}^{d_1} \times \ldots \times \mathcal{S}^{d_k}} via
+\eqn{\mathcal{S}^{d_1} \times \ldots \times \mathcal{S}^{d_r}} via
 Monte Carlo.
 }
 \examples{

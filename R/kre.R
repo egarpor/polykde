@@ -78,8 +78,9 @@ kre_polysph <- function(x, X, Y, d, h, p = 0) {
 #' regression
 #'
 #' @description Computes least squares cross-validation bandwidths for kernel
-#' polyspherical-on-scalar regression. It computes both the bandwidth that
-#' minimizes the cross-validation loss and its "one standard error" variant.
+#' regression estimation with polyspherical response and scalar predictor.
+#' It computes both the bandwidth that minimizes the cross-validation loss and
+#' its "one standard error" variant.
 #'
 #' @inheritParams kre_polysph
 #' @param h_grid bandwidth grid where to optimize the cross-validation loss.

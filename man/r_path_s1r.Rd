@@ -50,8 +50,8 @@ If \code{angles = TRUE} for \code{r_path_s1r}, then a matrix of size
 \code{c(n ,r)} with angles is returned.
 }
 \description{
-Functions for sampling data on \eqn{(\mathcal{S}^d)^r} for
-\eqn{d=1,2} using one-dimensional modes of variation.
+Functions for sampling data on \eqn{(\mathcal{S}^d)^r}, for
+\eqn{d=1,2}, using one-dimensional modes of variation.
 }
 \examples{
 # Straight trends on (S^1)^2
