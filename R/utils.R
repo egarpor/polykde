@@ -4,13 +4,11 @@
 #' @description Computes the softplus function \eqn{\log(1+e^{t})} in a
 #' numerically stable way for large absolute values of \eqn{t}.
 #'
-#' @param t numeric vector or matrix.
+#' @param t vector or matrix.
 #' @return The softplus function evaluated at \code{t}.
 #' @examples
-#' h <- 0.1
-#' k <- 1
-#' curve(polykde:::softplus(k * (1 - (1 - x) / h^2)), from = -1, to = 1)
-#' @keywords internal
+#' curve(softplus(10 * (1 - (1 - x) / 0.1)), from = -1, to = 1)
+#' @export
 softplus <- function(t) {
 
   # Evaluate the function in a stable for either positive or negative t's
@@ -85,9 +83,8 @@ comp_ind_dj <- function(d) {
 #' @return A list with the same structure as the input lists, but with the
 #' entries binded.
 #' @examples
-#' lists <- list(list(1:3, 4:6), list(7:9, 10:12))
-#' polykde:::bind_lists(lists = lists, bind = "rbind")
-#' @keywords internal
+#' polykde:::bind_lists(lists = list(list(1:3, 4:6), list(7:9, 10:12)))
+#' @noRd
 bind_lists <- function(lists, bind = "rbind") {
 
   stopifnot(bind %in% c("rbind", "cbind"))
@@ -115,17 +112,17 @@ bind_lists <- function(lists, bind = "rbind") {
 #' @param mu vector with exponents of the negative argument.
 #' @param s vector with indexes of the polylogarithm.
 #' @inheritParams eff_kern
-#' @param upper upper limit of integration.
+#' @param upper upper limit of integration. Defaults to \code{Inf}.
 #' @details If \code{s} is an integer, 1/2, 3/2, or 5/2, then routines from
 #' the \href{https://www.gnu.org/software/gsl/}{GSL library} to compute
 #' Fermi--Dirac integrals are called. Otherwise, numerical integration is used.
 #' @return A vector of size \code{length(mu)} or \code{length(s)} with the
 #' values of the polylogarithm.
 #' @examples
-#' polykde:::polylog_minus_exp_mu(mu = 1:5, s = 1)
-#' polykde:::polylog_minus_exp_mu(mu = 1, s = 1:5)
-#' polykde:::polylog_minus_exp_mu(mu = 1:5, s = 1:5)
-#' @keywords internal
+#' polylog_minus_exp_mu(mu = 1:5, s = 1)
+#' polylog_minus_exp_mu(mu = 1, s = 1:5)
+#' polylog_minus_exp_mu(mu = 1:5, s = 1:5)
+#' @export
 polylog_minus_exp_mu <- function(mu, s, upper = Inf, ...) {
 
   # gsl::fermi_dirac_int() computes the complete Fermi-Dirac integral
@@ -195,7 +192,6 @@ polylog_minus_exp_mu <- function(mu, s, upper = Inf, ...) {
 
     poly[ind_other] <- -sapply(ind_other, function(i)
       integrate(function(t) {
-        # t^(s[i] - 1) / (gamma(s[i]) * (exp(t - mu[i]) + 1))
         exp((s[i] - 1) * log(t) - (lgamma(s[i]) + log1p(exp(t - mu[i]))))
         }, lower = 0, upper = upper, ...)$value)
 
@@ -217,7 +213,7 @@ polylog_minus_exp_mu <- function(mu, s, upper = Inf, ...) {
 #' @return A vector of size \code{length(d)} with the values of the integral.
 #' @examples
 #' polykde:::J_d_k(d = 1:5, k = 10)
-#' @keywords internal
+#' @noRd
 J_d_k <- function(d, k = 10, upper = Inf, ...) {
 
   sapply(d, function(di)

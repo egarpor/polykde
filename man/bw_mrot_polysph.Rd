@@ -40,7 +40,6 @@ for the polyspherical kernel density estimator using a von Mises--Fisher
 distribution as reference.
 }
 \examples{
-# Comparison of marginal and joint bandwidths
 n <- 100
 d <- 1:2
 kappa <- rep(10, 2)

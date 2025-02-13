@@ -19,8 +19,9 @@ bw_rot_polysph(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
 \item{kernel_type}{type of kernel employed: \code{1} for product kernel
 (default); \code{2} for spherically symmetric kernel.}
 
-\item{bw0}{initial bandwidth for minimizing the AMISE. Computed with
-\code{\link{bw_rot_polysph}} if not provided (default).}
+\item{bw0}{initial bandwidth for minimizing the CV loss. If \code{NULL}, it
+is computed internally by magnifying the \code{\link{bw_mrot_polysph}}
+bandwidths by 50\%.}
 
 \item{upscale}{rescale bandwidths to work on
 \eqn{\mathcal{S}^{d_1}\times\cdots\times \mathcal{S}^{d_r}} and for
@@ -44,7 +45,7 @@ the latter containing the output of \code{\link[stats]{nlm}}.
 \description{
 Computes the rule-of-thumb bandwidth for the polyspherical
 kernel density estimator using a product of von Mises--Fisher distributions
-as reference.
+as reference in the Asymptotic Mean Integrated Squared Error (AMISE).
 }
 \details{
 The selector assumes that the density curvature matrix
@@ -55,7 +56,6 @@ concentration parameters \eqn{\boldsymbol{\kappa}} is done by maximum
 likelihood.
 }
 \examples{
-# Simple check
 n <- 100
 d <- 1:2
 kappa <- rep(10, 2)

@@ -479,8 +479,7 @@ Rcpp::List grad_hess_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
 //' \eqn{\mathsf{D}_{(p-1)}\hat{f}(\boldsymbol{x};\boldsymbol{h})} of the
 //' kernel density estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the
 //' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}},
-//' where \eqn{p=\sum_{j=1}^r d_j+r} is the total dimension of the ambient
-//' space.
+//' where \eqn{p=\sum_{j=1}^r d_j+r} is the dimension of the ambient space.
 //'
 //' @inheritParams kde_polysph
 //' @inheritParams grad_hess_kde_polysph

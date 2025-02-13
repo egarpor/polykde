@@ -1,7 +1,7 @@
 
 #' @title Conversion between the angular and Cartesian coordinates of the torus
 #'
-#' @description Transforms the angles \eqn{(\theta_1,\ldots,\theta_p)} in
+#' @description Transforms the angles \eqn{(\theta_1,\ldots,\theta_d)} in
 #' \eqn{[-\pi,\pi)^d} into the Cartesian coordinates
 #' \deqn{(\cos(x_1), \sin(x_1),\ldots,\cos(x_d), \sin(x_d))}
 #' of the torus \eqn{(\mathcal{S}^1)^d}, and vice versa.
@@ -95,12 +95,6 @@ torus_to_angles <- function(x) {
 #'                                   c(0, 1, 0, 0),
 #'                                   c(0, 0, 0, -1),
 #'                                   c(0, 0, 1, 0))))
-#'
-#' # Circle
-#' sph_to_angles(angles_to_sph(0))
-#' sph_to_angles(angles_to_sph(cbind(0:3)))
-#' angles_to_sph(cbind(sph_to_angles(rbind(c(0, 1), c(1, 0)))))
-#' angles_to_sph(cbind(sph_to_angles(rbind(c(0, 1)))))
 #' @export
 angles_to_sph <- function(theta) {
 
@@ -178,39 +172,6 @@ sph_to_angles <- function(x) {
 #' polysph_to_angles(angles_to_polysph(rep(pi / 2, 3), d = 2:1), d = 2:1)
 #' angles_to_polysph(polysph_to_angles(x = c(0, 0, 1, 0, 1), d = 2:1), d = 2:1)
 #' @export
-polysph_to_angles <- function(x, d) {
-
-  # Convert to matrix
-  if (!is.matrix(x)) {
-
-    x <- matrix(x, nrow = 1)
-
-  }
-
-  # Call sph_to_angles() for each sphere
-  theta <- matrix(0, nrow = nrow(x), ncol = sum(d))
-  ind_p <- 0
-  ind_r <- 0
-  for (di in d) {
-
-    input <- as.matrix(x[, (ind_p + 1):(ind_p + di + 1)])
-    if (nrow(x) == 1) {
-
-      input <- t(input)
-    }
-
-    theta[, (ind_r + 1):(ind_r + di)] <- sph_to_angles(input)
-    ind_p <- ind_p + di + 1
-    ind_r <- ind_r + di
-
-  }
-  return(theta)
-
-}
-
-
-#' @rdname polysph_to_angles
-#' @export
 angles_to_polysph <- function(theta, d) {
 
   # Convert to matrix
@@ -239,5 +200,38 @@ angles_to_polysph <- function(theta, d) {
 
   }
   return(x)
+
+}
+
+
+#' @rdname angles_to_polysph
+#' @export
+polysph_to_angles <- function(x, d) {
+
+  # Convert to matrix
+  if (!is.matrix(x)) {
+
+    x <- matrix(x, nrow = 1)
+
+  }
+
+  # Call sph_to_angles() for each sphere
+  theta <- matrix(0, nrow = nrow(x), ncol = sum(d))
+  ind_p <- 0
+  ind_r <- 0
+  for (di in d) {
+
+    input <- as.matrix(x[, (ind_p + 1):(ind_p + di + 1)])
+    if (nrow(x) == 1) {
+
+      input <- t(input)
+    }
+
+    theta[, (ind_r + 1):(ind_r + di)] <- sph_to_angles(input)
+    ind_p <- ind_p + di + 1
+    ind_r <- ind_r + di
+
+  }
+  return(theta)
 
 }

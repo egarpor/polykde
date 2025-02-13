@@ -3,13 +3,14 @@
 #'
 #' @description An isotropic kernel \eqn{L} on \eqn{\mathcal{S}^d} and its
 #' normalizing constant are such that \eqn{\int_{\mathcal{S}^d} c(h, d, L)
-#' L\left(\frac{1 - \boldsymbol{x}'\boldsymbol{y}}{h^2}\right) d\boldsymbol{x}
-#' = 1} (extrinsic-chordal distance) or \eqn{\int_{\mathcal{S}^d} c(h,d,L)
+#' L\left(\frac{1 - \boldsymbol{x}'\boldsymbol{y}}{h^2}\right)
+#' \,\mathrm{d}\boldsymbol{x} = 1} (extrinsic-chordal distance) or
+#' \eqn{\int_{\mathcal{S}^d} c(h, d, L)
 #' L\left(\frac{\cos^{-1}(\boldsymbol{x}'\boldsymbol{y})^2}{2h^2}\right)
-#' d\boldsymbol{x} = 1} (intrinsic distance).
+#' \,\mathrm{d}\boldsymbol{x} = 1} (intrinsic distance).
 #' @inheritParams kde_polysph
-#' @param t kernel argument. A positive scalar.
-#' @param squared square the kernel? Only for \code{deriv == 0}. Defaults to
+#' @param t vector with the evaluation points.
+#' @param squared square the kernel? Only for \code{deriv = 0}. Defaults to
 #' \code{FALSE}.
 #' @param deriv kernel derivative. Must be \code{0}, \code{1}, or \code{2}.
 #' Defaults to \code{0}.
@@ -18,7 +19,7 @@
 #' @param log compute the logarithm of the constant? Defaults to \code{FALSE}.
 #' @inheritParams L
 #' @param intrinsic consider the intrinsic distance? Defaults to \code{FALSE}.
-#' @param y center of the kernel.
+#' @param y center of the kernel, a vector of size \code{sum(d) + r}.
 #' @details The gradient and Hessian are computed for the functions
 #' \eqn{\boldsymbol{x} \mapsto
 #' L\left(\frac{1 - \boldsymbol{x}'\boldsymbol{y}}{h^2}\right)}.
@@ -26,7 +27,7 @@
 #' \itemize{
 #' \item{\code{L}: a vector with the kernel evaluated at \code{t}.}
 #' \item{\code{grad_L}: a vector with the gradient evaluated at \code{x}.}
-#' \item{\code{hess_L}:a matrix with the Hessian evaluated at \code{x}.}
+#' \item{\code{hess_L}: a matrix with the Hessian evaluated at \code{x}.}
 #' }
 #' @examples
 #' # Constants in terms of h
@@ -321,7 +322,7 @@ hess_L <- function(x, y, h, kernel = 1, k = 10) {
 #'
 #' @inheritParams r_unif_polysph
 #' @inheritParams kde_polysph
-#' @return A vector of size \code{n}.
+#' @return A vector of size \code{n} with the sample.
 #' @examples
 #' hist(r_g_kern(n = 1e3, d = 2, h = 1, kernel = "1"), breaks = 30,
 #'      probability = TRUE, main = "", xlim = c(-1, 1))
@@ -448,8 +449,6 @@ r_g_kern <- function(n, d, h, kernel = "1", k = 10) {
 #' default).
 #' @param ... further arguments passed to \code{\link{integrate}}, such as
 #' \code{upper}, \code{abs.tol}, \code{rel.tol}, etc.
-#' @param bias,squared flags parameters for computing the numerator constants
-#' in the bias and variance constants.
 #' @return
 #' \itemize{
 #' \item{\code{b_d}: a vector with the first kernel moment on each hypersphere
@@ -748,7 +747,9 @@ v_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
 
 
 #' @rdname eff_kern
-#' @keywords internal
+#' @param bias,squared flags parameters for computing the numerator constants
+#' in the bias and variance constants. Default to \code{FALSE}.
+#' @noRd
 lambda_h <- function(d, h = NULL, kernel = "1", bias = FALSE, squared = FALSE,
                      k = 10, ...) {
 
@@ -776,7 +777,7 @@ lambda_h <- function(d, h = NULL, kernel = "1", bias = FALSE, squared = FALSE,
 
 
 #' @rdname eff_kern
-#' @keywords internal
+#' @noRd
 lambda_vmf_h <- function(d, h = NULL, bias = FALSE, squared = FALSE) {
 
   if (bias) {
@@ -822,7 +823,7 @@ lambda_vmf_h <- function(d, h = NULL, bias = FALSE, squared = FALSE) {
 #' d <- seq_len(r)
 #' R <- curv_vmf_polysph(kappa = 10 * d, d = d)
 #' polykde:::beta0_R(d = d, R = R)
-#' @keywords internal
+#' @noRd
 beta0_R <- function(d, R, tol = 1e-10) {
 
   # # Simple fixed-point algorithm

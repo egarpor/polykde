@@ -55,7 +55,8 @@ Defaults to \code{1.25}.}
 \item{alpha_ashape3d_base, alpha_ashape3d_bdry}{alpha parameters for
 \code{\link[alphashape3d]{ashape3d}}. Default to \code{NULL}.}
 
-\item{lit}{lit parameter passed to \code{\link[rgl]{material3d}}.}
+\item{lit}{lit parameter passed to \code{\link[rgl]{material3d}}. Defaults to
+\code{FALSE}.}
 
 \item{...}{further arguments to be passed to \code{\link[rgl]{plot3d}} or
 \code{\link[scatterplot3d]{scatterplot3d}}.}

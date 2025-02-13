@@ -19,12 +19,12 @@ grad_L(x, y, h, kernel = 1, k = 10)
 hess_L(x, y, h, kernel = 1, k = 10)
 }
 \arguments{
-\item{t}{kernel argument. A positive scalar.}
+\item{t}{vector with the evaluation points.}
 
 \item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
 \code{2} for Epanechnikov; \code{3} for softplus.}
 
-\item{squared}{square the kernel? Only for \code{deriv == 0}. Defaults to
+\item{squared}{square the kernel? Only for \code{deriv = 0}. Defaults to
 \code{FALSE}.}
 
 \item{deriv}{kernel derivative. Must be \code{0}, \code{1}, or \code{2}.
@@ -49,22 +49,23 @@ Defaults to \code{0}.}
 \item{x}{a matrix of size \code{c(nx, sum(d) + r)} with the evaluation
 points.}
 
-\item{y}{center of the kernel.}
+\item{y}{center of the kernel, a vector of size \code{sum(d) + r}.}
 }
 \value{
 \itemize{
 \item{\code{L}: a vector with the kernel evaluated at \code{t}.}
 \item{\code{grad_L}: a vector with the gradient evaluated at \code{x}.}
-\item{\code{hess_L}:a matrix with the Hessian evaluated at \code{x}.}
+\item{\code{hess_L}: a matrix with the Hessian evaluated at \code{x}.}
 }
 }
 \description{
 An isotropic kernel \eqn{L} on \eqn{\mathcal{S}^d} and its
 normalizing constant are such that \eqn{\int_{\mathcal{S}^d} c(h, d, L)
-L\left(\frac{1 - \boldsymbol{x}'\boldsymbol{y}}{h^2}\right) d\boldsymbol{x}
-= 1} (extrinsic-chordal distance) or \eqn{\int_{\mathcal{S}^d} c(h,d,L)
+L\left(\frac{1 - \boldsymbol{x}'\boldsymbol{y}}{h^2}\right)
+\,\mathrm{d}\boldsymbol{x} = 1} (extrinsic-chordal distance) or
+\eqn{\int_{\mathcal{S}^d} c(h, d, L)
 L\left(\frac{\cos^{-1}(\boldsymbol{x}'\boldsymbol{y})^2}{2h^2}\right)
-d\boldsymbol{x} = 1} (intrinsic distance).
+\,\mathrm{d}\boldsymbol{x} = 1} (intrinsic distance).
 }
 \details{
 The gradient and Hessian are computed for the functions

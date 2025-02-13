@@ -40,7 +40,8 @@ extrinsic-chordal distance, in the kernel? Defaults to \code{FALSE}.}
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 }
 \value{
-A column vector of size \code{c(n, 1)}.
+A column vector of size \code{c(n, 1)} with the evaluation of the
+logarithm of the cross-validated kernel density estimator.
 }
 \description{
 Computes the logarithm of the cross-validated kernel density

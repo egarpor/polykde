@@ -2,15 +2,15 @@ Package: polykde
 Type: Package
 Title: Polyspherical Kernel Density Estimation
 Version: 1.0.0
-Date: 2025-02-09
+Date: 2025-02-13
 Authors@R: c(person(given = "Eduardo", family = "García-Portugués",
                     role = c("aut", "cre"), email = "edgarcia@est-econ.uc3m.es",
                     comment = c(ORCID = "0000-0002-9224-4111")),
              person(given = "Andrea", family = "Meilán-Vila",
                     role = c("ctb"), email = "ameilan@est-econ.uc3m.es",
                     comment = c(ORCID = "0000-0001-8537-9280")))
-Description: Tools for kernel density estimation on the polysphere, hypersphere,
-    and circle. Includes functions for density estimation, regression estimation,
+Description: Kernel density estimation on the polysphere, hypersphere, and
+    circle. Includes functions for density estimation, regression estimation,
     ridge estimation, bandwidth selection, kernels, samplers, and homogeneity
     tests. Companion package to García-Portugués and Meilán-Vila (2024)
     <doi:10.48550/arXiv.2411.04166> and García-Portugués and Meilán-Vila
