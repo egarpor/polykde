@@ -137,7 +137,7 @@ progressr::with_progress({
 })
 (h_med_rot <- apply(h_rot, 2, median))
 (h_med_cv <- apply(h_cv, 2, median))
-mean(h_med_rot / h_med_cv) # 0.8925769 (dgp = 1)
+mean(h_med_rot / h_med_cv) # 0.9456586 (dgp = 1)
 
 # Bandwidths for the tests (change)
 (c <- 2^(-3:5)[5])
