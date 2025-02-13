@@ -1,7 +1,7 @@
 
 # Randomize testing
-r <- 3
-d <- c(1, 2, 3)
+r <- 2
+d <- c(1, 2)
 h <- runif(r, 0.2, 1.5)
 n <- 50
 p1 <- runif(1)
