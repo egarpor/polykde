@@ -128,27 +128,15 @@ hezz <- function(f, x, d) {
 
 proj_grad_kde_vmf <- function(x, X, d, h) {
 
-  # res <- grad_hess_kde_polysph(x = x, X = X, d = d, h = h, projected = TRUE)
-  # kde <- drop(res$dens)
-  # grad <- drop(res$grad)
-  # hess <- res$hess[1, , ]
-
   kde <- kde_polysph(x = x, X = X, d = d, h = h)
   grad <- grad_bar(f = function(y) kde_polysph(x = y, X = X, d = d, h = h,
                                                norm_x = FALSE),
                    x = x, d = d)
-
   hess <- hess_bar(f = function(y) kde_polysph(x = y, X = X, d = d, h = h,
                                                norm_x = FALSE),
                    x = x, d = d)
-
   eig <- eigen(hess, symmetric = TRUE)
   eta <- drop(grad %*% tcrossprod(eig$vectors[, -1])) / drop(kde)
-
-  # p <- ncol(X)
-  # eig <- eigen(hess / kde, symmetric = TRUE)
-  # I <- diag(1, nrow = p, ncol = p)
-  # eta <- drop((grad / drop(kde)) %*% (I - tcrossprod(eig$vectors[, 1])))
   return(eta)
 
 }
@@ -355,39 +343,3 @@ test_that("Normalizing constants in projected gradient and Hessians", {
   expect_equal(gh_1, gh_2)
   expect_equal(gh_3, gh_4)
 })
-
-# ## Laplacians
-#
-# r <- 3
-# d <- rep(2, r)
-# mu <- r_unif_polysph(n = 1, d = d)
-# h <- rep(1, r)
-# M <- 1e4
-# x_MC <- r_unif_polysph(n = M, d = d)
-#
-# # Compute Laplacians
-# laplacians <- apply(x_MC, 1, function(x) {
-#   hess_ana <- hess_bar(f = function(y) kde_polysph(x = y, X = mu, d = d, h = h,
-#                                                    norm_x = FALSE),
-#                        x = rbind(x), d = d)
-#   rowSums(matrix(diag(hess_ana), nrow = r, byrow = TRUE))
-# })
-# laplacian <- t(laplacians)
-#
-# # Joint curvature
-# int <- (laplacians[1, ] + laplacians[2, ] + laplacians[3, ])^2
-# prod(rotasym::w_p(p = d + 1)) * mean(int)
-#
-# # Sum of marginal curvatures
-# int1 <- laplacians[1, ]^2
-# int2 <- laplacians[2, ]^2
-# int3 <- laplacians[3, ]^2
-# prod(rotasym::w_p(p = d + 1)) * (mean(int1) + mean(int2) + mean(int3))
-#
-# # Cross-term curvature?
-# int12 <- laplacians[1, ] * laplacians[2, ]
-# int13 <- laplacians[1, ] * laplacians[3, ]
-# int23 <- laplacians[2, ] * laplacians[3, ]
-# prod(rotasym::w_p(p = d + 1)) * mean(int12)
-# prod(rotasym::w_p(p = d + 1)) * mean(int13)
-# prod(rotasym::w_p(p = d + 1)) * mean(int23)

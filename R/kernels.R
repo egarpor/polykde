@@ -239,13 +239,6 @@ c_kern <- function(h, d, kernel = "1", kernel_type = "1", k = 10, log = FALSE,
       # Product or spherically symmetric
       if (kernel_type == "1") {
 
-        # N <- 1280
-        # t_k <- sphunif::Gauss_Legen_nodes(N = N)
-        # w_k <- sphunif::Gauss_Legen_weights(N = N)
-        # const <- rotasym::w_p(p = d) / softplus(k) *
-        #   sapply(seq_along(d), function(i)
-        #     sum(w_k * softplus(k * (1 - (1 - t_k) / h[i]^2)) *
-        #           (1 - t_k^2)^(d[i] / 2 - 1)))
         const <- rotasym::w_p(p = d) * sapply(seq_along(d), function(i)
           integrate(f = function(t)
             L(t = (1 - t) / h[i]^2, kernel = 3, k = k, inc_sfp = inc_sfp) *
@@ -823,18 +816,6 @@ lambda_vmf_h <- function(d, h = NULL, bias = FALSE, squared = FALSE) {
 #' polykde:::beta0_R(d = d, R = R)
 #' @noRd
 beta0_R <- function(d, R, tol = 1e-10) {
-
-  # # Simple fixed-point algorithm
-  # b <- rep(1, length(d))
-  # b_old <- rep(0, length(d))
-  # inv_d_R <- diag(1 / d) %*% R
-  # while (sum(abs(b - b_old)) > tol) {
-  #
-  #   b_old <- b
-  #   b <- inv_d_R %*% (1 / b_old)
-  #
-  # }
-  # return(b)
 
   # Fixed-point algorithm
   r <- nrow(R)

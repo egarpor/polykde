@@ -85,10 +85,6 @@ viz_euler_s1r <- function(y_old, X, col_X, k = 1, ind_dj, d, h, h_euler,
   # Kde
   stopifnot(all(d == 1))
   r <- length(d)
-  # kde_X <- kde_polysph(x = X, X = X, d = d, h = h)
-  # cut_X <- cut(kde_X, breaks = seq(min(kde_X), max(kde_X), l = 21),
-  #              include.lowest = TRUE)
-  # col_X <- viridis::viridis(20, alpha = 0.15)[cut_X]
 
   # Set index and plot sample
   ind_k <- 1:2 + 2 * (k - 1)
@@ -221,8 +217,6 @@ viz_euler_s1r <- function(y_old, X, col_X, k = 1, ind_dj, d, h, h_euler,
 
   # End
   points(y_new_k, col = 6, pch = 16)
-  # path_k <- path[, ind_k]
-  # lines(path_k, col = 6, lwd = 5)
 
 }
 
@@ -241,10 +235,6 @@ viz_euler_t2 <- function(y_old, X, col_X, d, h, h_euler, N = 100, eps = 1e-6,
   # Kde
   stopifnot(all(d == 1))
   stopifnot(ncol(X) == 4)
-  # kde_X <- kde_polysph(x = X, X = X, d = d, h = h)
-  # cut_X <- cut(kde_X, breaks = seq(min(kde_X), max(kde_X), l = 21),
-  #              include.lowest = TRUE)
-  # col_X <- viridis::viridis(20, alpha = 0.15)[cut_X]
 
   # Plot sample
   Th <- s1r_to_angles(x = X)
@@ -365,8 +355,6 @@ viz_euler_t2 <- function(y_old, X, col_X, d, h, h_euler, N = 100, eps = 1e-6,
 
   # End
   points(th_new, col = 6, pch = 16)
-  # path_k <- path[, ind_k]
-  # lines(path_k, col = 6, lwd = 5)
 
 }
 
@@ -378,10 +366,6 @@ viz_euler_s2r <- function(y_old, X, col_X, k = 1, ind_dj, d, h, h_euler,
   # Kde
   stopifnot(all(d == 2))
   r <- length(d)
-  # kde_X <- kde_polysph(x = X, X = X, d = d, h = h)
-  # cut_X <- cut(kde_X, breaks = seq(min(kde_X), max(kde_X), l = 21),
-  #              include.lowest = TRUE)
-  # col_X <- viridis::viridis(20, alpha = 0.15)[cut_X]
 
   # Set index and plot sample
   ind_k <- 1:3 + 3 * (k - 1)
@@ -514,8 +498,6 @@ viz_euler_s2r <- function(y_old, X, col_X, k = 1, ind_dj, d, h, h_euler,
 
   # End
   rgl::points3d(y_new_k, col = 6, size = 10)
-  # path_k <- path[, ind_k]
-  # rgl::lines3d(path_k, col = 6, lwd = 5)
 
 }
 

@@ -279,7 +279,6 @@ bw_rot_polysph <- function(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
 
       # Prepare data + fit vMF
       data <- X[, ind[j]:(ind[j + 1] - 1)]
-      # DirStats::kappa_ml(data = data, min_kappa = 0.1, max_kappa = 5000)
       min(DirStats::norm2(movMF::movMF(x = data, k = 1, type = "S",
                                        maxit = 300)$theta),
           5e4) # Breaking point for later Bessels
@@ -368,6 +367,8 @@ bw_rot_polysph <- function(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
     opt <- apply(bw0, 1, function(bw0_j) {
 
       nlm(p = log(bw0_j), f = f_log_amise_stable_log_h, ...)
+      # optim(par = log(bw0_j), fn = fn_log_amise_stable,
+      #       gr = gr_log_amise_stable, method = "L-BFGS-B", ...)
 
     })
     opt <- opt[[which.min(sapply(opt, function(op) op$minimum))]]
@@ -513,18 +514,6 @@ bw_mrot_polysph <- function(X, d, kernel = 1, k = 10, upscale = FALSE,
       log_kernel_den <- 0 # Already canceled with constants in numerator
 
     } else if (kernel == 2 || kernel == 3) {
-
-      # L_kern <- function(t) L(t = t, kernel = kernel, k = k)
-      # log_kernel_num <- 2 * log(q) + log(
-      #   DirStats::d_L(L = L_kern, q = q)) +
-      #   (q + 2) * log(2) + ((q + 1) / 2) * log(pi)
-      # log_kernel_den <- log(4) + 2 * log(DirStats::b_L(L = L_kern, q = q)) +
-      #   log(DirStats::lambda_L(L = L_kern, q = q))
-      #
-      # DirStats::d_L(L = L_kern, q = q) / DirStats::lambda_L(L = L_kern, q = q)
-      # v_d(kernel = kernel, d = q, k = k)
-      # DirStats::b_L(L = L_kern, q = q)
-      # q * b_d(kernel = kernel, d = q, k = k)
 
       log_kernel_num <- log(v_d(kernel = kernel, d = q, k = k)) +
         (q + 2) * log(2) + ((q + 1) / 2) * log(pi)
