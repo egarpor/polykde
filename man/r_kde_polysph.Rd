@@ -26,6 +26,9 @@ r_kde_polysph(n, X, d, h, kernel = 1, kernel_type = 1, k = 10,
 
 \item{norm_X}{ensure a normalization of the data?}
 }
+\value{
+A matrix of size \code{c(n, sum(d) + r)} with the sample.
+}
 \description{
 Simulates from the distribution defined by a polyspherical
 kernel density estimator on \eqn{\mathcal{S}^{d_1} \times \ldots \times

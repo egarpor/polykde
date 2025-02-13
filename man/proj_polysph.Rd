@@ -24,6 +24,5 @@ onto the polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times
 # Example on (S^1)^2
 d <- c(1, 1)
 x <- rbind(c(2, 0, 1, 1))
-polykde:::proj_polysph(x, ind_dj = comp_ind_dj(d))
+proj_polysph(x, ind_dj = comp_ind_dj(d))
 }
-\keyword{internal}

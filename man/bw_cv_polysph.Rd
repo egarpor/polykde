@@ -6,7 +6,7 @@
 density estimator}
 \usage{
 bw_cv_polysph(X, d, kernel = 1, kernel_type = 1, k = 10,
-  type = c("LCV", "LSCV")[1], M = 10000, start = NULL, na.rm = FALSE,
+  type = c("LCV", "LSCV")[1], M = 10000, bw0 = NULL, na.rm = FALSE,
   ncores = 1, h_min = 0, upscale = FALSE, deriv = 0, ...)
 }
 \arguments{
@@ -22,12 +22,15 @@ bw_cv_polysph(X, d, kernel = 1, kernel_type = 1, k = 10,
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 
-\item{type}{cross-validation type, either \code{"LCV"} or \code{"LSCV"}.}
+\item{type}{cross-validation type, either \code{"LCV"} (default) or
+\code{"LSCV"}.}
 
 \item{M}{Monte Carlo samples to use for approximating the integral in
 the LSCV loss.}
 
-\item{start}{staring value for \code{h}.}
+\item{bw0}{initial bandwidth for minimizing the CV loss. If \code{NULL}, it
+is computed internally by magnifying the \code{\link{bw_rot_polysph}}
+bandwidths by 50\%.}
 
 \item{na.rm}{remove \code{NA}s in the objective function? Defaults to
 \code{FALSE}.}
@@ -57,7 +60,6 @@ Cross-Validation (LSCV) bandwidth selection for the polyspherical kernel
 density estimator.
 }
 \examples{
-# Simple checks
 n <- 50
 d <- 1:2
 kappa <- rep(10, 2)

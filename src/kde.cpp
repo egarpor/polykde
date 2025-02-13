@@ -51,7 +51,8 @@ const double log_M_PI = std::log(M_PI);
 //' @param kernel_type type of kernel employed: \code{1} for product kernel
 //' (default); \code{2} for spherically symmetric kernel.
 //' @param k softplus kernel parameter. Defaults to \code{10.0}.
-//' @return A column vector of size \code{c(nx, 1)}.
+//' @return A column vector of size \code{c(nx, 1)} with the evaluation of
+//' kernel density estimator.
 //' @examples
 //' # Simple check on S^1 x S^2
 //' n <- 1e3
@@ -389,7 +390,8 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
 //'
 //' @inheritParams kde_polysph
 //' @param norm_X ensure a normalization of the data? Defaults to \code{FALSE}.
-//' @return A column vector of size \code{c(n, 1)}.
+//' @return A column vector of size \code{c(n, 1)} with the evaluation of the
+//' logarithm of the cross-validated kernel density estimator.
 //' @examples
 //' # Simple check on S^1 x S^2
 //' n <- 5

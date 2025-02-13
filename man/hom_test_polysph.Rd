@@ -47,7 +47,16 @@ integrals in the Jensen--Shannon distance.}
 distance? Does not require Monte Carlo. Defaults to \code{TRUE}.}
 }
 \value{
-An object of class \code{"htest"}.
+An object of class \code{"htest"} with the following fields:
+\item{statistic}{the value of the test statistic.}
+\item{p.value}{the p-value of the test.}
+\item{statistic_perm}{the \code{B} permuted statistics.}
+\item{n}{a table with the sample sizes per group.}
+\item{h}{bandwidths used.}
+\item{B}{number of permutations.}
+\item{alternative}{a character string describing the alternative hypothesis.}
+\item{method}{the kind of test performed.}
+\item{data.name}{a character string giving the name of the data.}
 }
 \description{
 Permutation tests for the equality of distributions of two or

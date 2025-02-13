@@ -14,7 +14,7 @@ points.}
 \item{d}{vector of size \code{r} with dimensions.}
 
 \item{mu}{a vector of size \code{sum(d) + r} with the concatenated von
-Mises--Fisher means on \eqn{\mathcal{S}^{d_j}}.}
+Mises--Fisher means.}
 
 \item{kappa}{a vector of size \code{r} with the von Mises--Fisher
 concentrations.}

@@ -11,7 +11,7 @@ polylog_minus_exp_mu(mu, s, upper = Inf, ...)
 
 \item{s}{vector with indexes of the polylogarithm.}
 
-\item{upper}{upper limit of integration.}
+\item{upper}{upper limit of integration. Defaults to \code{Inf}.}
 
 \item{...}{further arguments passed to \code{\link{integrate}}, such as
 \code{upper}, \code{abs.tol}, \code{rel.tol}, etc.}
@@ -29,8 +29,7 @@ the \href{https://www.gnu.org/software/gsl/}{GSL library} to compute
 Fermi--Dirac integrals are called. Otherwise, numerical integration is used.
 }
 \examples{
-polykde:::polylog_minus_exp_mu(mu = 1:5, s = 1)
-polykde:::polylog_minus_exp_mu(mu = 1, s = 1:5)
-polykde:::polylog_minus_exp_mu(mu = 1:5, s = 1:5)
+polylog_minus_exp_mu(mu = 1:5, s = 1)
+polylog_minus_exp_mu(mu = 1, s = 1:5)
+polylog_minus_exp_mu(mu = 1:5, s = 1:5)
 }
-\keyword{internal}

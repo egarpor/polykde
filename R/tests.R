@@ -34,7 +34,16 @@
 #' affine invariant Riemannian metric between the estimated scatter matrices.
 #' The \code{"hd"} statistic computes a monotonic transformation of the
 #' Hellinger distance, which is the Bhattacharyya divergence (or coefficient).
-#' @return An object of class \code{"htest"}.
+#' @return An object of class \code{"htest"} with the following fields:
+#' \item{statistic}{the value of the test statistic.}
+#' \item{p.value}{the p-value of the test.}
+#' \item{statistic_perm}{the \code{B} permuted statistics.}
+#' \item{n}{a table with the sample sizes per group.}
+#' \item{h}{bandwidths used.}
+#' \item{B}{number of permutations.}
+#' \item{alternative}{a character string describing the alternative hypothesis.}
+#' \item{method}{the kind of test performed.}
+#' \item{data.name}{a character string giving the name of the data.}
 #' @examples
 #' ## Two-sample case
 #' \donttest{
@@ -500,7 +509,7 @@ hom_test_polysph <- function(X, d, labels,
 #' @description Computes the Hellinger distance
 #' \deqn{H(f, g) = \sqrt(1 - \int_{\mathcal{S}^{d_1} \times \ldots \times
 #' \mathcal{S}^{d_r}} \sqrt(f(\boldsymbol{x}) g(\boldsymbol{x}))
-#' d\boldsymbol{x})} between two densities \eqn{f} and \eqn{g} on
+#' \,\mathrm{d}\boldsymbol{x})} between two densities \eqn{f} and \eqn{g} on
 #' \eqn{\mathcal{S}^{d_1} \times \ldots \times \mathcal{S}^{d_r}} via
 #' Monte Carlo.
 #'
@@ -523,7 +532,7 @@ hom_test_polysph <- function(X, d, labels,
 #' polykde:::hd_mc(log_f = log_f, log_g = log_g, d = d)
 #' polykde:::hd_mc(log_f = log_f, log_g = log_f, d = d, bhatta = TRUE)
 #' polykde:::hd_mc(log_f = log_f, log_g = log_g, d = d, bhatta = TRUE)
-#' @keywords internal
+#' @noRd
 hd_mc <- function(log_f, log_g, d, bhatta = FALSE) {
 
   # Hellinger distance: H(f, g) = \sqrt(1 - \int \sqrt(f(x) * g(x)) dx)

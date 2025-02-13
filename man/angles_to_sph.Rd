@@ -40,10 +40,4 @@ angles_to_sph(sph_to_angles(rbind(c(0, sqrt(0.5), sqrt(0.1), sqrt(0.4)),
                                   c(0, 1, 0, 0),
                                   c(0, 0, 0, -1),
                                   c(0, 0, 1, 0))))
-
-# Circle
-sph_to_angles(angles_to_sph(0))
-sph_to_angles(angles_to_sph(cbind(0:3)))
-angles_to_sph(cbind(sph_to_angles(rbind(c(0, 1), c(1, 0)))))
-angles_to_sph(cbind(sph_to_angles(rbind(c(0, 1)))))
 }
