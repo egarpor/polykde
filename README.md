@@ -20,8 +20,7 @@ Meilán-Vila, 2024).
 ## Replicability
 
 The folder `/replication` contains the scripts to replicate the
-simulations and numerical experiments of the Supplementary Material
-(SM):
+numerical experiments of the Supplementary Material (SM):
 
 - The script `kde-sims.R` reproduces the asymptotic normality experiment
   in Section B.1 of the SM.

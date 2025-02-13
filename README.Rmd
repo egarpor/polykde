@@ -33,7 +33,7 @@ Companion package for the article *Kernel density estimation with polyspherical 
 
 ## Replicability
 
-The folder `/replication` contains the scripts to replicate the simulations and numerical experiments of the Supplementary Material (SM):
+The folder `/replication` contains the scripts to replicate the numerical experiments of the Supplementary Material (SM):
 
 * The script `kde-sims.R` reproduces the asymptotic normality experiment in Section B.1 of the SM.
 * The script `kde-efic.R` computes the kernel efficiency table in Section B.2 of the SM and plots in Section 4 of the paper.
