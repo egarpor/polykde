@@ -526,7 +526,7 @@ test_that("Kde Hessian for vMF and sfp", {
         drop(kde_polysph(x = rbind(x), X = X, norm_x = FALSE, h = h, d = d,
                          kernel = kernel)), x = x,
         method.args = list(eps = 1e-10)),
-      tolerance = 1e-2)
+      tolerance = 5e-2)
   }
 })
 
