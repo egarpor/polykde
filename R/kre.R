@@ -121,11 +121,6 @@ bw_cv_kre_polysph <- function(X, Y, d, p = 0, h_grid = bw.nrd(X) *
         K <- (-0.5 / h^2) * dist(X)^2
         K <- as.matrix(K)
 
-        # Weights ij-matrix W_i(X_j): \sum_i W_i(X_j) = 1 -- Skip and compute
-        # directly W_minus_i for a better numerical stability
-        # diag(K) <- 1
-        # W <- sdetorus::safeSoftMax(logs = K, expTrc = 100)
-
         # Safe computation of the weights ij-matrix without i-th datum.
         # Normalize by row once ii-entry is removed:
         # W_{-i,j}(X_i) = W_j(X_i) / (1 - W_i(X_i)), j = 1, ..., n.

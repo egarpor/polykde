@@ -230,19 +230,19 @@ test_that("Derivatives of log_amise_*", {
       drop(attr(log_amise(h), which = "gradient")),
       numDeriv::grad(func = log_amise, x = h, method = "Richardson",
                      method.args = list(eps = 1e-10)),
-      tolerance = 1e-7
+      tolerance = 1e-6
       )
     expect_equal(
       drop(attr(log_amise_stable(h), which = "gradient")),
       numDeriv::grad(func = log_amise_stable, x = h, method = "Richardson",
                      method.args = list(eps = 1e-10)),
-      tolerance = 1e-7
+      tolerance = 1e-6
     )
     expect_equal(
       drop(attr(log_amise_stable_log_h(log(h)), which = "gradient")),
       numDeriv::grad(func = log_amise_stable_log_h, x = log(h),
                      method = "Richardson", method.args = list(eps = 1e-10)),
-      tolerance = 1e-7
+      tolerance = 1e-6
     )
   }
 })

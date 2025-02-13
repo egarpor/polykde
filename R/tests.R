@@ -245,30 +245,6 @@ hom_test_polysph <- function(X, d, labels,
         # CV approximation of the H(f_j)'s and H(f_0)?
         if (cv_jsd == 1) {
 
-          # # Estimate H(f_j)'s
-          # mc_samp <- list()
-          # H_fj <- numeric(kg)
-          # for (j in seq_len(kg)) {
-          #
-          #   # H(f_j)
-          #   log_fj_cv <- log_cv_kde_polysph(X = X[ind_j[[j]], ], d = d,
-          #                                   h = h, kernel = kernel,
-          #                                   kernel_type = kernel_type, k = k,
-          #                                   wrt_unif = TRUE)
-          #   H_fj[j] <- -mean(log_fj_cv)
-          #
-          # }
-          #
-          # # H(f_0)
-          # log_f0_cv <- log_cv_kde_polysph(X = X, d = d, h = h, kernel = kernel,
-          #                                 kernel_type = kernel_type, k = k,
-          #                                 weights = rep(probs / n, times = n),
-          #                                 wrt_unif = TRUE)
-          # H_f0 <- -mean(log_f0_cv)
-          #
-          # # Finally, compute Jensen--Shannon divergence
-          # jsd_old <- H_f0 - sum(probs * H_fj)
-
           # Compute pi_j * log_fj_cv and concatenate them
           mc_samp <- list()
           log_fj_cv <- numeric()
@@ -309,21 +285,6 @@ hom_test_polysph <- function(X, d, labels,
             H_fj[j] <- -mean(log_fj)
 
           }
-
-          # # log_f0 for H(f_0)
-          # log_f0 <- matrix(nrow = N, ncol = kg)
-          # for (j in seq_len(kg)) {
-          #
-          #   log_f0[, j] <- kde_polysph(x = X, X = X[ind_j[[j]], ],
-          #                              d = d, h = h, kernel = kernel,
-          #                              kernel_type = kernel_type, k = k,
-          #                              log = TRUE, wrt_unif = TRUE) +
-          #     log(probs[j])
-          #
-          # }
-          # log_max <- apply(log_f0, 1, max)
-          # log_f0 <- log_max + log(rowSums(exp(log_f0 - log_max)))
-          # H_f0 <- -mean(log_f0)
 
           # H(f_0)
           log_f0 <- kde_polysph(x = X, X = X, d = d, h = h, kernel = kernel,
