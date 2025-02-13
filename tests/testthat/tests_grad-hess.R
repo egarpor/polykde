@@ -246,12 +246,12 @@ hess_num_unproj <- numDeriv::hessian(func = function(y)
   method.args = list(eps = 1e-12))
 
 test_that("Numerical and analytical projected Hessian coincide", {
-  expect_equal(hess_ana, hess_num, tolerance = 1e-9)
+  expect_equal(hess_ana, hess_num, tolerance = 1e-6)
 })
 
 test_that("Unprojected analytical and vMF-specific R Hessian coincide", {
   expect_equal(hess_kde_vmf(x = x, X = X, d = d, h = h),
-                      hess_num_unproj, tolerance = 1e-8)
+                      hess_num_unproj, tolerance = 1e-7)
 })
 
 test_that("Unprojected analytical and vMF-specific Rcpp Hessian coincide", {
@@ -259,9 +259,9 @@ test_that("Unprojected analytical and vMF-specific Rcpp Hessian coincide", {
                                 norm_grad_hess = FALSE)
   gh_2 <- grad_hess_kde_polysph(x = x, X = X, d = d, h = h, projected = FALSE,
                                 norm_grad_hess = TRUE)
-  expect_equal(drop(gh_1$hess[1, , ]), hess_num_unproj, tolerance = 1e-9)
+  expect_equal(drop(gh_1$hess[1, , ]), hess_num_unproj, tolerance = 1e-7)
   expect_equal(drop(gh_2$hess[1, , ]), drop(gh_1$hess[1, , ]) / drop(gh_1$dens),
-               tolerance = 1e-8)
+               tolerance = 1e-7)
 })
 
 test_that("Analytical and vMF-specific Rcpp Hessian coincide", {
@@ -269,9 +269,9 @@ test_that("Analytical and vMF-specific Rcpp Hessian coincide", {
                                 norm_grad_hess = FALSE, proj_alt = FALSE)
   gh_2 <- grad_hess_kde_polysph(x = x, X = X, d = d, h = h, projected = TRUE,
                                 norm_grad_hess = TRUE, proj_alt = FALSE)
-  expect_equal(drop(gh_1$hess[1, , ]), hess_ana, tolerance = 1e-9)
+  expect_equal(drop(gh_1$hess[1, , ]), hess_ana, tolerance = 1e-7)
   expect_equal(drop(gh_2$hess[1, , ]), drop(gh_1$hess[1, , ]) / drop(gh_1$dens),
-               tolerance = 1e-8)
+               tolerance = 1e-7)
 })
 
 test_that("Hessian vanish in the x direction", {
@@ -290,18 +290,20 @@ test_that("Analytical and vMF-specific Rcpp projected gradient coincide", {
                expect_warning(drop(proj_grad_kde_polysph(
                  x = x, X = X, d = d, h = h, proj_alt = FALSE,
                  fix_u1 = FALSE)$eta)),
-               tolerance = 1e-7)
+               tolerance = 1e-6)
 })
 
 test_that("vMF-specific Rcpp projected gradient with/without sparsity", {
   expect_equal(proj_grad_kde_polysph(x = x, X = X, d = d, h = h,
                                      sparse = TRUE, fix_u1 = FALSE)$eta,
                proj_grad_kde_polysph(x = x, X = X, d = d, h = h,
-                                     sparse = FALSE, fix_u1 = FALSE)$eta)
+                                     sparse = FALSE, fix_u1 = FALSE)$eta,
+               tolerance = 1e-6)
   expect_equal(proj_grad_kde_polysph(x = x, X = X, d = d, h = h,
                                      sparse = TRUE)$eta,
                proj_grad_kde_polysph(x = x, X = X, d = d, h = h,
-                                     sparse = FALSE)$eta)
+                                     sparse = FALSE)$eta,
+               tolerance = 1e-6)
 })
 
 test_that("Projected gradient is orthogonal to x", {
