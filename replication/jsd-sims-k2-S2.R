@@ -234,7 +234,7 @@ type <- "jsd"
 h_rot <- h_cv <- numeric(M)
 progressr::with_progress({
   prog <- progressr::progressor(along = seq_len(M))
-  for (i in seq_len(M) {
+  for (i in seq_len(M)) {
 
     set.seed(1e6 + i)
     X <- switch(dgp,
@@ -252,10 +252,10 @@ progressr::with_progress({
 })
 (h_med_rot <- median(h_rot))
 (h_med_cv <- median(h_cv))
-h_med_rot / h_med_cv # 7.001466
+h_med_rot / h_med_cv # 7.001773 (dgp = 1)
 
-# Bandwidths for the tests
-(c <- 2^(-3:5)[9])
+# Bandwidths for the tests (change)
+(c <- 2^(-3:5)[5])
 h_test <- c * h_med_cv
 
 # File for saving & loading

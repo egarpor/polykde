@@ -124,7 +124,7 @@ type <- "jsd"
 h_rot <- h_cv <- matrix(nrow = M, ncol = r)
 progressr::with_progress({
   prog <- progressr::progressor(along = seq_len(M))
-  for (i in seq_len(M) {
+  for (i in seq_len(M)) {
 
     set.seed(1e6 + i)
     X <- r_hyp_a(n1 = n1, n2 = n2, n3 = n3, d = d, r = r)$X
@@ -137,10 +137,10 @@ progressr::with_progress({
 })
 (h_med_rot <- apply(h_rot, 2, median))
 (h_med_cv <- apply(h_cv, 2, median))
-mean(h_med_rot / h_med_cv) # 0.8925769
+mean(h_med_rot / h_med_cv) # 0.8925769 (dgp = 1)
 
-# Bandwidths for the tests
-(c <- 2^(-3:5)[9])
+# Bandwidths for the tests (change)
+(c <- 2^(-3:5)[5])
 h_test <- c * h_med_rot
 
 # File for saving & loading

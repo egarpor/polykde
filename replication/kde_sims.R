@@ -9,7 +9,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 ## Simulation
 
 # Setting
-r <- 2
+r <- 1
 d <- 2
 dd <- rep(d, r)
 stopifnot(all(dd == d))
@@ -17,7 +17,6 @@ mu <- rep(c(1, rep(0, d)), r)
 kappa <- rep(5, r)
 x <- rbind(mu)
 kernel <- 1
-# x <- r_vmf_polysph(n = 1, d = dd, mu = mu, kappa = kappa)
 
 # Variance elements
 f_x <- drop(kde_polysph(x = x, X = rbind(mu), d = dd, h = 1 / sqrt(kappa),
@@ -34,11 +33,8 @@ nabla2_x <- apply(nabla2_samp, 1, function(xi) sum(diag(Hf(x = xi)))^2)
 (R <- rotasym::w_p(p = d + 1)^r * mean(nabla2_x))
 (C <- (vd^r / bd^2 * (d * r) / (4 * R))^(1 / (d * r + 4)))
 
-# # When r = 1, check R with:
-# d^2 * DirStats::R_Psi_mixvmf(q = d, mu = rbind(mu), kappa = kappa, p = 1)
-
 # Monte Carlo
-M <- 1e4
+M <- 1e5
 (n <- 2^(7:17))
 delta <- c(-2:2, 4)
 kde <- array(NA, dim = c(M, length(n), length(delta)))
@@ -56,18 +52,6 @@ for (j in seq_along(n)) {
     # Bandwidths
     h[j, k] <- C * n[j]^(-1 / (4 + d * r + delta[k]))
     hh <- rep(h[j, k], r)
-
-    # # Sequential Monte Carlo
-    # for (i in seq_len(M)) {
-    #
-    #   set.seed(i, kind = "Mersenne-Twister")
-    #   samp <- r_vmf_polysph(n = n[j], d = dd, mu = mu, kappa = kappa)
-    #   kde[i, j, k] <- tryCatch(kde_polysph(x = x, X = samp, d = dd, h = hh,
-    #                                        wrt_unif = FALSE, kernel = kernel),
-    #                            error = function(e) NA)
-    #   setTxtProgressBar(pb, value = ((k - 1) * M + i) / (M * length(delta)))
-    #
-    # }
 
     # Parallel Monte Carlo
     kde[, j, k] <- foreach::foreach(i = 1:M, .combine = "c",
@@ -92,12 +76,6 @@ stopCluster(cl)
 # Asymptotic expectation, variance, and rate
 asymp_exp <- f_x + bd * sum(diag(Hf_x)) * h^2
 asymp_var <- (vd^r * f_x) / (n * (h^d)^r)
-# bd_vmf_h <- (1 / d) * lambda_vmf_h(d = d, h = h, bias = TRUE) /
-#   lambda_vmf_h(d = d, h = h, bias = FALSE)
-# vd_vmf_h <- lambda_vmf_h(d = d, h = h, squared = TRUE) /
-#   lambda_vmf_h(d = d, h = h, squared = FALSE)^2
-# asymp_exp2 <- f_x + bd_vmf_h * sum(diag(Hf_x)) * h^2
-# asymp_var2 <- (vd_vmf_h^r * f_x) / (n * (h^d)^r)
 rate_n <- 1 / sqrt(asymp_var)
 
 # Exact expectation and variance
@@ -106,10 +84,10 @@ exact_var <- apply(kde, 2:3, var)
 
 # Zn statistics
 zn_1 <- zn_2 <- array(NA, dim = c(M, length(n), length(delta)))
-for (i in seq_len(M) {
+for (i in seq_len(M)) {
 
-  zn_1[i, , ] <- rate_n * (kde[i, , ] - exact_exp)    # Central
-  zn_2[i, , ] <- rate_n * (kde[i, , ] - asymp_exp)   # Expansion
+  zn_1[i, , ] <- rate_n * (kde[i, , ] - exact_exp) # Central
+  zn_2[i, , ] <- rate_n * (kde[i, , ] - asymp_exp) # Expansion
 
 }
 
@@ -120,36 +98,14 @@ save(list = ls(), file = paste0("kde-norm-kernel", kernel,
 
 ## Analysis
 
-# (r, d, kernel) = (1, 1, *): Perfect match for bias/var for delta = -2:2
-# (r, d, kernel) = (1, 2, *): Perfect match for bias/var for delta = -1:2
-# (r, d, kernel) = (2, 1, *): NO match for bias for delta = -2:2,
-#                             but match for var for delta = -2:0 (larger n's).
-#                             The kernel has an effect.
-# (r, d, kernel) = (2, 2, *): NO match for bias for delta = -2:2,
-#                             but match for var for delta = -2:0 (larger n's).
-#                             The kernel has an effect.
-# Problem: ^r must be removed on the bias moment!
-
 # Load data
-r <- 2
+r <- 1
 d <- 2
 kernel <- 1
 k <- 5
 M <- 1e5
 load(dir(pattern = paste0("kde-norm-kernel", kernel,
                           "-r", r, "-d", d, "-k", k, "-M", log10(M), "-*"))[1])
-
-# # Subset to delta = -2:2, 4
-# delta_small <- c(-2:2, 4)
-# ind <- delta %in% delta_small
-# zn_1 <- zn_1[ , , ind]
-# zn_2 <- zn_2[ , , ind]
-# exact_exp <- exact_exp[, ind]
-# asymp_exp <- asymp_exp[, ind]
-# exact_var <- exact_var[, ind]
-# asymp_var <- asymp_var[, ind]
-# h <- h[, ind]
-# delta <- delta_small
 
 # Plots of expectation, log(bias), and variance
 col <- viridis::plasma(length(delta))
