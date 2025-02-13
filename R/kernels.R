@@ -436,9 +436,9 @@ r_g_kern <- function(n, d, h, kernel = "1", k = 10) {
 #' \cdots \times \mathcal{S}^{d_r}} and efficiencies of kernels on
 #' \eqn{(\mathcal{S}^d)^r}.
 #'
-#' @param d either a vector with the dimensions or a scalar with the
-#' common dimension of each hypersphere (a scalar).
-#' @param r number of polyspheres of the same dimension.
+#' @param d a scalar with the common dimension of each hypersphere
+#' \eqn{\mathcal{S}^d}.
+#' @param r a scalar with the number of polyspheres of the same dimension.
 #' @inheritParams kde_polysph
 #' @param kernel_ref reference kernel to which compare the efficiency. Uses the
 #' same codification as the \code{kernel}. Defaults to \code{"2"}.
@@ -518,8 +518,6 @@ eff_kern <- function(d, r, k = 10, kernel, kernel_type = c("prod", "sph")[1],
   }
 
   # Efficiency
-  # eff <- (C_d_r(kern = kernel_ref, kernel_type = kernel_ref_type) /
-  #           C_d_r(kern = kernel, kernel_type = kernel_type))^((d * r + 4) / 4)
   eff <- C_d_r(kern = kernel_ref, kernel_type = kernel_ref_type) /
     C_d_r(kern = kernel, kernel_type = kernel_type)
   return(eff)

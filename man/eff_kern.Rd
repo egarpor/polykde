@@ -14,10 +14,10 @@ b_d(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...)
 v_d(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...)
 }
 \arguments{
-\item{d}{either a vector with the dimensions or a scalar with the
-common dimension of each hypersphere (a scalar).}
+\item{d}{a scalar with the common dimension of each hypersphere
+\eqn{\mathcal{S}^d}.}
 
-\item{r}{number of polyspheres of the same dimension.}
+\item{r}{a scalar with the number of polyspheres of the same dimension.}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 
