@@ -4,8 +4,6 @@
 \alias{eff_kern}
 \alias{b_d}
 \alias{v_d}
-\alias{lambda_h}
-\alias{lambda_vmf_h}
 \title{Polyspherical kernel moments and efficiencies}
 \usage{
 eff_kern(d, r, k = 10, kernel, kernel_type = c("prod", "sph")[1],
@@ -14,11 +12,6 @@ eff_kern(d, r, k = 10, kernel, kernel_type = c("prod", "sph")[1],
 b_d(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...)
 
 v_d(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...)
-
-lambda_h(d, h = NULL, kernel = "1", bias = FALSE, squared = FALSE,
-  k = 10, ...)
-
-lambda_vmf_h(d, h = NULL, bias = FALSE, squared = FALSE)
 }
 \arguments{
 \item{d}{either a vector with the dimensions or a scalar with the
@@ -43,11 +36,6 @@ default).}
 
 \item{...}{further arguments passed to \code{\link{integrate}}, such as
 \code{upper}, \code{abs.tol}, \code{rel.tol}, etc.}
-
-\item{h}{vector of size \code{r} with bandwidths.}
-
-\item{bias, squared}{flags parameters for computing the numerator constants
-in the bias and variance constants.}
 }
 \value{
 \itemize{
@@ -75,4 +63,3 @@ eff_kern(d = 2, r = 1, kernel = "1")
 eff_kern(d = 2, r = 1, kernel = "2")
 eff_kern(d = 2, r = 1, k = 10, kernel = "3")
 }
-\keyword{internal}

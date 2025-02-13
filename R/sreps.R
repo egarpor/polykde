@@ -58,7 +58,8 @@ interp_polysph <- function(x, y, ind_dj, N = 10) {
 #' Defaults to \code{1.25}.
 #' @param alpha_ashape3d_base,alpha_ashape3d_bdry alpha parameters for
 #' \code{\link[alphashape3d]{ashape3d}}. Default to \code{NULL}.
-#' @param lit lit parameter passed to \code{\link[rgl]{material3d}}.
+#' @param lit lit parameter passed to \code{\link[rgl]{material3d}}. Defaults to
+#' \code{FALSE}.
 #' @param ... further arguments to be passed to \code{\link[rgl]{plot3d}} or
 #' \code{\link[scatterplot3d]{scatterplot3d}}.
 #' @return Creates a static or interactive plot.
@@ -226,118 +227,118 @@ view_srep <- function(base, dirs, bdry, radii, show_base = TRUE,
 }
 
 
-#' #' @title Movie weighted by distances
-#' #'
-#' #' @description TODO
-#' #'
-#' #' @param X TODO
-#' #' @inheritParams proj_polysph
-#' #' @param ord TODO
-#' #' @param L number of frames. If \code{NULL}, \code{nx} frames are taken.
-#' #' @return TODO
-#' #' @examples
-#' #' X <- polykde:::interp_polysph(x = c(1, 0), y = c(0, 1),
-#' #'                               ind_dj = comp_ind_dj(d = 1), N = 5)
-#' #' polykde:::interp_srep(X = X, ind_dj = comp_ind_dj(d = 1), ord = 1:5, L = 10)
-#' #' polykde:::interp_srep(X = X, ind_dj = comp_ind_dj(d = 1), ord = 5:1, L = 10)
-#' #' @keywords internal
-#' interp_srep <- function(X, ind_dj, ord, L = NULL) {
-#'
-#'   # Ordered
-#'   X_ord <- X[ord, ]
-#'
-#'   # How many frames per index
-#'   if (is.null(L)) {
-#'
-#'     L <- nrow(X_ord) - 1
-#'     frames <- rep(1, L)
-#'     ind_frames <- seq_len(L)
-#'
-#'   } else {
-#'
-#'     dists <- dist_polysph(x = X_ord[-1, ], y = X_ord[-nrow(X_ord), ],
-#'                           ind_dj = ind_dj)
-#'     frames <- round(c(L * dists / sum(dists)))
-#'     ind_frames <- which(frames > 0)
-#'     frames <- frames[ind_frames]
-#'
-#'   }
-#'
-#'   # Interpolation
-#'   int <- X_ord[ind_frames[1], ]
-#'   for (i in seq_along(ind_frames)) {
-#'
-#'     int_i <- interp_polysph(x = X_ord[ind_frames[i], ],
-#'                             y = X_ord[ind_frames[i] + 1, ],
-#'                             ind_dj = ind_dj, N = frames[i] + 1)[-1, ]
-#'     int <- rbind(int, int_i)
-#'
-#'   }
-#'   return(int)
-#'
-#' }
-#'
-#'
-#' #' @title View s-reps across time
-#' #'
-#' #' @description TODO
-#' #'
-#' #' @param avg_base average base points, a matrix of size \code{c(nx, 3)}.
-#' #' @param avg_dirs average directions of spokes, a matrix of size
-#' #' \code{c(nx, 3)} with unit vectors.
-#' #' @param avg_radii average radii of spokes, a vector of size \code{nx}.
-#' #' @param moving_spokes TODO
-#' #' @inheritParams interp_srep
-#' #' @param col_pal color palette for
-#' #' @inheritParams view_srep
-#' #' @param ... further arguments passed to \code{\link{view_srep}}.
-#' #' @return Creates a static or interactive plot.
-#' #' @examples
-#' #' base <- r_unif_polysph(n = 50, d = 2)
-#' #' dirs <- base
-#' #' radii <- runif(nrow(base), min = 0.5, max = 1)
-#' #' bdry <- base + radii * dirs
-#' #' polykde:::view_srep_movie(avg_base = base, avg_radii = radii,
-#' #'                           avg_dirs = dirs, moving_spokes = 1:25,
-#' #'                           X = dirs)
-#' #' @keywords internal
-#' view_srep_movie <- function(avg_base, avg_radii, avg_dirs, moving_spokes,
-#'                             X, ord, col_pal = grDevices::rainbow, L = NULL,
-#'                             static = TRUE, ...) {
-#'
-#'   # Obtain ind_dj_nice
-#'   r_nice <- sum(moving_spokes)
-#'   d_nice <- rep(2, r_nice)
-#'   ind_dj_nice <- rep(0, r_nice + 1)
-#'   ind_dj_nice[-1] <- d_nice + 1
-#'   ind_dj_nice <- cumsum(ind_dj_nice)
-#'
-#'   # Interpolation of directions
-#'   rid_dirs <- interp_srep(X = X, ind_dj = ind_dj_nice,
-#'                           ord = ord, L = L)
-#'   L <- nrow(rid_dirs)
-#'   cols <- col_pal(L)
-#'   rid_dirs_k <- avg_dirs
-#'
-#'   # Plot s-reps
-#'   if (static) {
-#'
-#'     angle <- 40
-#'     manipulate::manipulate({
-#'
-#'       # Update directions
-#'       rid_dirs_k[moving_spokes, ] <- matrix(rid_dirs[k, ], ncol = 3,
-#'                                             byrow = TRUE)
-#'
-#'       # Plot s-rep
-#'       view_srep(base = avg_base, dirs = rid_dirs_k, radii = avg_radii,
-#'                 show_base = FALSE, show_base_pt = TRUE, show_bdry = TRUE,
-#'                 show_bdry_pt = TRUE, show_seg = TRUE,
-#'                 col_bndy = ifelse(moving_spokes, cols[k], "gray"),
-#'                 col_base = 1, col_seg = ifelse(moving_spokes, cols[k], "gray"),
-#'                 static = static, angle = angle, ...)
-#'       # theta = theta, phi = phi)
-#'
+# #' @title Movie weighted by distances
+# #'
+# #' @description TODO
+# #'
+# #' @param X TODO
+# #' @inheritParams proj_polysph
+# #' @param ord TODO
+# #' @param L number of frames. If \code{NULL}, \code{nx} frames are taken.
+# #' @return TODO
+# #' @examples
+# #' X <- polykde:::interp_polysph(x = c(1, 0), y = c(0, 1),
+# #'                               ind_dj = comp_ind_dj(d = 1), N = 5)
+# #' polykde:::interp_srep(X = X, ind_dj = comp_ind_dj(d = 1), ord = 1:5, L = 10)
+# #' polykde:::interp_srep(X = X, ind_dj = comp_ind_dj(d = 1), ord = 5:1, L = 10)
+# #' @noRd
+# interp_srep <- function(X, ind_dj, ord, L = NULL) {
+#
+#   # Ordered
+#   X_ord <- X[ord, ]
+#
+#   # How many frames per index
+#   if (is.null(L)) {
+#
+#     L <- nrow(X_ord) - 1
+#     frames <- rep(1, L)
+#     ind_frames <- seq_len(L)
+#
+#   } else {
+#
+#     dists <- dist_polysph(x = X_ord[-1, ], y = X_ord[-nrow(X_ord), ],
+#                           ind_dj = ind_dj)
+#     frames <- round(c(L * dists / sum(dists)))
+#     ind_frames <- which(frames > 0)
+#     frames <- frames[ind_frames]
+#
+#   }
+#
+#   # Interpolation
+#   int <- X_ord[ind_frames[1], ]
+#   for (i in seq_along(ind_frames)) {
+#
+#     int_i <- interp_polysph(x = X_ord[ind_frames[i], ],
+#                             y = X_ord[ind_frames[i] + 1, ],
+#                             ind_dj = ind_dj, N = frames[i] + 1)[-1, ]
+#     int <- rbind(int, int_i)
+#
+#   }
+#   return(int)
+#
+# }
+
+
+# #' @title View s-reps across time
+# #'
+# #' @description TODO
+# #'
+# #' @param avg_base average base points, a matrix of size \code{c(nx, 3)}.
+# #' @param avg_dirs average directions of spokes, a matrix of size
+# #' \code{c(nx, 3)} with unit vectors.
+# #' @param avg_radii average radii of spokes, a vector of size \code{nx}.
+# #' @param moving_spokes TODO
+# #' @inheritParams interp_srep
+# #' @param col_pal color palette for
+# #' @inheritParams view_srep
+# #' @param ... further arguments passed to \code{\link{view_srep}}.
+# #' @return Creates a static or interactive plot.
+# #' @examples
+# #' base <- r_unif_polysph(n = 50, d = 2)
+# #' dirs <- base
+# #' radii <- runif(nrow(base), min = 0.5, max = 1)
+# #' bdry <- base + radii * dirs
+# #' polykde:::view_srep_movie(avg_base = base, avg_radii = radii,
+# #'                           avg_dirs = dirs, moving_spokes = 1:25,
+# #'                           X = dirs)
+# #' @noRd
+# view_srep_movie <- function(avg_base, avg_radii, avg_dirs, moving_spokes,
+#                             X, ord, col_pal = grDevices::rainbow, L = NULL,
+#                             static = TRUE, ...) {
+#
+#   # Obtain ind_dj_nice
+#   r_nice <- sum(moving_spokes)
+#   d_nice <- rep(2, r_nice)
+#   ind_dj_nice <- rep(0, r_nice + 1)
+#   ind_dj_nice[-1] <- d_nice + 1
+#   ind_dj_nice <- cumsum(ind_dj_nice)
+#
+#   # Interpolation of directions
+#   rid_dirs <- interp_srep(X = X, ind_dj = ind_dj_nice,
+#                           ord = ord, L = L)
+#   L <- nrow(rid_dirs)
+#   cols <- col_pal(L)
+#   rid_dirs_k <- avg_dirs
+#
+#   # Plot s-reps
+#   if (static) {
+#
+#     angle <- 40
+#     manipulate::manipulate({
+#
+#       # Update directions
+#       rid_dirs_k[moving_spokes, ] <- matrix(rid_dirs[k, ], ncol = 3,
+#                                             byrow = TRUE)
+#
+#       # Plot s-rep
+#       view_srep(base = avg_base, dirs = rid_dirs_k, radii = avg_radii,
+#                 show_base = FALSE, show_base_pt = TRUE, show_bdry = TRUE,
+#                 show_bdry_pt = TRUE, show_seg = TRUE,
+#                 col_bndy = ifelse(moving_spokes, cols[k], "gray"),
+#                 col_base = 1, col_seg = ifelse(moving_spokes, cols[k], "gray"),
+#                 static = static, angle = angle, ...)
+#       # theta = theta, phi = phi)
+#
 #'     }, k = manipulate::slider(min = 1, max = L, initial = 1, step = 1),
 #'     angle = manipulate::slider(min = 0, max = 360, initial = 40, step = 1))
 #'     # theta = manipulate::slider(min = -180, max = 180,

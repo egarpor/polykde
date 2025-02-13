@@ -132,8 +132,7 @@ grad_hess_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), projec
 #' \eqn{\mathsf{D}_{(p-1)}\hat{f}(\boldsymbol{x};\boldsymbol{h})} of the
 #' kernel density estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the
 #' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}},
-#' where \eqn{p=\sum_{j=1}^r d_j+r} is the total dimension of the ambient
-#' space.
+#' where \eqn{p=\sum_{j=1}^r d_j+r} is the dimension of the ambient space.
 #'
 #' @inheritParams kde_polysph
 #' @inheritParams grad_hess_kde_polysph
@@ -195,7 +194,8 @@ proj_grad_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), wrt_un
 #' @param kernel_type type of kernel employed: \code{1} for product kernel
 #' (default); \code{2} for spherically symmetric kernel.
 #' @param k softplus kernel parameter. Defaults to \code{10.0}.
-#' @return A column vector of size \code{c(nx, 1)}.
+#' @return A column vector of size \code{c(nx, 1)} with the evaluation of
+#' kernel density estimator.
 #' @examples
 #' # Simple check on S^1 x S^2
 #' n <- 1e3
@@ -219,7 +219,8 @@ kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), log = FALSE, wrt
 #'
 #' @inheritParams kde_polysph
 #' @param norm_X ensure a normalization of the data? Defaults to \code{FALSE}.
-#' @return A column vector of size \code{c(n, 1)}.
+#' @return A column vector of size \code{c(n, 1)} with the evaluation of the
+#' logarithm of the cross-validated kernel density estimator.
 #' @examples
 #' # Simple check on S^1 x S^2
 #' n <- 5
@@ -233,16 +234,16 @@ log_cv_kde_polysph <- function(X, d, h, weights = as.numeric( c()), wrt_unif = F
     .Call(`_polykde_log_cv_kde_polysph`, X, d, h, weights, wrt_unif, normalized, intrinsic, norm_X, kernel, kernel_type, k)
 }
 
-#' @title Stable computation of the softplus function
+#' @title Computation of the softplus function
 #'
 #' @description Computes the softplus function \eqn{\log(1+e^{t})} in a
-#' numerically stable way for large absolute values of \eqn{t}.
+#' direct way, as it is supposed to be evaluated for large negative \eqn{t}.
 #'
-#' @inheritParams softplus
+#' @param t vector or matrix.
 #' @return The softplus function evaluated at \code{t}.
 #' @examples
-#' curve(log(polykde:::sfp(rbind(5 * (1 - x)))), from = -10, to = 10)
-#' @keywords internal
+#' curve(log(polykde:::sfp(rbind(5 * (1 - x)))), from = -10, to = 1)
+#' @noRd
 sfp <- function(t) {
     .Call(`_polykde_sfp`, t)
 }
@@ -261,8 +262,8 @@ sfp <- function(t) {
 #' # Example on (S^1)^2
 #' d <- c(1, 1)
 #' x <- rbind(c(2, 0, 1, 1))
-#' polykde:::proj_polysph(x, ind_dj = comp_ind_dj(d))
-#' @keywords internal
+#' proj_polysph(x, ind_dj = comp_ind_dj(d))
+#' @export
 proj_polysph <- function(x, ind_dj) {
     .Call(`_polykde_proj_polysph`, x, ind_dj)
 }
@@ -337,7 +338,7 @@ dist_polysph_cross <- function(x, y, ind_dj, norm_x = FALSE, norm_y = FALSE, std
 #' d <- c(1, 2)
 #' X <- r_unif_polysph(n = 2, d = d)
 #' polykde:::diamond_crossprod(X = X, ind_dj = comp_ind_dj(d))
-#' @keywords internal
+#' @noRd
 diamond_crossprod <- function(X, ind_dj) {
     .Call(`_polykde_diamond_crossprod`, X, ind_dj)
 }
@@ -352,9 +353,8 @@ diamond_crossprod <- function(X, ind_dj) {
 #' \eqn{\boldsymbol{A} + \boldsymbol{A}'}? Defaults to \code{FALSE}
 #' @return A symmetric matrix with the same dimensions as \code{A}.
 #' @examples
-#' A <- matrix(rnorm(4), nrow = 2, ncol = 2)
-#' polykde:::s(A)
-#' @keywords internal
+#' polykde:::s(matrix(rnorm(4), nrow = 2, ncol = 2))
+#' @noRd
 s <- function(A, add = FALSE) {
     .Call(`_polykde_s`, A, add)
 }
@@ -379,7 +379,7 @@ s <- function(A, add = FALSE) {
 #' x <- r_unif_polysph(n = 1, d = d)
 #' v <- r_unif_polysph(n = 1, d = d)
 #' polykde:::AP(x = x, v = v, ind_dj = comp_ind_dj(d))
-#' @keywords internal
+#' @noRd
 AP <- function(x, v, ind_dj, orth = FALSE) {
     .Call(`_polykde_AP`, x, v, ind_dj, orth)
 }

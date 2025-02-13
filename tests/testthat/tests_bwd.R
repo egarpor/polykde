@@ -64,7 +64,7 @@ X <- r_kde_polysph(n = n, X = mu, d = d, h = h)
 test_that("bw_cv_polysph(type = \"LCV\") equals DirStats::bw_dir_lcv()", {
   expect_equal(
     bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV",
-                  method = "L-BFGS-B", start = h)$par,
+                  method = "L-BFGS-B", bw0 = h)$par,
     DirStats::bw_dir_lcv(data = X, optim = TRUE, optim_par = h)$h_opt,
     tolerance = 1e-3)
 })
@@ -72,7 +72,7 @@ test_that("bw_cv_polysph(type = \"LCV\") equals DirStats::bw_dir_lcv()", {
 test_that("bw_cv_polysph(type = \"LSCV\") equals DirStats::bw_dir_lscv()", {
   expect_equal(
     bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
-                  method = "L-BFGS-B", start = 0.25, M = 1e4)$par,
+                  method = "L-BFGS-B", bw0 = 0.25, M = 1e4)$par,
     DirStats::bw_dir_lscv(data = X, optim = TRUE, optim_par = 0.25)$h_opt,
     tolerance = 5e-2)
 })

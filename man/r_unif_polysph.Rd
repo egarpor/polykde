@@ -11,6 +11,9 @@ r_unif_polysph(n, d)
 
 \item{d}{vector of size \code{r} with dimensions.}
 }
+\value{
+A matrix of size \code{c(n, sum(d) + r)} with the sample.
+}
 \description{
 Simulates from a uniform distribution on the polysphere
 \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.

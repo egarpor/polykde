@@ -7,10 +7,13 @@
 #' density estimator.
 #'
 #' @inheritParams kde_polysph
-#' @param type cross-validation type, either \code{"LCV"} or \code{"LSCV"}.
+#' @param type cross-validation type, either \code{"LCV"} (default) or
+#' \code{"LSCV"}.
 #' @param M Monte Carlo samples to use for approximating the integral in
 #' the LSCV loss.
-#' @param start staring value for \code{h}.
+#' @param bw0 initial bandwidth for minimizing the CV loss. If \code{NULL}, it
+#' is computed internally by magnifying the \code{\link{bw_rot_polysph}}
+#' bandwidths by 50\%.
 #' @param na.rm remove \code{NA}s in the objective function? Defaults to
 #' \code{FALSE}.
 #' @param ncores number of cores used during the optimization. Defaults to
@@ -26,7 +29,6 @@
 #' \code{\link[optimParallel]{optimParallel}} output. In particular, the
 #' optimal bandwidth is stored in \code{par}.
 #' @examples
-#' # Simple checks
 #' n <- 50
 #' d <- 1:2
 #' kappa <- rep(10, 2)
@@ -37,7 +39,7 @@
 #' @export
 bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
                           type = c("LCV", "LSCV")[1], M = 1e4,
-                          start = NULL, na.rm = FALSE, ncores = 1,
+                          bw0 = NULL, na.rm = FALSE, ncores = 1,
                           h_min = 0, upscale = FALSE, deriv = 0, ...) {
 
   # Check dimensions
@@ -155,32 +157,32 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
   }
 
   # Set initial bandwidths
-  if (is.null(start)) {
+  if (is.null(bw0)) {
 
     # 50% larger ROT bandwidths
-    start <- 1.5 * bw_rot_polysph(X = X, d = d, kernel = kernel,
-                                  kernel_type = kernel_type, k = k,
-                                  upscale = FALSE, deriv = 0)$bw
+    bw0 <- 1.5 * bw_rot_polysph(X = X, d = d, kernel = kernel,
+                                kernel_type = kernel_type, k = k,
+                                upscale = FALSE, deriv = 0)$bw
 
   } else {
 
-    if (r != length(start)) {
+    if (r != length(bw0)) {
 
-      stop("start and d are incompatible.")
+      stop("bw0 and d are incompatible.")
 
     }
 
   }
   if (!is.null(list(...)$control$trace) && list(...)$control$trace > 0) {
 
-    message("start = ", start)
+    message("bw0 = ", bw0)
 
   }
 
   # Optimization
   if (ncores == 1) {
 
-    opt <- optim(par = log(start), fn = obj, ...)
+    opt <- optim(par = log(bw0), fn = obj, ...)
 
   } else {
 
@@ -190,7 +192,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
     parallel::clusterCall(cl, function() {
       library("polykde")
     })
-    opt <- optimParallel::optimParallel(par = log(start), fn = obj,
+    opt <- optimParallel::optimParallel(par = log(bw0), fn = obj,
                                         parallel = list(cl = cl, forward = TRUE,
                                                         loginfo = TRUE),
                                         ...)
@@ -217,11 +219,12 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 #'
 #' @description Computes the rule-of-thumb bandwidth for the polyspherical
 #' kernel density estimator using a product of von Mises--Fisher distributions
-#' as reference.
+#' as reference in the Asymptotic Mean Integrated Squared Error (AMISE).
 #'
 #' @inheritParams kde_polysph
-#' @param bw0 initial bandwidth for minimizing the AMISE. Computed with
-#' \code{\link{bw_rot_polysph}} if not provided (default).
+#' @param bw0 initial bandwidth for minimizing the CV loss. If \code{NULL}, it
+#' is computed internally by magnifying the \code{\link{bw_mrot_polysph}}
+#' bandwidths by 50\%.
 #' @param upscale rescale bandwidths to work on
 #' \eqn{\mathcal{S}^{d_1}\times\cdots\times \mathcal{S}^{d_r}} and for
 #' derivative estimation?
@@ -240,7 +243,6 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 #' @return A list with entries \code{bw} (optimal bandwidth) and \code{opt},
 #' the latter containing the output of \code{\link[stats]{nlm}}.
 #' @examples
-#' # Simple check
 #' n <- 100
 #' d <- 1:2
 #' kappa <- rep(10, 2)
@@ -462,7 +464,6 @@ curv_vmf_polysph <- function(kappa, d, log = FALSE) {
 #' @inheritParams bw_rot_polysph
 #' @return A vector of size \code{r} with the marginal optimal bandwidths.
 #' @examples
-#' # Comparison of marginal and joint bandwidths
 #' n <- 100
 #' d <- 1:2
 #' kappa <- rep(10, 2)

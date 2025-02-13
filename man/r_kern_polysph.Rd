@@ -13,7 +13,7 @@ r_kern_polysph(n, d, mu, h, kernel = 1, kernel_type = 1, k = 10,
 \item{d}{vector of size \code{r} with dimensions.}
 
 \item{mu}{a vector of size \code{sum(d) + r} with the concatenated means
-on \eqn{\mathcal{S}^{d_j}}.}
+that define the center of the kernel.}
 
 \item{h}{vector of size \code{r} with bandwidths.}
 
@@ -26,6 +26,9 @@ on \eqn{\mathcal{S}^{d_j}}.}
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 
 \item{norm_mu}{ensure a normalization of \code{mu}? Defaults to \code{FALSE}.}
+}
+\value{
+A matrix of size \code{c(n, sum(d) + r)} with the sample.
 }
 \description{
 Simulates from the distribution defined by a kernel on the
