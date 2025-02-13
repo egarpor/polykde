@@ -6,10 +6,11 @@
 #'
 #' @param n sample size.
 #' @inheritParams kde_polysph
-#' @export
+#' @return A matrix of size \code{c(n, sum(d) + r)} with the sample.
 #' @examples
 #' # Simulate uniform data on (S^1)^2
 #' r_unif_polysph(n = 10, d = c(1, 1))
+#' @export
 r_unif_polysph <- function(n, d) {
 
   do.call(cbind, as.list(sapply(d, function(dj)
@@ -26,17 +27,18 @@ r_unif_polysph <- function(n, d) {
 #' \mathcal{S}^{d_r}}.
 #'
 #' @param mu a vector of size \code{sum(d) + r} with the concatenated von
-#' Mises--Fisher means on \eqn{\mathcal{S}^{d_j}}.
+#' Mises--Fisher means.
 #' @param kappa a vector of size \code{r} with the von Mises--Fisher
 #' concentrations.
-#' @param normalize_mu ensure a normalization of \code{mu}?
+#' @inheritParams r_kern_polysph
 #' @inheritParams r_unif_polysph
 #' @inheritParams kde_polysph
-#' @export
+#' @return A matrix of size \code{c(n, sum(d) + r)} with the sample.
 #' @examples
 #' # Simulate vMF data on (S^1)^2
 #' r_vmf_polysph(n = 10, d = c(1, 1), mu = c(1, 0, 0, 1), kappa = c(1, 1))
-r_vmf_polysph <- function(n, d, mu, kappa, normalize_mu = FALSE) {
+#' @export
+r_vmf_polysph <- function(n, d, mu, kappa, norm_mu = FALSE) {
 
   # Check dimensions
   r <- length(kappa)
@@ -55,7 +57,7 @@ r_vmf_polysph <- function(n, d, mu, kappa, normalize_mu = FALSE) {
   ind <- cumsum(c(1, d + 1))
 
   # Normalize mu?
-  if (normalize_mu) {
+  if (norm_mu) {
 
     for (j in seq_len(r)) {
 
@@ -81,13 +83,14 @@ r_vmf_polysph <- function(n, d, mu, kappa, normalize_mu = FALSE) {
 #' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
 #'
 #' @param mu a vector of size \code{sum(d) + r} with the concatenated means
-#' on \eqn{\mathcal{S}^{d_j}}.
+#' that define the center of the kernel.
 #' @param norm_mu ensure a normalization of \code{mu}? Defaults to \code{FALSE}.
 #' @inheritParams r_unif_polysph
 #' @inheritParams kde_polysph
 #' @details Simulation for non-von Mises--Fisher spherically symmetric kernels
 #' is done by acceptance-rejection from a von Mises--Fisher proposal
 #' distribution.
+#' @return A matrix of size \code{c(n, sum(d) + r)} with the sample.
 #' @examples
 #' # Simulate kernels in (S^1)^2
 #' n <- 1e3
@@ -294,6 +297,7 @@ r_kern_polysph <- function(n, d, mu, h, kernel = 1, kernel_type = 1, k = 10,
 #' @inheritParams r_unif_polysph
 #' @details The function uses \code{\link{r_kern_polysph}} to sample from the
 #' considered kernel.
+#' @return A matrix of size \code{c(n, sum(d) + r)} with the sample.
 #' @examples
 #' # Simulated data on (S^1)^2
 #' n <- 50

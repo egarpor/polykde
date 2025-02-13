@@ -19,42 +19,46 @@ for (ki in seq_along(k)) {
 }
 lines(t, L(t = t, kernel = 1), type = "l", col = 2)
 abline(h = 0:1, lty = 2, col = "gray")
-axis(1); axis(2, at = seq(0, 1, l = 11)); box()
+axis(1)
+axis(2, at = seq(0, 1, l = 11))
+box()
 legend("topright", legend = expression("vMF",
-                                         "sfp " * (upsilon == 1),
-                                         "sfp " * (upsilon == 2),
-                                         "sfp " * (upsilon == 5),
-                                         "sfp " * (upsilon == 10),
-                                         "sfp " * (upsilon == 20),
-                                         "Epa"),
+                                       "sfp " * (upsilon == 1),
+                                       "sfp " * (upsilon == 2),
+                                       "sfp " * (upsilon == 5),
+                                       "sfp " * (upsilon == 10),
+                                       "sfp " * (upsilon == 20),
+                                       "Epa"),
        col = c(2, col[1:length(k)], col[length(k) + 2]), lwd = 2, bg = "white")
 dev.off()
 
 # Varying r, for fixed d = 1,2
 for (d in 1:2) {
   pdf(paste0("effic_r_d_", d, ".pdf"), width = 6, height = 6)
-  r <- 1:20
+  rr <- 1:20
   k <- c(1, 5, 10, 20)
   col <- viridis::viridis(length(k), direction = -1)
-  plot(r, rep(1, length(r)), type = "o", pch = 16, col = 4, ylab = "Efficiency",
+  plot(rr, rep(1, length(rr)), type = "o", pch = 16, col = 4, ylab = "Efficiency",
        xlab = expression(r), ylim = c(0, 1), axes = FALSE)
-  lines(r, sapply(r, function(j) {
-    eff_kern(d = d, r = j, kernel = 1, kernel_type = "prod")
+  lines(rr, sapply(rr, function(r) {
+    eff_kern(d = d, r = r, kernel = 1, kernel_type = "prod")
   }), col = 2, lty = 1, type = "o", pch = 16)
   for (ki in seq_along(k)) {
-    lines(r, sapply(r, function(j) {
-      eff_kern(d = d, r = j, kernel = 3, kernel_type = "sph", k = k[ki])
+    lines(rr, sapply(rr, function(r) {
+      eff_kern(d = d, r = r, kernel = 3, kernel_type = "sph", k = k[ki])
     }), col = col[ki], lty = 1, type = "o", pch = 16)
-    lines(r, sapply(r, function(j) {
-      eff_kern(d = d, r = j, kernel = 3, kernel_type = "prod", k = k[ki])
+    lines(rr, sapply(rr, function(r) {
+      eff_kern(d = d, r = r, kernel = 3, kernel_type = "prod", k = k[ki])
     }), col = col[ki], lty = 2, type = "o", pch = 16)
   }
-  lines(r, sapply(r, function(j) {
-    eff_kern(d = d, r = j, kernel = 2, kernel_type = "prod")
+  lines(rr, sapply(rr, function(r) {
+    eff_kern(d = d, r = r, kernel = 2, kernel_type = "prod")
   }), col = 4, lty = 2, type = "o", pch = 16)
-  axis(1, at = seq(1, max(r), by = 2), labels = seq(1, max(r), by = 2))
-  axis(1, at = seq(2, max(r), by = 2), labels = seq(2, max(r), by = 2))
-  axis(1, at = r, labels = r); axis(2, at = seq(0, 1, l = 11)); box()
+  axis(1, at = seq(1, max(rr), by = 2), labels = seq(1, max(rr), by = 2))
+  axis(1, at = seq(2, max(rr), by = 2), labels = seq(2, max(rr), by = 2))
+  axis(1, at = rr, labels = rr)
+  axis(2, at = seq(0, 1, l = 11))
+  box()
   abline(h = 0:1, lty = 2, col = "gray")
   legend(ifelse(d == 2, "topright", "bottomleft"),
          legend = expression("Epa",
@@ -73,22 +77,23 @@ for (d in 1:2) {
 # Varying d, fixed r = 1
 for (r in 1:2) {
   pdf(paste0("effic_d_r_", r, ".pdf"), width = 6, height = 6)
-  d <- 1:20
+  dd <- 1:20
   k <- c(1, 5, 10, 20)
   col <- viridis::viridis(length(k), direction = -1)
-  plot(d, rep(1, length(d)), col = 4, type = "o", pch = 16, ylab = "Efficiency",
-       xlab = expression(d), ylim = c(0, 1), axes = FALSE)
-  lines(d, eff_kern(d = d, r = r, kernel = 1, kernel_type = "prod"),
+  plot(dd, rep(1, length(dd)), col = 4, type = "o", pch = 16,
+       xlab = expression(d), ylab = "Efficiency", ylim = c(0, 1), axes = FALSE)
+  lines(dd, sapply(dd, function(d) eff_kern(d = d, r = r, kernel = 1,
+                                            kernel_type = "prod")),
         col = 2, type = "o", pch = 16)
   for (ki in seq_along(k)) {
-    lines(d, eff_kern(d = d, r = r, kernel = 3, kernel_type = "prod",
-                      k = k[ki]),
+    lines(dd, sapply(dd, function(d) eff_kern(d = d, r = r, kernel = 3,
+                                              kernel_type = "prod", k = k[ki])),
           col = col[ki], type = "o", pch = 16)
   }
 
-  axis(1, at = seq(1, max(d), by = 2), labels = seq(1, max(d), by = 2))
-  axis(1, at = seq(2, max(d), by = 2), labels = seq(2, max(d), by = 2))
-  axis(1, at = d, labels = d); axis(2, at = seq(0, 1, l = 11)); box()
+  axis(1, at = seq(1, max(dd), by = 2), labels = seq(1, max(dd), by = 2))
+  axis(1, at = seq(2, max(dd), by = 2), labels = seq(2, max(dd), by = 2))
+  axis(1, at = dd, labels = dd); axis(2, at = seq(0, 1, l = 11)); box()
   abline(h = 0:1, lty = 2, col = "gray")
   legend("bottomleft", legend = expression("Epa",
                                            "vMF",
@@ -104,22 +109,22 @@ for (r in 1:2) {
 
 dd <- c(1, 2, 3, 5, 10)
 rr <- c(1, 2, 3, 5, 10)
-eff_vmf <- c(sapply(rr, function(r)
-  eff_kern(d = dd, r = r, kernel = "1", kernel_type = "sph")))
-eff_sfp_S_1 <- c(sapply(rr, function(r)
-  eff_kern(d = dd, r = r, k = 1, kernel = "3", kernel_type = "sph")))
-eff_sfp_S_10 <- c(sapply(rr, function(r)
-  eff_kern(d = dd, r = r, k = 10, kernel = "3", kernel_type = "sph")))
-eff_sfp_S_100 <- c(sapply(rr, function(r)
-  eff_kern(d = dd, r = r, k = 100, kernel = "3", kernel_type = "sph")))
-eff_epa_P <- c(sapply(rr, function(r)
-  eff_kern(d = dd, r = r, kernel = "2", kernel_type = "prod")))
-eff_sfp_P_1 <- c(sapply(rr, function(r)
-  eff_kern(d = dd, r = r, k = 1, kernel = "3", kernel_type = "prod")))
-eff_sfp_P_10 <- c(sapply(rr, function(r)
-  eff_kern(d = dd, r = r, k = 10, kernel = "3", kernel_type = "prod")))
-eff_sfp_P_100 <- c(sapply(rr, function(r)
-  eff_kern(d = dd, r = r, k = 100, kernel = "3", kernel_type = "prod")))
+eff_vmf <- c(sapply(rr, function(r) sapply(dd, function(d)
+  eff_kern(d = d, r = r, kernel = "1", kernel_type = "sph"))))
+eff_sfp_S_1 <- c(sapply(rr, function(r) sapply(dd, function(d)
+  eff_kern(d = d, r = r, k = 1, kernel = "3", kernel_type = "sph"))))
+eff_sfp_S_10 <- c(sapply(rr, function(r) sapply(dd, function(d)
+  eff_kern(d = d, r = r, k = 10, kernel = "3", kernel_type = "sph"))))
+eff_sfp_S_100 <- c(sapply(rr, function(r) sapply(dd, function(d)
+  eff_kern(d = d, r = r, k = 100, kernel = "3", kernel_type = "sph"))))
+eff_epa_P <- c(sapply(rr, function(r) sapply(dd, function(d)
+  eff_kern(d = d, r = r, kernel = "2", kernel_type = "prod"))))
+eff_sfp_P_1 <- c(sapply(rr, function(r) sapply(dd, function(d)
+  eff_kern(d = d, r = r, k = 1, kernel = "3", kernel_type = "prod"))))
+eff_sfp_P_10 <- c(sapply(rr, function(r) sapply(dd, function(d)
+  eff_kern(d = d, r = r, k = 10, kernel = "3", kernel_type = "prod"))))
+eff_sfp_P_100 <- c(sapply(rr, function(r) sapply(dd, function(d)
+  eff_kern(d = d, r = r, k = 100, kernel = "3", kernel_type = "prod"))))
 
 # Table
 eff <- 100 * data.frame(eff_vmf,

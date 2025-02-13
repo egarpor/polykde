@@ -7,7 +7,7 @@
 softplus(t)
 }
 \arguments{
-\item{t}{numeric vector or matrix.}
+\item{t}{vector or matrix.}
 }
 \value{
 The softplus function evaluated at \code{t}.
@@ -17,8 +17,5 @@ Computes the softplus function \eqn{\log(1+e^{t})} in a
 numerically stable way for large absolute values of \eqn{t}.
 }
 \examples{
-h <- 0.1
-k <- 1
-curve(polykde:::softplus(k * (1 - (1 - x) / h^2)), from = -1, to = 1)
+curve(softplus(10 * (1 - (1 - x) / 0.1)), from = -1, to = 1)
 }
-\keyword{internal}

@@ -4,7 +4,7 @@
 \alias{r_vmf_polysph}
 \title{Sample von Mises--Fisher distributed polyspherical data}
 \usage{
-r_vmf_polysph(n, d, mu, kappa, normalize_mu = FALSE)
+r_vmf_polysph(n, d, mu, kappa, norm_mu = FALSE)
 }
 \arguments{
 \item{n}{sample size.}
@@ -12,12 +12,15 @@ r_vmf_polysph(n, d, mu, kappa, normalize_mu = FALSE)
 \item{d}{vector of size \code{r} with dimensions.}
 
 \item{mu}{a vector of size \code{sum(d) + r} with the concatenated von
-Mises--Fisher means on \eqn{\mathcal{S}^{d_j}}.}
+Mises--Fisher means.}
 
 \item{kappa}{a vector of size \code{r} with the von Mises--Fisher
 concentrations.}
 
-\item{normalize_mu}{ensure a normalization of \code{mu}?}
+\item{norm_mu}{ensure a normalization of \code{mu}? Defaults to \code{FALSE}.}
+}
+\value{
+A matrix of size \code{c(n, sum(d) + r)} with the sample.
 }
 \description{
 Simulates from a product of von Mises--Fisher distributions on
