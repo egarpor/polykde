@@ -7,8 +7,8 @@ density estimator}
 \usage{
 bw_cv_polysph(X, d, kernel = 1, kernel_type = 1, k = 10,
   type = c("LCV", "LSCV")[1], M = 10000, bw0 = NULL, na.rm = FALSE,
-  ncores = 1, h_min = 0, upscale = FALSE, deriv = 0,
-  exact_vmf = TRUE, ...)
+  ncores = 1, h_min = 0, upscale = FALSE, deriv = 0, seed_mc = NULL,
+  exact_vmf = FALSE, ...)
 }
 \arguments{
 \item{X}{a matrix of size \code{c(n, sum(d) + r)} with the sample.}
@@ -46,8 +46,12 @@ estimation? Defaults to \code{FALSE}.}
 
 \item{deriv}{derivative order to perform the upscaling. Defaults to \code{0}.}
 
-\item{exact_vmf}{use the closed-forms for the von Mises--Fisher kernel?
-Defaults to \code{TRUE}.}
+\item{seed_mc}{seed for the Monte Carlo simulations used to estimate the
+integral in the LSCV loss for varying bandwidths. Defaults to \code{NULL}
+(no seed is fixed).}
+
+\item{exact_vmf}{use the closed-form for the LSCV loss with the
+von Mises--Fisher kernel? Defaults to \code{FALSE}.}
 
 \item{...}{further arguments passed to \code{\link{optim}}
 (if \code{ncores = 1}) or \code{\link[optimParallel]{optimParallel}}

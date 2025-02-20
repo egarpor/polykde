@@ -24,7 +24,8 @@
 #' @param plot_boot flag to display a graphical output of the test decision.
 #' Defaults to \code{FALSE}.
 #' @param seed_jsd seed for the Monte Carlo simulations used to estimate the
-#' integrals in the Jensen--Shannon distance.
+#' integrals in the Jensen--Shannon distance in the original and bootstrapped
+#' statistics. Defaults to \code{NULL} (no seed is fixed).
 #' @details Only \code{type = "jsd"} is able to deal with \eqn{k > 2}.
 #'
 #' The \code{"jsd"} statistic is the Jensen--Shannon divergence. This statistic
