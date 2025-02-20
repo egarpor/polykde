@@ -80,7 +80,7 @@ test_that("dist_polysph_cross() equals dist_polysph()", {
     tolerance = 1e-6)
 })
 
-## diamond_crossprod()
+## diamond_crossprod() and diamond_rcrossprod()
 
 # Randomize testing
 r <- 2
@@ -97,6 +97,15 @@ test_that("Simple case in diamond_crossprod()", {
             cbind(tcrossprod(X[i, 4:7], X[i, 1:3]), tcrossprod(X[i, 4:7])))
       )
   }
+})
+
+test_that("Simple case in diamond_rcrossprod()", {
+  expect_equal(
+    diamond_rcrossprod(X = X, ind_dj = ind_dj)[, , 1],
+    tcrossprod(X[, 1:3]))
+  expect_equal(
+    diamond_rcrossprod(X = X, ind_dj = ind_dj)[, , 2],
+    tcrossprod(X[, 4:7]))
 })
 
 ## s()

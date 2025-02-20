@@ -205,6 +205,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// diamond_rcrossprod
+arma::cube diamond_rcrossprod(arma::mat X, arma::uvec ind_dj);
+RcppExport SEXP _polykde_diamond_rcrossprod(SEXP XSEXP, SEXP ind_djSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type ind_dj(ind_djSEXP);
+    rcpp_result_gen = Rcpp::wrap(diamond_rcrossprod(X, ind_dj));
+    return rcpp_result_gen;
+END_RCPP
+}
 // s
 arma::mat s(arma::mat A, bool add);
 RcppExport SEXP _polykde_s(SEXP ASEXP, SEXP addSEXP) {
@@ -243,6 +255,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_polykde_dist_polysph", (DL_FUNC) &_polykde_dist_polysph, 6},
     {"_polykde_dist_polysph_cross", (DL_FUNC) &_polykde_dist_polysph_cross, 6},
     {"_polykde_diamond_crossprod", (DL_FUNC) &_polykde_diamond_crossprod, 2},
+    {"_polykde_diamond_rcrossprod", (DL_FUNC) &_polykde_diamond_rcrossprod, 2},
     {"_polykde_s", (DL_FUNC) &_polykde_s, 2},
     {"_polykde_AP", (DL_FUNC) &_polykde_AP, 4},
     {NULL, NULL, 0}
