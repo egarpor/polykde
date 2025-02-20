@@ -41,7 +41,8 @@ Hellinger/Jensen--Shannon distance. Defaults to \code{1e4}.}
 Defaults to \code{FALSE}.}
 
 \item{seed_jsd}{seed for the Monte Carlo simulations used to estimate the
-integrals in the Jensen--Shannon distance.}
+integrals in the Jensen--Shannon distance in the original and bootstrapped
+statistics. Defaults to \code{NULL} (no seed is fixed).}
 
 \item{cv_jsd}{use cross-validation to approximate the Jensen--Shannon
 distance? Does not require Monte Carlo. Defaults to \code{TRUE}.}

@@ -8,7 +8,7 @@
 arma::mat proj_polysph(arma::mat x, arma::uvec ind_dj);
 arma::vec dist_polysph(arma::mat x, arma::mat y, arma::uvec ind_dj,
                        bool norm_x, bool norm_y, bool std);
-
+arma::mat s(arma::mat A, bool add);
 
 //' @title Computation of the softplus function
 //'
@@ -365,17 +365,19 @@ arma::cube diamond_rcrossprod(arma::mat X, arma::uvec ind_dj) {
     arma::mat X_k = X.cols(ini_dk, end_dk);
 
     // Matrix (X_ik'X_jk)_{ij}
-    // X_diamond.slice(dk) = X_k * X_k.t();
-    // TODO: symmetryze for faster computation
     for (arma::uword i = 0; i < n; i++) {
 
-      for (arma::uword j = 0; j < i; j++) {
+      for (arma::uword j = 0; j <= i; j++) {
 
         X_diamond(i, j, dk) = arma::as_scalar(X_k.row(i) * X_k.row(j).t());
 
       }
 
     }
+
+    // Symmetrize
+    X_diamond.slice(dk) = s(X_diamond.slice(dk), true);
+    X_diamond.slice(dk).diag() /= 2;
 
   }
   return X_diamond;
