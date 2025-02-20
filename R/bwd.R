@@ -22,6 +22,8 @@
 #' @inheritParams bw_rot_polysph
 #' @param upscale rescale the resulting bandwidths to work for derivative
 #' estimation? Defaults to \code{FALSE}.
+#' @param exact_vmf use the closed-forms for the von Mises--Fisher kernel?
+#' Defaults to \code{TRUE}.
 #' @param ... further arguments passed to \code{\link{optim}}
 #' (if \code{ncores = 1}) or \code{\link[optimParallel]{optimParallel}}
 #' (if \code{ncores > 1}).
@@ -40,7 +42,8 @@
 bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
                           type = c("LCV", "LSCV")[1], M = 1e4,
                           bw0 = NULL, na.rm = FALSE, ncores = 1,
-                          h_min = 0, upscale = FALSE, deriv = 0, ...) {
+                          h_min = 0, upscale = FALSE, deriv = 0,
+                          exact_vmf = TRUE, ...) {
 
   # Check dimensions
   if (ncol(X) != sum(d + 1)) {
@@ -67,7 +70,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
       }
 
-      # Wrap in a tryCatch to avoid too small bandwidth errors
+      # Wrap in a tryCatch() to avoid too small bandwidth errors
       loss <- tryCatch({
 
         # Log-cv kernels
@@ -89,64 +92,125 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
     # Common Monte Carlo sample
     mc_samp <- r_unif_polysph(n = M, d = d)
 
-    obj <- function(log_h) {
+    if (kernel == "1" && exact_vmf) {
 
-      # Ensure positivity and lower bound (if not enforced by optim())
-      h_pos <- exp(log_h)
-      penalty <- 0
-      if (any(h_pos < h_min)) {
+      stop("Not working yet")
 
-        message("h left-truncated to h_min")
-        penalty <- 1e6 * sum((h_pos - h_min)^2)
-        h_pos <- pmax(h_pos, h_min)
+      obj <- function(log_h) {
+
+        # Ensure positivity and lower bound (if not enforced by optim())
+        h_pos <- exp(log_h)
+        penalty <- 0
+        if (any(h_pos < h_min)) {
+
+          message("h left-truncated to h_min")
+          penalty <- 1e6 * sum((h_pos - h_min)^2)
+          h_pos <- pmax(h_pos, h_min)
+
+        }
+
+        # Wrap in a tryCatch() to avoid too small bandwidth errors
+        exact_loss <- tryCatch({
+
+          # Log-constants
+          log_n <- log(n)
+          log2n <- log(2 / (n - 1))
+          h_pos2 <- 1 / h_pos^2
+          log_c_h2 <- c_kern(d = d, h = h_pos2, kernel = 1,
+                             kernel_type = 2, log = TRUE)
+          log_c_2h2 <- c_kern(d = d, h = 2 * h_pos2, kernel = 1,
+                              kernel_type = 2, log = TRUE)
+
+          # Compute X_{il}'X_{jl} / h_l^2 and
+          # log(c_d((||X_{il}'X_{jl}|| / h_l^2)_l))
+          ind_dj <- comp_ind_dj(d = d)
+          Xi_Xj_l <- diamond_rcrossprod(X = X, ind_dj = ind_dj)
+          Xi_Xj_l <- sapply(seq_len(r), function(j) {
+
+            Xi_Xj_l[, , j][lower.tri(Xi_Xj_l[, , j], diag = FALSE)]
+
+          })
+          log_c_norm_Xi_Xj_l <- sqrt(2 * (1 + Xi_Xj_l)) * h_pos2
+          Xi_Xj_l <- rowSums(Xi_Xj_l * h_pos2)
+          log_c_norm_Xi_Xj_l <- apply(log_c_norm_Xi_Xj_l, 1, function(h) {
+            c_kern(d = d, h = h, kernel = 1, kernel_type = 2, log = TRUE)
+          })
+
+          # CV loss
+          cv_1 <- exp(2 * log_c_h2 - log_c_2h2 - log_n)
+          cv_2 <- 2 * sum(exp(Xi_Xj_l + log_c_h2 + log2n) -
+                            exp(2 * log_c_h2 - log_c_norm_Xi_Xj_l - log_n))
+          cv <- cv_1 - cv_2
+          cv <- cv + penalty
+          ifelse(!is.finite(cv), 1e6, cv)
+
+        }, error = function(e) 1e6)
+        return(exact_loss)
 
       }
 
-      # Wrap in a tryCatch to avoid too small bandwidth errors
-      loss <- tryCatch({
+    } else {
 
-        # Integral part with LogSumExp trick
-        log_kde2_mc <- 2 * kde_polysph(x = mc_samp, X = X, d = d, h = h_pos,
-                                       wrt_unif = TRUE, kernel = kernel,
-                                       kernel_type = kernel_type, k = k,
-                                       log = TRUE) - log(M)
-        max_log_kde2_mc <- max(log_kde2_mc)
-        log_int_kde2 <- ifelse(is.finite(max_log_kde2_mc),
-                               max_log_kde2_mc +
-                                 log(sum(exp(log_kde2_mc - max_log_kde2_mc))),
-                               -Inf)
+      obj <- function(log_h) {
 
-        # Sum part with LogSumExp trick
-        log_cv_kde <- log_cv_kde_polysph(X = X, d = d, h = h_pos,
-                                         wrt_unif = TRUE, kernel = kernel,
-                                         kernel_type = kernel_type, k = k) -
-          log(n) + log(2)
-        max_log_cv_kde <- max(log_cv_kde)
-        log_sum_cv_kde <- ifelse(is.finite(max_log_cv_kde),
-                                 max_log_cv_kde +
-                                   log(sum(exp(log_cv_kde - max_log_cv_kde))),
-                                 -Inf)
+        # Ensure positivity and lower bound (if not enforced by optim())
+        h_pos <- exp(log_h)
+        penalty <- 0
+        if (any(h_pos < h_min)) {
 
-        # Logarithm of CV loss -- we assume
-        # LSCV(h) is always negative, i.e., log_int_kde2 < log_sum_cv_kde
-        if (log_int_kde2 > log_sum_cv_kde) {
-
-          warning("LSCV(h) is not negative, which is assumed.")
+          message("h left-truncated to h_min")
+          penalty <- 1e6 * sum((h_pos - h_min)^2)
+          h_pos <- pmax(h_pos, h_min)
 
         }
-        max_log <- max(c(log_int_kde2, log_sum_cv_kde))
-        min_log <- min(c(log_int_kde2, log_sum_cv_kde))
-        log_abs_cv <- max_log + log1p(-exp(min_log - max_log))
 
-        # Set the sign of log-CV loss
-        log_cv <- sign(log_int_kde2 - log_sum_cv_kde) * log_abs_cv
+        # Wrap in a tryCatch() to avoid too small bandwidth errors
+        loss <- tryCatch({
 
-        # LSCV
-        loss <- log_cv + penalty
-        ifelse(!is.finite(loss), 1e6, loss)
+          # Integral part with LogSumExp trick
+          log_kde2_mc <- 2 * kde_polysph(x = mc_samp, X = X, d = d, h = h_pos,
+                                         wrt_unif = TRUE, kernel = kernel,
+                                         kernel_type = kernel_type, k = k,
+                                         log = TRUE) - log(M)
+          max_log_kde2_mc <- max(log_kde2_mc)
+          log_int_kde2 <- ifelse(is.finite(max_log_kde2_mc),
+                                 max_log_kde2_mc +
+                                   log(sum(exp(log_kde2_mc - max_log_kde2_mc))),
+                                 -Inf)
 
-      }, error = function(e) 1e6)
-      return(loss)
+          # Sum part with LogSumExp trick
+          log_cv_kde <- log_cv_kde_polysph(X = X, d = d, h = h_pos,
+                                           wrt_unif = TRUE, kernel = kernel,
+                                           kernel_type = kernel_type, k = k) -
+            log(n) + log(2)
+          max_log_cv_kde <- max(log_cv_kde)
+          log_sum_cv_kde <- ifelse(is.finite(max_log_cv_kde),
+                                   max_log_cv_kde +
+                                     log(sum(exp(log_cv_kde - max_log_cv_kde))),
+                                   -Inf)
+
+          # Logarithm of CV loss -- we assume
+          # LSCV(h) is always negative, i.e., log_int_kde2 < log_sum_cv_kde
+          if (log_int_kde2 > log_sum_cv_kde) {
+
+            warning("LSCV(h) is not negative, which is assumed.")
+
+          }
+          max_log <- max(c(log_int_kde2, log_sum_cv_kde))
+          min_log <- min(c(log_int_kde2, log_sum_cv_kde))
+          log_abs_cv <- max_log + log1p(-exp(min_log - max_log))
+
+          # Set the sign of log-CV loss
+          log_cv <- sign(log_int_kde2 - log_sum_cv_kde) * log_abs_cv
+
+          # LSCV
+          loss <- log_cv + penalty
+          ifelse(!is.finite(loss), 1e6, loss)
+
+        }, error = function(e) 1e6)
+        return(loss)
+
+      }
 
     }
 
@@ -193,7 +257,8 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
       library("polykde")
     })
     opt <- optimParallel::optimParallel(par = log(bw0), fn = obj,
-                                        parallel = list(cl = cl, forward = TRUE,
+                                        parallel = list(cl = cl,
+                                                        forward = FALSE,
                                                         loginfo = TRUE),
                                         ...)
     parallel::stopCluster(cl)
