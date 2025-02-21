@@ -75,6 +75,8 @@ cv_naive <- function(h, X, d, mc_samp, kde_samp = FALSE) {
 #                 bw0 = rep(hh1, r), control = list(maxit = 0),
 #                 method = "BFGS", exact_vmf = TRUE)$value
 # })
+#
+# # Visualization of LSCV functions
 # curve(cv_naive_curve(x, kde_samp = FALSE), from = 0.2, to = 1, n = 100,
 #       ylab = "CV loss")
 # curve(cv_naive_curve(x, kde_samp = TRUE), from = 0.2, to = 1, n = 100,
@@ -100,7 +102,7 @@ test_that("bw_cv_polysph(type = \"LSCV\") in sequential and parallel mode", {
     tolerance = 1e-2)
 })
 
-test_that("bw_cv_polysph(type = \"LSCV\") losses with kde sampling", {
+test_that("bw_cv_polysph(type = \"LSCV\", imp_mc = TRUE) loss", {
 
   for (f in c(0.25, 0.5, 1, 2)) {
 
@@ -108,14 +110,29 @@ test_that("bw_cv_polysph(type = \"LSCV\") losses with kde sampling", {
       cv_naive(h = f * h, X = X, d = d, kde_samp = TRUE),
       bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
                     bw0 = f * h, M = M, control = list(maxit = 0),
-                    method = "BFGS", exact_vmf = FALSE,
+                    method = "BFGS", exact_vmf = FALSE, imp_mc = TRUE,
                     seed_mc = seed)$value)
 
   }
 
 })
 
-test_that("bw_cv_polysph(type = \"LSCV\") losses with exact_vmf = TRUE", {
+test_that("bw_cv_polysph(type = \"LSCV\", imp_mc = FALSE) loss", {
+
+  for (f in c(0.25, 0.5, 1, 2)) {
+
+    expect_equal(
+      cv_naive(h = f * h, X = X, d = d, mc_samp = mc_samp, kde_samp = FALSE),
+      bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
+                    bw0 = f * h, M = M, control = list(maxit = 0),
+                    method = "BFGS", exact_vmf = FALSE, imp_mc = FALSE,
+                    seed_mc = seed)$value)
+
+  }
+
+})
+
+test_that("bw_cv_polysph(type = \"LSCV\", exact_vmf = TRUE) loss", {
 
   for (f in c(0.25, 0.5, 1, 2)) {
 
@@ -128,6 +145,41 @@ test_that("bw_cv_polysph(type = \"LSCV\") losses with exact_vmf = TRUE", {
                   bw0 = f * h, M = M, control = list(maxit = 0),
                   method = "BFGS", exact_vmf = TRUE)$value,
     tolerance = 5e-2)
+
+  }
+
+})
+
+test_that("bw_cv_polysph(type = \"LCV\", common_h = TRUE)", {
+
+  for (f in c(0.25, 0.5, 1, 2)) {
+
+    expect_equal(
+      bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV",
+                    bw0 = f * h, M = M, control = list(maxit = 0),
+                    method = "BFGS", common_h = TRUE)$value,
+      bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV",
+                    bw0 = f * rep(mean(h), r), M = M, control = list(maxit = 0),
+                    method = "BFGS", common_h = FALSE)$value,
+      tolerance = 5e-2)
+
+  }
+
+})
+
+test_that("bw_cv_polysph(type = \"LSCV\", common_h = TRUE)", {
+
+  for (f in c(0.25, 0.5, 1, 2)) {
+
+    expect_equal(
+      bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
+                    bw0 = f * h, M = M, control = list(maxit = 0),
+                    method = "BFGS", exact_vmf = TRUE, common_h = TRUE,
+                    seed_mc = seed)$value,
+      bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
+                    bw0 = f * rep(mean(h), r), M = M, control = list(maxit = 0),
+                    method = "BFGS", exact_vmf = TRUE, common_h = FALSE)$value,
+      tolerance = 5e-2)
 
   }
 

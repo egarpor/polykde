@@ -6,9 +6,10 @@
 density estimator}
 \usage{
 bw_cv_polysph(X, d, kernel = 1, kernel_type = 1, k = 10,
-  type = c("LCV", "LSCV")[1], M = 10000, bw0 = NULL, na.rm = FALSE,
-  ncores = 1, h_min = 0, upscale = FALSE, deriv = 0, seed_mc = NULL,
-  exact_vmf = FALSE, ...)
+  intrinsic = FALSE, type = c("LCV", "LSCV")[1], M = 10000, bw0 = NULL,
+  na.rm = FALSE, ncores = 1, h_min = 0, upscale = FALSE, deriv = 0,
+  imp_mc = TRUE, seed_mc = NULL, exact_vmf = FALSE, common_h = FALSE,
+  ...)
 }
 \arguments{
 \item{X}{a matrix of size \code{c(n, sum(d) + r)} with the sample.}
@@ -22,6 +23,9 @@ bw_cv_polysph(X, d, kernel = 1, kernel_type = 1, k = 10,
 (default); \code{2} for spherically symmetric kernel.}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
+
+\item{intrinsic}{use the intrinsic distance, instead of the
+extrinsic-chordal distance, in the kernel? Defaults to \code{FALSE}.}
 
 \item{type}{cross-validation type, either \code{"LCV"} (default) or
 \code{"LSCV"}.}
@@ -46,12 +50,19 @@ estimation? Defaults to \code{FALSE}.}
 
 \item{deriv}{derivative order to perform the upscaling. Defaults to \code{0}.}
 
+\item{imp_mc}{use importance sampling in the Monte Carlo simulations used
+to estimate the integral in the LSCV loss? It is more accurate but also more
+time consuming. Defaults to \code{TRUE}.}
+
 \item{seed_mc}{seed for the Monte Carlo simulations used to estimate the
-integral in the LSCV loss for varying bandwidths. Defaults to \code{NULL}
-(no seed is fixed).}
+integral in the LSCV loss. Defaults to \code{NULL} (no seed is fixed for
+different bandwidths).}
 
 \item{exact_vmf}{use the closed-form for the LSCV loss with the
 von Mises--Fisher kernel? Defaults to \code{FALSE}.}
+
+\item{common_h}{use the same bandwidth for all dimensions? Defaults to
+\code{FALSE}.}
 
 \item{...}{further arguments passed to \code{\link{optim}}
 (if \code{ncores = 1}) or \code{\link[optimParallel]{optimParallel}}

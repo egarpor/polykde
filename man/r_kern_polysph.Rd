@@ -5,7 +5,7 @@
 \title{Sample kernel-distributed polyspherical data}
 \usage{
 r_kern_polysph(n, d, mu, h, kernel = 1, kernel_type = 1, k = 10,
-  norm_mu = FALSE)
+  intrinsic = FALSE, norm_mu = FALSE)
 }
 \arguments{
 \item{n}{sample size.}
@@ -24,6 +24,9 @@ that define the center of the kernel.}
 (default); \code{2} for spherically symmetric kernel.}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
+
+\item{intrinsic}{use the intrinsic distance, instead of the
+extrinsic-chordal distance, in the kernel? Defaults to \code{FALSE}.}
 
 \item{norm_mu}{ensure a normalization of \code{mu}? Defaults to \code{FALSE}.}
 }

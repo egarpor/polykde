@@ -22,11 +22,16 @@
 #' @inheritParams bw_rot_polysph
 #' @param upscale rescale the resulting bandwidths to work for derivative
 #' estimation? Defaults to \code{FALSE}.
+#' @param imp_mc use importance sampling in the Monte Carlo simulations used
+#' to estimate the integral in the LSCV loss? It is more accurate but also more
+#' time consuming. Defaults to \code{TRUE}.
 #' @param seed_mc seed for the Monte Carlo simulations used to estimate the
-#' integral in the LSCV loss for varying bandwidths. Defaults to \code{NULL}
-#' (no seed is fixed).
+#' integral in the LSCV loss. Defaults to \code{NULL} (no seed is fixed for
+#' different bandwidths).
 #' @param exact_vmf use the closed-form for the LSCV loss with the
 #' von Mises--Fisher kernel? Defaults to \code{FALSE}.
+#' @param common_h use the same bandwidth for all dimensions? Defaults to
+#' \code{FALSE}.
 #' @param ... further arguments passed to \code{\link{optim}}
 #' (if \code{ncores = 1}) or \code{\link[optimParallel]{optimParallel}}
 #' (if \code{ncores > 1}).
@@ -43,10 +48,11 @@
 #' bw_cv_polysph(X = X, d = d, type = "LSCV")$par
 #' @export
 bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
-                          type = c("LCV", "LSCV")[1], M = 1e4,
-                          bw0 = NULL, na.rm = FALSE, ncores = 1,
-                          h_min = 0, upscale = FALSE, deriv = 0,
-                          seed_mc = NULL, exact_vmf = FALSE, ...) {
+                          intrinsic = FALSE, type = c("LCV", "LSCV")[1],
+                          M = 1e4, bw0 = NULL, na.rm = FALSE, ncores = 1,
+                          h_min = 0, upscale = FALSE, deriv = 0, imp_mc = TRUE,
+                          seed_mc = NULL, exact_vmf = FALSE, common_h = FALSE,
+                          ...) {
 
   # Check dimensions
   if (ncol(X) != sum(d + 1)) {
@@ -60,7 +66,15 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
   # Objective function
   if (type == "LCV") {
 
+    # LCV loss
     obj <- function(log_h) {
+
+      # Replicate bandwidths if common_h
+      if (common_h) {
+
+        log_h <- rep(log_h, r)
+
+      }
 
       # Ensure positivity and lower bound (if not enforced by optim())
       h_pos <- exp(log_h)
@@ -79,7 +93,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
         # Log-cv kernels
         log_cv <- log_cv_kde_polysph(X = X, d = d, h = h_pos, wrt_unif = TRUE,
                                      kernel = kernel, kernel_type = kernel_type,
-                                     k = k)
+                                     k = k, intrinsic = intrinsic)
 
         # -LCV
         loss <- -sum(log_cv, na.rm = na.rm) + penalty
@@ -94,7 +108,14 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
     if (kernel == "1" && exact_vmf) {
 
-      # Matrix with lower triangular part of the matrices (X_{il}'X_{jl})_{ij}
+      if (intrinsic) {
+
+        stop("Intrinsic LSCV loss is not available with exact_vmf = TRUE.")
+
+      }
+
+      # Precompute matrix with the lower triangular parts of the matrices
+      # (X_{il}'X_{jl})_{ij}, l = 1, ..., r.
       ind_dj <- comp_ind_dj(d = d)
       Xi_Xj_l <- diamond_rcrossprod(X = X, ind_dj = ind_dj)
       Xi_Xj_l <- sapply(seq_len(r), function(j) {
@@ -102,8 +123,22 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
         Xi_Xj_l[, , j][lower.tri(Xi_Xj_l[, , j], diag = FALSE)]
 
       })
+      Xi_Xj_l <- t(Xi_Xj_l) # For better column recycling later
+      norm_Xi_Xj_l <- sqrt(2 * (1 + Xi_Xj_l))
 
+      # Precompute other fixed objects in the LSCV loss
+      log_n <- log(n)
+      log_2_n1 <- log(2 / (n - 1))
+
+      # LSCV loss
       obj <- function(log_h) {
+
+        # Replicate bandwidths if common_h
+        if (common_h) {
+
+          log_h <- rep(log_h, r)
+
+        }
 
         # Ensure positivity and lower bound (if not enforced by optim())
         h_pos <- exp(log_h)
@@ -120,8 +155,6 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
         exact_loss <- tryCatch({
 
           # Log-constants
-          log_n <- log(n)
-          log_2_n1 <- log(2 / (n - 1))
           h_pos2 <- 1 / h_pos^2
           log_c_h2 <- sum(rotasym::c_vMF(p = d + 1, kappa = h_pos2,
                                          log = TRUE))
@@ -130,16 +163,17 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
           # Compute X_{il}'X_{jl} / h_l^2 and
           # sum_l log(c_vMF(||X_{il}'X_{jl}|| / h_l^2))
-          Xi_Xj_l_h <- colSums(t(Xi_Xj_l) * h_pos2)
-          log_c_norm_Xi_Xj_l_h <- t(t(sqrt(2 * (1 + Xi_Xj_l))) * h_pos2)
-          log_c_norm_Xi_Xj_l_h <- apply(log_c_norm_Xi_Xj_l_h, 1, function(k) {
-            sum(rotasym::c_vMF(p = d + 1, kappa = k, log = TRUE))
-          })
+          Xi_Xj_l_h <- colSums(Xi_Xj_l * h_pos2)
+          log_c_norm_Xi_Xj_l_h <- rowSums(
+            sapply(seq_len(r), function(l) {
+              rotasym::c_vMF(p = d[l] + 1, kappa = norm_Xi_Xj_l[l, ] *
+                               h_pos2[l], log = TRUE)
+              }))
 
           # CV loss
           cv_1 <- exp(2 * log_c_h2 - log_c_2h2 - log_n)
-          cv_2 <- 2 * sum(exp(Xi_Xj_l_h + log_c_h2 - log_n + log_2_n1) -
-                            exp(2 * log_c_h2 - log_c_norm_Xi_Xj_l_h - 2 * log_n))
+          cv_2 <- 2 * sum(exp(Xi_Xj_l_h + log_c_h2 + (log_2_n1 - log_n)) -
+                            exp(2 * (log_c_h2 - log_n) - log_c_norm_Xi_Xj_l_h))
           cv <- cv_1 - cv_2
           loss <- cv + penalty
           ifelse(!is.finite(loss), 1e6, loss)
@@ -151,7 +185,27 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
     } else {
 
+      # Common uniform Monte Carlo sample
+      if (!imp_mc) {
+
+        if (!is.null(seed_mc)) {
+
+          set.seed(seed_mc, kind = "Mersenne-Twister")
+
+        }
+        mc_samp <- r_unif_polysph(n = M, d = d)
+
+      }
+
+      # LSCV loss
       obj <- function(log_h) {
+
+        # Replicate bandwidths if common_h
+        if (common_h) {
+
+          log_h <- rep(log_h, r)
+
+        }
 
         # Ensure positivity and lower bound (if not enforced by optim())
         h_pos <- exp(log_h)
@@ -167,20 +221,36 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
         # Wrap in a tryCatch() to avoid too small bandwidth errors
         loss <- tryCatch({
 
-          # Integral part with LogSumExp trick and importance-sampling
-          # Monte Carlo
-          if (!is.null(seed_mc)) {
+          # Integral part with LogSumExp trick
 
-            set.seed(seed_mc, kind = "Mersenne-Twister")
+          # Use importance-sampling Monte Carlo?
+          if (imp_mc) {
+
+            if (!is.null(seed_mc)) {
+
+              set.seed(seed_mc, kind = "Mersenne-Twister")
+
+            }
+            mc_kde_samp <- r_kde_polysph(n = M, X = X, d = d,
+                                         h = h_pos, kernel = kernel,
+                                         kernel_type = kernel_type, k = k,
+                                         intrinsic = intrinsic)
+            log_kde2_mc <- kde_polysph(x = mc_kde_samp, X = X, d = d,
+                                       h = h_pos, wrt_unif = FALSE,
+                                       kernel = kernel, kernel_type =
+                                         kernel_type, k = k, log = TRUE,
+                                       intrinsic = intrinsic) - log(M)
+
+          } else {
+
+            log_kde2_mc <- 2 * kde_polysph(x = mc_samp, X = X, d = d,
+                                           h = h_pos, wrt_unif = FALSE,
+                                           kernel = kernel, kernel_type =
+                                             kernel_type, k = k,
+                                           log = TRUE, intrinsic = intrinsic) -
+              log(M) + sum(rotasym::w_p(p = d + 1, log = TRUE))
 
           }
-          mc_kde_samp <- r_kde_polysph(n = M, X = X, d = d,
-                                       h = h_pos, kernel = kernel,
-                                       kernel_type = kernel_type, k = k)
-          log_kde2_mc <- kde_polysph(x = mc_kde_samp, X = X, d = d, h = h_pos,
-                                     wrt_unif = FALSE, kernel = kernel,
-                                     kernel_type = kernel_type, k = k,
-                                     log = TRUE) - log(M)
           max_log_kde2_mc <- max(log_kde2_mc)
           log_int_kde2 <- ifelse(is.finite(max_log_kde2_mc),
                                  max_log_kde2_mc +
@@ -190,7 +260,8 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
           # Sum part with LogSumExp trick
           log_cv_kde <- log_cv_kde_polysph(X = X, d = d, h = h_pos,
                                            wrt_unif = FALSE, kernel = kernel,
-                                           kernel_type = kernel_type, k = k) -
+                                           kernel_type = kernel_type, k = k,
+                                           intrinsic = intrinsic) -
             log(n) + log(2)
           max_log_cv_kde <- max(log_cv_kde)
           log_sum_cv_kde <- ifelse(is.finite(max_log_cv_kde),
@@ -231,6 +302,11 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
       stop("bw0 and d are incompatible.")
 
     }
+
+  }
+  if (common_h) {
+
+    bw0 <- mean(bw0)
 
   }
   if (!is.null(list(...)$control$trace) && list(...)$control$trace > 0) {
