@@ -5,7 +5,7 @@
 \title{Sample from polyspherical kernel density estimator}
 \usage{
 r_kde_polysph(n, X, d, h, kernel = 1, kernel_type = 1, k = 10,
-  norm_X = FALSE)
+  intrinsic = FALSE, norm_X = FALSE)
 }
 \arguments{
 \item{n}{sample size.}
@@ -23,6 +23,9 @@ r_kde_polysph(n, X, d, h, kernel = 1, kernel_type = 1, k = 10,
 (default); \code{2} for spherically symmetric kernel.}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
+
+\item{intrinsic}{use the intrinsic distance, instead of the
+extrinsic-chordal distance, in the kernel? Defaults to \code{FALSE}.}
 
 \item{norm_X}{ensure a normalization of the data?}
 }
