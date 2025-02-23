@@ -139,7 +139,7 @@ bw_cv_kre_polysph <- function(X, Y, d, p = 0, h_grid = bw.nrd(X) *
 
     } else {
 
-      stop("Not implemented yet")
+      stop("Not implemented yet.")
 
     }
 

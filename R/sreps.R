@@ -131,7 +131,7 @@ view_srep <- function(base, dirs, bdry, radii, show_base = TRUE,
       # Plot surface
       if (is.null(alpha_ashape3d_base)) {
 
-        stop("alpha_ashape3d_base must be provided")
+        stop("alpha_ashape3d_base must be provided.")
 
       }
       ash_base <- alphashape3d::ashape3d(base[-duplicated_base, ],
@@ -195,7 +195,7 @@ view_srep <- function(base, dirs, bdry, radii, show_base = TRUE,
     # Plot surface
     if (is.null(alpha_ashape3d_base)) {
 
-      stop("alpha_ashape3d_base must be provided")
+      stop("alpha_ashape3d_base must be provided.")
 
     }
     ash_bndy <- alphashape3d::ashape3d(bdry[-duplicated_bdry, ],

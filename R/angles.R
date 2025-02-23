@@ -54,7 +54,7 @@ torus_to_angles <- function(x) {
   p <- ncol(x)
   if (p %% 2) {
 
-    stop("The dimension is not even")
+    stop("The dimension is not even.")
 
   }
 
