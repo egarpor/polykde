@@ -3,6 +3,7 @@
 ^README$
 ^README.*$
 ^replication
+^data-raw
 ^CRAN-RELEASE$
 ^cran-comments\.md$
 ^LICENSE\.md$
