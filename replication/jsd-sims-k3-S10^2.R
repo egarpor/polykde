@@ -130,7 +130,7 @@ progressr::with_progress({
     X <- r_hyp_a(n1 = n1, n2 = n2, n3 = n3, d = d, r = r)$X
     h_rot[i, ] <- bw_rot_polysph(X = X, d = dd)$bw
     h_cv[i, ] <- bw_cv_polysph(X = X, d = dd, method = "L-BFGS-B",
-                               bw0 = h_rot[i, ])$par
+                               bw0 = h_rot[i, ])$bw
     prog()
 
   }

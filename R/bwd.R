@@ -11,13 +11,12 @@
 #' \code{"LSCV"}.
 #' @param M Monte Carlo samples to use for approximating the integral in
 #' the LSCV loss.
-#' @param bw0 initial bandwidth for minimizing the CV loss. If \code{NULL}, it
-#' is computed internally by magnifying the \code{\link{bw_rot_polysph}}
-#' bandwidths by 50\%.
+#' @param bw0 initial bandwidth vector for minimizing the CV loss. If
+#' \code{NULL}, it is computed internally by magnifying the
+#' \code{\link{bw_rot_polysph}} bandwidths by 50\%. Can be also a matrix of
+#' initial bandwidth vectors.
 #' @param na.rm remove \code{NA}s in the objective function? Defaults to
 #' \code{FALSE}.
-#' @param ncores number of cores used during the optimization. Defaults to
-#' \code{1}.
 #' @param h_min minimum h enforced (componentwise). Defaults to \code{0}.
 #' @inheritParams bw_rot_polysph
 #' @param upscale rescale the resulting bandwidths to work for derivative
@@ -32,27 +31,37 @@
 #' von Mises--Fisher kernel? Defaults to \code{FALSE}.
 #' @param common_h use the same bandwidth for all dimensions? Defaults to
 #' \code{FALSE}.
-#' @param ... further arguments passed to \code{\link{optim}}
-#' (if \code{ncores = 1}) or \code{\link[optimParallel]{optimParallel}}
-#' (if \code{ncores > 1}).
-#' @return A list as \code{\link[stats]{optim}} or
-#' \code{\link[optimParallel]{optimParallel}} output. In particular, the
-#' optimal bandwidth is stored in \code{par}.
+#' @param spline use a faster spline approximation to compute Bessel functions?
+#' Defaults to \code{FALSE}.
+#' @param opt optimizer to use; either \code{"\link{optim}"} (default) or
+#' \code{"\link{nlm}"}.
+#' @param ncores number of cores used during the optimization. Defaults to
+#' \code{1}.
+#' @param ... further arguments passed to \code{\link{optim}} or
+#' \code{\link{nlm}} (if \code{ncores = 1}) or
+#' \code{\link[optimParallel]{optimParallel}} (if \code{ncores > 1}).
+#' @details If \code{bw0} is a matrix, then the optimization is started at that
+#' row of bandwidths that is most promising for the optimization, i.e., the
+#' bandwidths that minimized the CV loss.
+#' @return A list with entries \code{bw} (optimal bandwidth) and \code{opt},
+#' the latter containing the output of \code{\link[stats]{nlm}},
+#' \code{\link[stats]{optim}}, or \code{\link[optimParallel]{optimParallel}}.
 #' @examples
 #' n <- 50
 #' d <- 1:2
 #' kappa <- rep(10, 2)
 #' X <- r_vmf_polysph(n = n, d = d, mu = r_unif_polysph(n = 1, d = d),
 #'                    kappa = kappa)
-#' bw_cv_polysph(X = X, d = d, type = "LCV")$par
-#' bw_cv_polysph(X = X, d = d, type = "LSCV")$par
+#' bw_cv_polysph(X = X, d = d, type = "LCV")$bw
+#' bw_cv_polysph(X = X, d = d, type = "LSCV")$bw
 #' @export
 bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
                           intrinsic = FALSE, type = c("LCV", "LSCV")[1],
-                          M = 1e4, bw0 = NULL, na.rm = FALSE, ncores = 1,
-                          h_min = 0, upscale = FALSE, deriv = 0, imp_mc = TRUE,
+                          M = 1e4, bw0 = NULL, na.rm = FALSE, h_min = 0,
+                          upscale = FALSE, deriv = 0, imp_mc = TRUE,
                           seed_mc = NULL, exact_vmf = FALSE, common_h = FALSE,
-                          ...) {
+                          spline = FALSE, opt = c("optim", "nlm")[1],
+                          ncores = 1, ...) {
 
   # Check dimensions
   if (ncol(X) != sum(d + 1)) {
@@ -129,6 +138,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
       # Precompute other fixed objects in the LSCV loss
       log_n <- log(n)
       log_2_n1 <- log(2 / (n - 1))
+      n2 <- n * (n - 1) / 2
 
       # LSCV loss
       obj <- function(log_h) {
@@ -156,19 +166,22 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
           # Log-constants
           h_pos2 <- 1 / h_pos^2
-          log_c_h2 <- sum(rotasym::c_vMF(p = d + 1, kappa = h_pos2,
-                                         log = TRUE))
-          log_c_2h2 <- sum(rotasym::c_vMF(p = d + 1, kappa = 2 * h_pos2,
-                                          log = TRUE))
+          log_c_h2 <- sum(fast_log_c_vMF(p = d + 1, kappa = h_pos2,
+                                         spline = FALSE))
+          log_c_2h2 <- sum(fast_log_c_vMF(p = d + 1, kappa = 2 * h_pos2,
+                                          spline = FALSE))
 
           # Compute X_{il}'X_{jl} / h_l^2 and
           # sum_l log(c_vMF(||X_{il}'X_{jl}|| / h_l^2))
-          Xi_Xj_l_h <- colSums(Xi_Xj_l * h_pos2)
-          log_c_norm_Xi_Xj_l_h <- rowSums(
-            sapply(seq_len(r), function(l) {
-              rotasym::c_vMF(p = d[l] + 1, kappa = norm_Xi_Xj_l[l, ] *
-                               h_pos2[l], log = TRUE)
-              }))
+          Xi_Xj_l_h <- .colSums(Xi_Xj_l * h_pos2, m = r, n = n2)
+          log_c_norm_Xi_Xj_l_h <- numeric(n2)
+          for (l in seq_len(r)) {
+
+            log_c_norm_Xi_Xj_l_h <- log_c_norm_Xi_Xj_l_h +
+              fast_log_c_vMF(p = d[l] + 1, kappa = norm_Xi_Xj_l[l, ] *
+                               h_pos2[l], spline = spline)
+
+          }
 
           # CV loss
           cv_1 <- exp(2 * log_c_h2 - log_c_2h2 - log_n)
@@ -294,59 +307,100 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
     bw0 <- 1.5 * bw_rot_polysph(X = X, d = d, kernel = kernel,
                                 kernel_type = kernel_type, k = k,
                                 upscale = FALSE, deriv = 0)$bw
+    bw0 <- rbind(bw0)
 
   } else {
 
-    if (r != length(bw0)) {
+    bw0 <- rbind(bw0)
+    if (r != ncol(bw0)) {
 
       stop("bw0 and d are incompatible.")
 
     }
 
   }
-  if (common_h) {
 
-    bw0 <- mean(bw0)
+  # Find the best starting bandwidths to run the optimization on it
+  if (nrow(bw0) > 1) {
+
+    if (common_h) {
+
+      bw0 <- cbind(rowMeans(bw0))
+
+    }
+    ind_best <- which.min(apply(log(bw0), 1, obj))
+    bw0 <- bw0[ind_best, ]
+
+  } else {
+
+    # Replicate bandwidths if common_h
+    if (common_h) {
+
+      bw0 <- rowMeans(bw0)
+
+    } else {
+
+      bw0 <- drop(bw0)
+
+    }
 
   }
-  if (!is.null(list(...)$control$trace) && list(...)$control$trace > 0) {
+  if ((!is.null(list(...)$control$trace) && list(...)$control$trace > 0) ||
+      (!is.null(list(...)$print.level) && list(...)$print.level > 0)) {
 
     message("bw0 = ", bw0)
 
   }
 
   # Optimization
-  if (ncores == 1) {
+  if (opt == "nlm") {
 
-    opt <- optim(par = log(bw0), fn = obj, ...)
+    if (ncores == 1) {
+
+      opt <- nlm(f = obj, p = log(bw0), ...)
+      bw <- exp(opt$estimate)
+
+    } else {
+
+      stop("nlm() with ncores > 1 not available.")
+
+    }
 
   } else {
 
-    cl <- parallel::makeCluster(spec = ncores)
-    parallel::setDefaultCluster(cl = cl)
-    parallel::clusterExport(cl = cl, varlist = ls(), envir = environment())
-    parallel::clusterCall(cl, function() {
-      library("polykde")
-    })
-    opt <- optimParallel::optimParallel(par = log(bw0), fn = obj,
-                                        parallel = list(cl = cl,
-                                                        forward = FALSE,
-                                                        loginfo = TRUE),
-                                        ...)
-    parallel::stopCluster(cl)
+    if (ncores == 1) {
+
+      opt <- optim(par = log(bw0), fn = obj, ...)
+      bw <- exp(opt$par)
+
+    } else {
+
+      cl <- parallel::makeCluster(spec = ncores)
+      parallel::setDefaultCluster(cl = cl)
+      parallel::clusterExport(cl = cl, varlist = ls(), envir = environment())
+      parallel::clusterCall(cl, function() {
+        library("polykde")
+      })
+      opt <- optimParallel::optimParallel(par = log(bw0), fn = obj,
+                                          parallel = list(cl = cl,
+                                                          forward = FALSE,
+                                                          loginfo = TRUE),
+                                          ...)
+      parallel::stopCluster(cl)
+      bw <- exp(opt$par)
+
+    }
 
   }
 
   # Upscale?
-  bw <- exp(opt$par)
   if (upscale > 0) {
 
     n_up <- n^(1 / (d * r + 4)) * n^(-1 / (d * r + 2 * deriv + 4))
     bw <- bw * n_up
 
   }
-  opt$par <- bw
-  return(opt)
+  return(list("bw" = unname(bw), "opt" = opt))
 
 }
 
@@ -361,7 +415,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 #' @inheritParams kde_polysph
 #' @param bw0 initial bandwidth for minimizing the CV loss. If \code{NULL}, it
 #' is computed internally by magnifying the \code{\link{bw_mrot_polysph}}
-#' bandwidths by 50\%.
+#' bandwidths by 50\%. Can be also a matrix of initial bandwidth vectors.
 #' @param upscale rescale bandwidths to work on
 #' \eqn{\mathcal{S}^{d_1}\times\cdots\times \mathcal{S}^{d_r}} and for
 #' derivative estimation?
@@ -377,6 +431,10 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 #' \eqn{\boldsymbol{R}(\boldsymbol{\kappa})}. The estimation of the
 #' concentration parameters \eqn{\boldsymbol{\kappa}} is done by maximum
 #' likelihood.
+#'
+#' If \code{bw0} is a matrix, then the optimization is started at that row of
+#' bandwidths that is most promising for the optimization, i.e., the bandwidths
+#' that minimized the CV loss.
 #' @return A list with entries \code{bw} (optimal bandwidth) and \code{opt},
 #' the latter containing the output of \code{\link[stats]{nlm}}.
 #' @examples
@@ -495,28 +553,37 @@ bw_rot_polysph <- function(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
     # 50% larger ROT bandwidths
     bw0 <- 1.5 * bw_mrot_polysph(X = X, d = d, kernel = kernel,
                                  kappa = kappa, upscale = FALSE, deriv = 0)
-
-  }
-
-  # Optimization. Run several starting values?
-  if (is.matrix(bw0) && nrow(bw0) > 1) {
-
-    opt <- apply(bw0, 1, function(bw0_j) {
-
-      nlm(p = log(bw0_j), f = f_log_amise_stable_log_h, ...)
-      # optim(par = log(bw0_j), fn = fn_log_amise_stable,
-      #       gr = gr_log_amise_stable, method = "L-BFGS-B", ...)
-
-    })
-    opt <- opt[[which.min(sapply(opt, function(op) op$minimum))]]
-    bw <- exp(opt$estimate)
+    bw0 <- rbind(bw0)
 
   } else {
 
-    opt <- nlm(p = log(bw0), f = f_log_amise_stable_log_h, ...)
-    bw <- exp(opt$estimate)
+    bw0 <- rbind(bw0)
+    if (r != ncol(bw0)) {
+
+      stop("bw0 and d are incompatible.")
+
+    }
 
   }
+
+  # Find the best starting bandwidths to run the optimization on it
+  if (nrow(bw0) > 1) {
+
+    ind_best <- which.min(apply(log(bw0), 1, f_log_amise_stable_log_h))
+    bw0 <- bw0[ind_best, ]
+
+  }
+  if (!is.null(list(...)$print.level) && list(...)$print.level > 0) {
+
+    message("bw0 = ", bw0)
+
+  }
+
+  # Optimization
+  opt <- nlm(p = log(bw0), f = f_log_amise_stable_log_h, ...)
+  # opt <- optim(par = log(bw0), fn = fn_log_amise_stable,
+  #              gr = gr_log_amise_stable, method = "L-BFGS-B", ...)
+  bw <- exp(opt$estimate)
 
   # Upscale?
   if (upscale > 0) {
@@ -530,7 +597,7 @@ bw_rot_polysph <- function(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
     bw <- bw * n_up
 
   }
-  return(list("bw" = bw, "opt" = opt))
+  return(list("bw" = unname(bw), "opt" = opt))
 
 }
 
