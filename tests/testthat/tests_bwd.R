@@ -28,7 +28,7 @@ test_that("v_d(L) equals definition for kernel = 1, 2", {
 r <- 2
 d <- sample(1:3, size = r, replace = TRUE)
 h <- sample(c(1, 0.5, 0.75), size = r, replace = TRUE)
-n <- 50
+n <- 100
 mu <- r_unif_polysph(n = 5, d = d)
 X <- r_kde_polysph(n = n, X = mu, d = d, h = h)
 
@@ -68,12 +68,12 @@ cv_naive <- function(h, X, d, mc_samp, kde_samp = FALSE) {
 # cv_bw_cv_curve <- function(h1) sapply(h1, function(hh1) {
 #   bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
 #                 bw0 = rep(hh1, r), M = M, control = list(maxit = 0),
-#                 method = "BFGS", exact_vmf = FALSE, seed_mc = seed)$value
+#                 method = "BFGS", exact_vmf = FALSE, seed_mc = seed)$opt$value
 # })
 # cv_bw_cv_vmf_curve <- function(h1) sapply(h1, function(hh1) {
 #   bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
 #                 bw0 = rep(hh1, r), control = list(maxit = 0),
-#                 method = "BFGS", exact_vmf = TRUE)$value
+#                 method = "BFGS", exact_vmf = TRUE)$opt$value
 # })
 #
 # # Visualization of LSCV functions
@@ -87,18 +87,19 @@ cv_naive <- function(h, X, d, mc_samp, kde_samp = FALSE) {
 test_that("bw_cv_polysph(type = \"LCV\") in sequential and parallel mode", {
   expect_equal(
     bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV",
-                  control = list(maxit = 1e3))$value,
+                  control = list(maxit = 1e3))$opt$value,
     bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV",
-                  control = list(maxit = 1e3), ncores = 2)$value,
+                  control = list(maxit = 1e3), ncores = 2)$opt$value,
                tolerance = 1e-2)
 })
 
 test_that("bw_cv_polysph(type = \"LSCV\") in sequential and parallel mode", {
   expect_equal(
     bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
-                  control = list(maxit = 1e3), seed_mc = 1)$value,
+                  control = list(maxit = 1e3), seed_mc = 1)$opt$value,
     bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
-                  control = list(maxit = 1e3), seed_mc = 1, ncores = 2)$value,
+                  control = list(maxit = 1e3), seed_mc = 1,
+                  ncores = 2)$opt$value,
     tolerance = 1e-2)
 })
 
@@ -111,7 +112,7 @@ test_that("bw_cv_polysph(type = \"LSCV\", imp_mc = TRUE) loss", {
       bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
                     bw0 = f * h, M = M, control = list(maxit = 0),
                     method = "BFGS", exact_vmf = FALSE, imp_mc = TRUE,
-                    seed_mc = seed)$value)
+                    seed_mc = seed)$opt$value)
 
   }
 
@@ -126,7 +127,7 @@ test_that("bw_cv_polysph(type = \"LSCV\", imp_mc = FALSE) loss", {
       bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
                     bw0 = f * h, M = M, control = list(maxit = 0),
                     method = "BFGS", exact_vmf = FALSE, imp_mc = FALSE,
-                    seed_mc = seed)$value)
+                    seed_mc = seed)$opt$value)
 
   }
 
@@ -140,10 +141,10 @@ test_that("bw_cv_polysph(type = \"LSCV\", exact_vmf = TRUE) loss", {
       bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
                     bw0 = f * h, M = M, control = list(maxit = 0),
                     method = "BFGS", exact_vmf = FALSE,
-                    seed_mc = seed)$value,
+                    seed_mc = seed)$opt$value,
       bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
                     bw0 = f * h, M = M, control = list(maxit = 0),
-                    method = "BFGS", exact_vmf = TRUE)$value,
+                    method = "BFGS", exact_vmf = TRUE)$opt$value,
       tolerance = 5e-2)
 
   }
@@ -157,10 +158,10 @@ test_that("bw_cv_polysph(type = \"LCV\", common_h = TRUE)", {
     expect_equal(
       bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV",
                     bw0 = f * h, M = M, control = list(maxit = 0),
-                    method = "BFGS", common_h = TRUE)$value,
+                    method = "BFGS", common_h = TRUE)$opt$value,
       bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV",
                     bw0 = f * rep(mean(h), r), M = M, control = list(maxit = 0),
-                    method = "BFGS", common_h = FALSE)$value,
+                    method = "BFGS", common_h = FALSE)$opt$value,
       tolerance = 5e-2)
 
   }
@@ -175,13 +176,79 @@ test_that("bw_cv_polysph(type = \"LSCV\", common_h = TRUE)", {
       bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
                     bw0 = f * h, M = M, control = list(maxit = 0),
                     method = "BFGS", exact_vmf = TRUE, common_h = TRUE,
-                    seed_mc = seed)$value,
+                    seed_mc = seed)$opt$value,
       bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
                     bw0 = f * rep(mean(h), r), M = M, control = list(maxit = 0),
-                    method = "BFGS", exact_vmf = TRUE, common_h = FALSE)$value,
+                    method = "BFGS", exact_vmf = TRUE,
+                    common_h = FALSE)$opt$value,
       tolerance = 5e-2)
 
   }
+
+})
+
+test_that("bw_cv_polysph() with bw0 vector and bw0 matrix", {
+
+  bw0_vec_1 <- h
+  bw0_vec_2 <- 0.1 * h
+  bw0_vec_3 <- 5 * h
+  bw0_mat <- rbind(bw0_vec_1, bw0_vec_2, bw0_vec_3)
+  expect_equal(
+    bw_cv_polysph(X = X, d = d, bw0 = bw0_vec_1,
+                  control = list(maxit = 0))$opt$value,
+    bw_cv_polysph(X = X, d = d, bw0 = bw0_mat,
+                  control = list(maxit = 0))$opt$value)
+  expect_gt(
+    bw_cv_polysph(X = X, d = d, bw0 = bw0_vec_2,
+                  control = list(maxit = 0))$opt$value,
+    bw_cv_polysph(X = X, d = d, bw0 = bw0_mat,
+                  control = list(maxit = 0))$opt$value)
+  expect_gt(
+    bw_cv_polysph(X = X, d = d, bw0 = bw0_vec_3,
+                  control = list(maxit = 0))$opt$value,
+    bw_cv_polysph(X = X, d = d, bw0 = bw0_mat,
+                  control = list(maxit = 0))$opt$value)
+
+})
+
+test_that("bw_cv_polysph() with bw0 vector and bw0 matrix with common_h", {
+
+  bw0_vec_1 <- h
+  bw0_vec_2 <- 0.1 * h
+  bw0_vec_3 <- 5 * h
+  bw0_mat <- rbind(bw0_vec_1, bw0_vec_2, bw0_vec_3)
+  expect_equal(
+    bw_cv_polysph(X = X, d = d, bw0 = bw0_vec_1, control = list(maxit = 0),
+                  common_h = TRUE, method = "L-BFGS-B", lower = -7,
+                  upper = 0)$opt$value,
+    bw_cv_polysph(X = X, d = d, bw0 = bw0_mat, control = list(maxit = 0),
+                  common_h = TRUE, method = "L-BFGS-B", lower = -7,
+                  upper = 0)$opt$value)
+  expect_gt(
+    bw_cv_polysph(X = X, d = d, bw0 = bw0_vec_2, control = list(maxit = 0),
+                  common_h = TRUE, method = "L-BFGS-B", lower = -7,
+                  upper = 0)$opt$value,
+    bw_cv_polysph(X = X, d = d, bw0 = bw0_mat, control = list(maxit = 0),
+                  common_h = TRUE, method = "L-BFGS-B", lower = -7,
+                  upper = 0)$opt$value)
+  expect_gt(
+    bw_cv_polysph(X = X, d = d, bw0 = bw0_vec_3, control = list(maxit = 0),
+                  common_h = TRUE, method = "L-BFGS-B", lower = -7,
+                  upper = 0)$opt$value,
+    bw_cv_polysph(X = X, d = d, bw0 = bw0_mat, control = list(maxit = 0),
+                  common_h = TRUE, method = "L-BFGS-B", lower = -7,
+                  upper = 0)$opt$value)
+
+})
+
+test_that("bw_cv_polysph(type = \"LCV\") with optim/nlm", {
+
+  expect_equal(
+    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV", opt = "nlm")$bw,
+    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV", opt = "optim")$bw,
+    tolerance = 1e-2)
+  expect_error(bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV",
+                             opt = "nlm", ncores = 2))
 
 })
 
@@ -197,7 +264,7 @@ X <- r_kde_polysph(n = n, X = mu, d = d, h = h)
 test_that("bw_cv_polysph(type = \"LCV\") equals DirStats::bw_dir_lcv()", {
   expect_equal(
     bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV",
-                  method = "L-BFGS-B", bw0 = h)$par,
+                  method = "L-BFGS-B", bw0 = h)$bw,
     DirStats::bw_dir_lcv(data = X, optim = TRUE, optim_par = h)$h_opt,
     tolerance = 1e-3)
 })
@@ -205,7 +272,7 @@ test_that("bw_cv_polysph(type = \"LCV\") equals DirStats::bw_dir_lcv()", {
 test_that("bw_cv_polysph(type = \"LSCV\") equals DirStats::bw_dir_lscv()", {
   expect_equal(
     bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
-                  method = "L-BFGS-B", bw0 = 0.25, exact_vmf = TRUE)$par,
+                  method = "L-BFGS-B", bw0 = 0.25, exact_vmf = TRUE)$bw,
     DirStats::bw_dir_lscv(data = X, optim = TRUE, optim_par = 0.25)$h_opt,
     tolerance = 5e-2)
 })

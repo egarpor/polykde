@@ -7,9 +7,9 @@ density estimator}
 \usage{
 bw_cv_polysph(X, d, kernel = 1, kernel_type = 1, k = 10,
   intrinsic = FALSE, type = c("LCV", "LSCV")[1], M = 10000, bw0 = NULL,
-  na.rm = FALSE, ncores = 1, h_min = 0, upscale = FALSE, deriv = 0,
+  na.rm = FALSE, h_min = 0, upscale = FALSE, deriv = 0,
   imp_mc = TRUE, seed_mc = NULL, exact_vmf = FALSE, common_h = FALSE,
-  ...)
+  spline = FALSE, opt = c("optim", "nlm")[1], ncores = 1, ...)
 }
 \arguments{
 \item{X}{a matrix of size \code{c(n, sum(d) + r)} with the sample.}
@@ -33,15 +33,13 @@ extrinsic-chordal distance, in the kernel? Defaults to \code{FALSE}.}
 \item{M}{Monte Carlo samples to use for approximating the integral in
 the LSCV loss.}
 
-\item{bw0}{initial bandwidth for minimizing the CV loss. If \code{NULL}, it
-is computed internally by magnifying the \code{\link{bw_rot_polysph}}
-bandwidths by 50\%.}
+\item{bw0}{initial bandwidth vector for minimizing the CV loss. If
+\code{NULL}, it is computed internally by magnifying the
+\code{\link{bw_rot_polysph}} bandwidths by 50\%. Can be also a matrix of
+initial bandwidth vectors.}
 
 \item{na.rm}{remove \code{NA}s in the objective function? Defaults to
 \code{FALSE}.}
-
-\item{ncores}{number of cores used during the optimization. Defaults to
-\code{1}.}
 
 \item{h_min}{minimum h enforced (componentwise). Defaults to \code{0}.}
 
@@ -64,19 +62,31 @@ von Mises--Fisher kernel? Defaults to \code{FALSE}.}
 \item{common_h}{use the same bandwidth for all dimensions? Defaults to
 \code{FALSE}.}
 
-\item{...}{further arguments passed to \code{\link{optim}}
-(if \code{ncores = 1}) or \code{\link[optimParallel]{optimParallel}}
-(if \code{ncores > 1}).}
+\item{spline}{TODO}
+
+\item{opt}{TODO}
+
+\item{ncores}{number of cores used during the optimization. Defaults to
+\code{1}.}
+
+\item{...}{further arguments passed to \code{\link{optim}} or
+\code{\link{nlm}} (if \code{ncores = 1}) or
+\code{\link[optimParallel]{optimParallel}} (if \code{ncores > 1}).}
 }
 \value{
-A list as \code{\link[stats]{optim}} or
-\code{\link[optimParallel]{optimParallel}} output. In particular, the
-optimal bandwidth is stored in \code{par}.
+A list with entries \code{bw} (optimal bandwidth) and \code{opt},
+the latter containing the output of \code{\link[stats]{nlm}},
+\code{\link[stats]{optim}}, or \code{\link[optimParallel]{optimParallel}}.
 }
 \description{
 Likelihood Cross-Validation (LCV) and Least Squares
 Cross-Validation (LSCV) bandwidth selection for the polyspherical kernel
 density estimator.
+}
+\details{
+If \code{bw0} is a matrix, then the optimization is started at that
+row of bandwidths that is most promising for the optimization, i.e., the
+bandwidths that minimized the CV loss.
 }
 \examples{
 n <- 50
@@ -84,6 +94,6 @@ d <- 1:2
 kappa <- rep(10, 2)
 X <- r_vmf_polysph(n = n, d = d, mu = r_unif_polysph(n = 1, d = d),
                    kappa = kappa)
-bw_cv_polysph(X = X, d = d, type = "LCV")$par
-bw_cv_polysph(X = X, d = d, type = "LSCV")$par
+bw_cv_polysph(X = X, d = d, type = "LCV")$bw
+bw_cv_polysph(X = X, d = d, type = "LSCV")$bw
 }
