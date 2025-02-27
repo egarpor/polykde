@@ -844,3 +844,174 @@ bw_lcv_min_epa <- function(X, d, kernel_type = c("prod", "sph")[1]) {
   }
 
 }
+
+
+#' @title TODO
+#'
+#' @description TODO
+#'
+#' @param h TODO
+#' @param n TODO
+#' @param mu TODO
+#' @param kappa TODO
+#' @param p TODO
+#' @param d TODO
+#' @param M TODO
+#' @inheritParams log_besselI_scaled
+#' @return TODO
+#' @examples
+#' h <- seq(0.01, 1, l = 100)
+#' log_mise_h <- sapply(h, function(hi) {
+#'   set.seed(1)
+#'   log(polykde:::exact_mise_vmf(h = hi, n = 100, mu = rbind(c(0, 1),
+#'                                                            c(1, 0)),
+#'                                kappa = c(5, 2), p = c(0.7, 0.3), d = 1,
+#'                                spline = TRUE)$mise)
+#'   })
+#' plot(h, log_mise_h)
+#' log_mise_h <- sapply(h, function(hi) {
+#'   set.seed(1)
+#'   log(polykde:::exact_mise_vmf_polysph(h = rep(hi, 3), n = 100,
+#'                                        mu = rbind(c(0, 0, 1, 0, 1, 0, 1),
+#'                                                   c(0, 0, -1, 0, -1, 0, 1)),
+#'                                        kappa = rbind(1:3, 3:1),
+#'                                        p = c(0.7, 0.3), d = c(2, 1, 1),
+#'                                        spline = TRUE)$mise)
+#'   })
+#' plot(h, log_mise_h)
+#' @noRd
+exact_mise_vmf <- function(h, n, mu, kappa, p, d, M = 1e4, spline = FALSE) {
+
+  # Check mixture inputs
+  m <- length(p)
+  mu <- rbind(mu)
+  stopifnot(sum(p) == 1)
+  stopifnot(ncol(mu) == d + 1)
+  stopifnot(nrow(mu) == m)
+  stopifnot(length(kappa) == m)
+  stopifnot(length(d) == 1)
+
+  # mu_i * kappa_i
+  mu_kappa <- mu  * kappa
+
+  # Psi_0
+  # ||kappa_i mu_i + kappa_j mu_j||^2 = kappa_i^2 + kappa_j^2
+  #                                    + 2 * kappa_i * kappa_j * mu_i'mu_j
+  log_C_kappa <- polykde:::fast_log_c_vMF(p = d + 1, kappa = kappa,
+                                          spline = spline)
+  kappa_mu_i_kappa_mu_j <-
+    sqrt(outer(kappa^2, kappa^2, "+") + 2 * tcrossprod(mu_kappa))
+  log_C_kappa_mu_i_kappa_mu_j <-
+    polykde:::fast_log_c_vMF(p = d + 1, kappa = kappa_mu_i_kappa_mu_j,
+                             spline = spline)
+  Psi_0 <- exp(outer(log_C_kappa, log_C_kappa, "+") -
+                 log_C_kappa_mu_i_kappa_mu_j)
+
+  # Psi_1 and Psi_2 using weighted MC
+  Psi_1 <- Psi_2 <- matrix(0, nrow = m, ncol = m)
+  log_C_h <- polykde:::fast_log_c_vMF(p = d + 1, kappa = 1 / h^2,
+                                      spline = spline)
+  for (j in seq_len(m)) {
+
+    # Sample vMF(mu[j], kappa[j])
+    vmf_samp_j <- rotasym::r_vMF(n = M, mu = mu[j, ], kappa = kappa[j])
+
+    for (i in seq_len(j)) {
+
+      # Sample vMF(mu[i], kappa[i])
+      vmf_samp_i <- rotasym::r_vMF(n = M, mu = mu[i, ], kappa = kappa[i])
+
+      # Combined sample for estimation based on mixture
+      vmf_samp_ij <- rbind(vmf_samp_i, vmf_samp_j)
+
+      # Evaluate mixture
+      log_dens_ij <- log(0.5 * (
+        rotasym::d_vMF(x = vmf_samp_ij, mu = mu[i, ], kappa = kappa[i]) +
+          rotasym::d_vMF(x = vmf_samp_ij, mu = mu[j, ], kappa = kappa[j])))
+
+      # Compute C(||x/h^2 + kappa_i mu_i||) and C(||x/h^2 + kappa_j mu_j||)
+      h_x_kappa_mu_i <- sqrt(colSums((t(vmf_samp_ij / h^2) +
+                                        kappa[i] * mu[i, ])^2))
+      h_x_kappa_mu_j <- sqrt(colSums((t(vmf_samp_ij / h^2) +
+                                        kappa[j] * mu[j, ])^2))
+      log_C_h_x_kappa_mu_i <-
+        polykde:::fast_log_c_vMF(p = d + 1,
+                                 kappa = h_x_kappa_mu_i,
+                                 spline = spline)
+      log_C_h_x_kappa_mu_j <-
+        polykde:::fast_log_c_vMF(p = d + 1,
+                                 kappa = h_x_kappa_mu_j,
+                                 spline = spline)
+
+      # Psi_1
+      Psi_1[i, j] <- mean(exp(log_C_h + log_C_kappa[i] + log_C_kappa[j] +
+                                kappa[j] * vmf_samp_ij %*% mu[j, ] -
+                                log_C_h_x_kappa_mu_i - log_dens_ij))
+
+      # Psi_2
+      Psi_2[i, j] <- mean(exp(2 * log_C_h + log_C_kappa[i] + log_C_kappa[j] -
+                                log_C_h_x_kappa_mu_i - log_C_h_x_kappa_mu_j -
+                                log_dens_ij))
+
+    }
+
+  }
+  Psi_1[lower.tri(Psi_1)] <- Psi_1[upper.tri(Psi_1)]
+  Psi_2[lower.tri(Psi_2)] <- Psi_2[upper.tri(Psi_2)]
+
+  # Dq constant (careful: it is the inverse of what is reported in the paper!)
+  log_C_h <- polykde:::fast_log_c_vMF(p = d + 1, kappa = 1 / h^2,
+                           spline = spline)
+  log_Dq_h <- -2 * log_C_h +
+    polykde:::fast_log_c_vMF(p = d + 1, kappa = 2 / h^2, spline = spline)
+
+  # MISE in Proposition 4 of "Kernel density estimation for
+  # directional-linear data" (https://doi.org/10.1016/j.jmva.2013.06.009)
+  mise <- exp(-(log_Dq_h + log(n))) +
+    drop(t(p) %*% ((1 - 1 / n) * Psi_2 - 2 * Psi_1 + Psi_0) %*% p)
+  return(list("mise" = mise, "Psi_0" = Psi_0, "Psi_1" = Psi_1, "Psi_2" = Psi_2,
+              "log_Dq_h" = log_Dq_h))
+
+}
+
+
+#' @noRd
+exact_mise_vmf_polysph <- function(h, n, mu, kappa, p, d, M = 1e4,
+                                   spline = FALSE) {
+
+  r <- length(d)
+  mu <- rbind(mu)
+  kappa <- cbind(kappa)
+  m <- length(p)
+  stopifnot(length(h) == r)
+  stopifnot(nrow(kappa) == m)
+  stopifnot(ncol(kappa) == r)
+  stopifnot(ncol(mu) == sum(d + 1))
+
+  # Loop on spheres
+  ind_dj <- comp_ind_dj(d)
+  log_Dq_h <- 0
+  Psi_0 <- Psi_1 <- Psi_2 <- matrix(1, nrow = m, ncol = m)
+  for (j in 1:r) {
+
+    mise_j <- exact_mise_vmf(h = h[j], n = n,
+                             mu = mu[, (ind_dj[j] + 1):ind_dj[j + 1]],
+                             kappa = kappa[, j], p = p, d = d[j],
+                             M = 1e4, spline = spline)
+
+    # Exploiting structure in Proposition 5 of "Kernel density estimation for
+    # directional-linear data" (https://doi.org/10.1016/j.jmva.2013.06.009)
+    log_Dq_h <- log_Dq_h + mise_j$log_Dq_h
+    Psi_0 <- Psi_0 * mise_j$Psi_0
+    Psi_1 <- Psi_1 * mise_j$Psi_1
+    Psi_2 <- Psi_2 * mise_j$Psi_2
+
+  }
+
+  # MISE
+  mise <- exp(-(log_Dq_h + log(n))) +
+    drop(t(p) %*% ((1 - 1 / n) * Psi_2 - 2 * Psi_1 + Psi_0) %*% p)
+  return(list("mise" = mise, "Psi_0" = Psi_0, "Psi_1" = Psi_1, "Psi_2" = Psi_2,
+              "log_Dq_h" = log_Dq_h))
+
+}
