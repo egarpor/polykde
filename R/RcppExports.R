@@ -29,7 +29,7 @@
 #' to initiate the ridge path. The function \code{euler_ridge_parallel}
 #' parallelizes on the starting values \code{x}. The function
 #' \code{euler_ridge_block} runs the Euler algorithm marginally in blocks
-#' of hyperspheres, instead of jointly in the whole polysphere. This function
+#' of spheres, instead of jointly in the whole polysphere. This function
 #' requires that all the dimensions are the same.
 #' @return The three functions return a list with the following fields:
 #' \item{ridge_y}{a matrix of size \code{c(nx, sum(d) + r)} with the end

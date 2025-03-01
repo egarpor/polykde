@@ -34,7 +34,6 @@ kre_polysph <- function(x, X, Y, d, h, p = 0) {
   stopifnot(is.matrix(Y))
   stopifnot(length(X) == nrow(Y))
   stopifnot(sum(d + 1) == ncol(Y))
-  stopifnot(p == 0 || p == 1)
 
   # Log-kernel weights
   nx <- length(x)
@@ -55,7 +54,7 @@ kre_polysph <- function(x, X, Y, d, h, p = 0) {
     # Weighted means
     Y_hat <- W %*% Y
 
-  } else {
+  } else if (p == 1) {
 
     Y_hat <- matrix(nrow = nx, ncol = ncol(Y))
     for (j in seq_len(nx)) {
@@ -64,6 +63,10 @@ kre_polysph <- function(x, X, Y, d, h, p = 0) {
                             w = W[j, ])$coefficients[1, ]
 
     }
+
+  } else {
+
+    stop("p must be either 0 or 1.")
 
   }
 
@@ -88,8 +91,8 @@ kre_polysph <- function(x, X, Y, d, h, p = 0) {
 #' @param plot_cv plot the cross-validation loss curve? Defaults to \code{TRUE}.
 #' @param fast use the faster and equivalent version of the cross-validation
 #' loss? Defaults to \code{TRUE}.
-#' @details A similar output to \code{glmnet}'s \code{\link[glmnet]{cv.glmnet}}
-#' is returned.
+#' @details A similar output to \code{\link[glmnet]{glmnet::cv.glmnet}} is
+#' returned.
 #' @return A list with the following fields:
 #' \item{h_min}{the bandwidth that minimizes the cross-validation loss.}
 #' \item{h_1se}{the largest bandwidth within one standard error of the

@@ -45,8 +45,9 @@ interp_polysph <- function(x, y, ind_dj, N = 10) {
 #' @param show_seg show segments? Defaults to \code{TRUE}.
 #' @param col_base,col_bndy,col_seg colors for the base, boundary, and segments.
 #' Default to \code{"red"}, \code{"blue"}, and \code{"green"}, respectively.
-#' @param static use static (\code{\link[scatterplot3d]{scatterplot3d}}) or
-#' interactive (\code{\link[rgl]{plot3d}}) plot? Default to \code{TRUE}.
+#' @param static use static
+#' (\code{\link[scatterplot3d]{scatterplot3d::scatterplot3d}}) or
+#' interactive (\code{\link[rgl]{rgl::plot3d}}) plot? Default to \code{TRUE}.
 #' @param texts add text labels? If given, it should be a vector of size
 #' \code{nx} with the labels. Defaults to \code{NULL}.
 #' @param cex_base,cex_bdry size of the base and boundary points.
@@ -57,11 +58,11 @@ interp_polysph <- function(x, y, ind_dj, N = 10) {
 #' @param r_texts magnification of the radius to separate the text labels.
 #' Defaults to \code{1.25}.
 #' @param alpha_ashape3d_base,alpha_ashape3d_bdry alpha parameters for
-#' \code{\link[alphashape3d]{ashape3d}}. Default to \code{NULL}.
-#' @param lit lit parameter passed to \code{\link[rgl]{material3d}}. Defaults to
-#' \code{FALSE}.
-#' @param ... further arguments to be passed to \code{\link[rgl]{plot3d}} or
-#' \code{\link[scatterplot3d]{scatterplot3d}}.
+#' \code{\link[alphashape3d]{alphashape3d::ashape3d}}. Default to \code{NULL}.
+#' @param lit lit parameter passed to \code{\link[rgl]{rgl::material3d}}.
+#' Defaults to \code{FALSE}.
+#' @param ... further arguments to be passed to \code{\link[rgl]{rgl::plot3d}}
+#' or \code{\link[scatterplot3d]{scatterplot3d::scatterplot3d}}.
 #' @return Creates a static or interactive plot.
 #' @examples
 #' base <- r_unif_polysph(n = 50, d = 2)
