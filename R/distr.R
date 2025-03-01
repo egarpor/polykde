@@ -62,8 +62,8 @@ d_unif_polysph <- function(x, d, log = FALSE) {
 #'
 #' @description Computes the normalizing constant of the von Mises--Fisher
 #' distribution on the sphere \eqn{\mathcal{S}^{p-1}} as in
-#' \code{\link[rotasym]{rotasym::c_vMF}} but using a fast spline approximation
-#' for the logarithm of (a limited number of) Bessel functions.
+#' \code{\link[rotasym]{c_vMF}} but using a fast spline approximation for the
+#' logarithm of (a limited number of) Bessel functions.
 #'
 #' @param p positive integer giving the dimension of the ambient space that
 #' contains the sphere \eqn{\mathcal{S}^{p-1}}. Can be a vector only for

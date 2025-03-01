@@ -39,15 +39,13 @@
 #' \code{1}.
 #' @param ... further arguments passed to \code{\link{optim}} or
 #' \code{\link{nlm}} (if \code{ncores = 1}) or
-#' \code{\link[optimParallel]{optimParallel::optimParallel}} (if
-#' \code{ncores > 1}).
+#' \code{\link[optimParallel]{optimParallel}} (if \code{ncores > 1}).
 #' @details If \code{bw0} is a matrix, then the optimization is started at that
 #' row of bandwidths that is most promising for the optimization, i.e., the
 #' bandwidths that minimized the CV loss.
 #' @return A list with entries \code{bw} (optimal bandwidth) and \code{opt},
 #' the latter containing the output of \code{\link[stats]{nlm}},
-#' \code{\link[stats]{optim}}, or
-#' \code{\link[optimParallel]{optimParallel::optimParallel}}.
+#' \code{\link[stats]{optim}}, or \code{\link[optimParallel]{optimParallel}}.
 #' @examples
 #' n <- 50
 #' d <- 1:2

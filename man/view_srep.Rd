@@ -35,8 +35,8 @@ unit vectors.}
 Default to \code{"red"}, \code{"blue"}, and \code{"green"}, respectively.}
 
 \item{static}{use static
-(\code{\link[scatterplot3d]{scatterplot3d::scatterplot3d}}) or
-interactive (\code{\link[rgl]{rgl::plot3d}}) plot? Default to \code{TRUE}.}
+(\code{\link[scatterplot3d]{scatterplot3d}}) or interactive
+(\code{\link[rgl]{plot3d}}) plot? Default to \code{TRUE}.}
 
 \item{texts}{add text labels? If given, it should be a vector of size
 \code{nx} with the labels. Defaults to \code{NULL}.}
@@ -54,13 +54,13 @@ interactive (\code{\link[rgl]{rgl::plot3d}}) plot? Default to \code{TRUE}.}
 Defaults to \code{1.25}.}
 
 \item{alpha_ashape3d_base, alpha_ashape3d_bdry}{alpha parameters for
-\code{\link[alphashape3d]{alphashape3d::ashape3d}}. Default to \code{NULL}.}
+\code{\link[alphashape3d]{ashape3d}}. Default to \code{NULL}.}
 
-\item{lit}{lit parameter passed to \code{\link[rgl]{rgl::material3d}}.
+\item{lit}{lit parameter passed to \code{\link[rgl]{material3d}}.
 Defaults to \code{FALSE}.}
 
-\item{...}{further arguments to be passed to \code{\link[rgl]{rgl::plot3d}}
-or \code{\link[scatterplot3d]{scatterplot3d::scatterplot3d}}.}
+\item{...}{further arguments to be passed to \code{\link[rgl]{plot3d}}
+or \code{\link[scatterplot3d]{scatterplot3d}}.}
 }
 \value{
 Creates a static or interactive plot.
