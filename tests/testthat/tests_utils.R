@@ -161,3 +161,46 @@ test_that("polylog_minus_exp_mu() is smooth on half arguments", {
                  tolerance = 1e-5)
   }
 })
+test_that("polylog_minus_exp_mu() edge cases", {
+  expect_equal(polylog_minus_exp_mu(s = c(0.5, 1.5), mu = 1),
+               c(polylog_minus_exp_mu(s = 0.5, mu = 1),
+                 polylog_minus_exp_mu(s = 1.5, mu = 1)))
+  expect_error(polylog_minus_exp_mu(s = 1:3, mu = 1:2))
+})
+
+## log_besselI_scaled()
+
+test_that("Accuracy of log_besselI_scaled(nu = seq(0, 4, by = 0.5)) with
+          spline approximations", {
+
+  x <- seq(1e-8, 1e4, l = 1e3)
+  nus <- seq(0, 4, by = 0.5)
+  for (nu in nus) {
+    expect_equal(
+      polykde:::log_besselI_scaled(nu = nu, x = x, spline = TRUE),
+      polykde:::log_besselI_scaled(nu = nu, x = x, spline = FALSE),
+      tolerance = 1e-9)
+  }
+
+})
+
+test_that("Accuracy of log_besselI_scaled(nu = seq(0, 4, by = 0.5)) with
+          asymptotic approximations", {
+
+  x <- seq(1e4, 1e5, l = 100)
+  nus <- seq(0, 5, by = 1)
+  for (nu in nus) {
+    expect_equal(
+      polykde:::log_besselI_scaled(nu = nu, x = x, spline = TRUE),
+      polykde:::log_besselI_scaled(nu = nu, x = x, spline = FALSE),
+      tolerance = 1e-9)
+  }
+
+})
+
+test_that("Edge cases of log_besselI_scaled()", {
+
+  expect_error(log_besselI_scaled(nu = 5, x = 0, spline = TRUE))
+  expect_error(log_besselI_scaled(nu = 1:3, x = 0, spline = TRUE))
+
+})

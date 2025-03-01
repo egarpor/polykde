@@ -1,4 +1,6 @@
 
+## von Mises--Fisher density
+
 test_that("Check d_vmf_polysph by inverse weighted sampling", {
 
   M <- 1e3
@@ -11,6 +13,15 @@ test_that("Check d_vmf_polysph by inverse weighted sampling", {
                tolerance = 1e-1)
 
 })
+
+test_that("fast_log_c_vMF() works properly with spline = TRUE / FALSE", {
+
+  expect_equal(polykde:::fast_log_c_vMF(p = 5, kappa = 0:10, spline = TRUE),
+               polykde:::fast_log_c_vMF(p = 5, kappa = 0:10, spline = FALSE))
+
+})
+
+## Uniform density
 
 test_that("Check d_unif_polysph by inverse weighted sampling", {
 
