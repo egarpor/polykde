@@ -21,9 +21,9 @@
 #' @inheritParams bw_rot_polysph
 #' @param upscale rescale the resulting bandwidths to work for derivative
 #' estimation? Defaults to \code{FALSE}.
-#' @param imp_mc use importance sampling in the Monte Carlo simulations used
-#' to estimate the integral in the LSCV loss? It is more accurate but also more
-#' time consuming. Defaults to \code{TRUE}.
+#' @param imp_mc use importance sampling in the Monte Carlo approximation of
+#' the integral in the LSCV loss? It is more accurate but also more time
+#' consuming. Defaults to \code{TRUE}.
 #' @param seed_mc seed for the Monte Carlo simulations used to estimate the
 #' integral in the LSCV loss. Defaults to \code{NULL} (no seed is fixed for
 #' different bandwidths).
@@ -39,13 +39,15 @@
 #' \code{1}.
 #' @param ... further arguments passed to \code{\link{optim}} or
 #' \code{\link{nlm}} (if \code{ncores = 1}) or
-#' \code{\link[optimParallel]{optimParallel}} (if \code{ncores > 1}).
+#' \code{\link[optimParallel]{optimParallel::optimParallel}} (if
+#' \code{ncores > 1}).
 #' @details If \code{bw0} is a matrix, then the optimization is started at that
 #' row of bandwidths that is most promising for the optimization, i.e., the
 #' bandwidths that minimized the CV loss.
 #' @return A list with entries \code{bw} (optimal bandwidth) and \code{opt},
 #' the latter containing the output of \code{\link[stats]{nlm}},
-#' \code{\link[stats]{optim}}, or \code{\link[optimParallel]{optimParallel}}.
+#' \code{\link[stats]{optim}}, or
+#' \code{\link[optimParallel]{optimParallel::optimParallel}}.
 #' @examples
 #' n <- 50
 #' d <- 1:2
@@ -453,7 +455,7 @@ bw_rot_polysph <- function(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
   if (is.numeric(kernel_type)) {
 
     kernel_type <- switch(kernel_type, "1" = "prod", "2" = "sph",
-                          stop("\"kernel_type\" must be 1 or 2."))
+                          stop("kernel_type must be 1 or 2."))
 
   }
 
@@ -725,7 +727,7 @@ bw_mrot_polysph <- function(X, d, kernel = 1, k = 10, upscale = FALSE,
 
     } else {
 
-      stop("\"kernel\" must be 1, 2, or 3.")
+      stop("kernel must be 1, 2, or 3.")
 
     }
 
@@ -797,7 +799,7 @@ bw_lcv_min_epa <- function(X, d, kernel_type = c("prod", "sph")[1]) {
   if (is.numeric(kernel_type)) {
 
     kernel_type <- switch(kernel_type, "1" = "prod", "2" = "sph",
-                          stop("\"kernel_type\" must be 1 or 2."))
+                          stop("kernel_type must be 1 or 2."))
 
   }
 
@@ -839,26 +841,47 @@ bw_lcv_min_epa <- function(X, d, kernel_type = c("prod", "sph")[1]) {
 
   } else {
 
-    stop("\"kernel_type\" must be either \"prod\" or \"sph\".")
+    stop("kernel_type must be either \"prod\" or \"sph\".")
 
   }
 
 }
 
 
-#' @title TODO
+#' @title Computation of the exact MISE for mixtures of von Mises--Fisher
+#' distributions on the polysphere
 #'
-#' @description TODO
+#' @description The function \code{exact_mise_vmf_polysph} computes the
+#' exact Mean Integrated Squared Error (MISE) of the kernel density estimator
+#' on the polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times
+#' \mathcal{S}^{d_r}} with respect to a density \eqn{f_m(\boldsymbol{x}) =
+#' \sum_{j=1}^m p_j
+#' f_{\mathrm{vMF}}(\boldsymbol{x}; \boldsymbol{\mu}_j, \kappa_j)} of an
+#' \eqn{m}-mixture of von Mises--Fisher distributions. The MISE is
+#' \deqn{\mathrm{MISE}_m[\hat{f}(\cdot;\boldsymbol{h})]=\mathbb{E}\left[
+#' \int_{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}
+#' \left(\hat{f}(\boldsymbol{x};\boldsymbol{h})-f_m(\boldsymbol{x})\right)^2
+#' \,\mathrm{d}\boldsymbol{x}\right]}
+#' and can be computed exactly from Propositions 4 and 5 in García-Portugués
+#' et al. (2013), using importance-sampling Monte Carlo to evaluate the matrices
+#' \eqn{\boldsymbol{\Psi_1}} and \eqn{\boldsymbol{\Psi_2}}.
 #'
-#' @param h TODO
-#' @param n TODO
-#' @param mu TODO
-#' @param kappa TODO
-#' @param p TODO
-#' @param d TODO
-#' @param M TODO
+#' @inheritParams kde_polysph
+#' @param n sample size.
+#' @param mu a matrix of size \code{c(m, sum(d + 1))} with the means of
+#' each mixture components in the rows.
+#' @param kappa a matrix of size \code{c(m, r)} with the concentrations of
+#' each mixture components in the rows.
+#' @param p a vector of size \code{m} with the proportions of the mixture
+#' components.
+#' @param M number of importance-sampling Monte Carlo samples. Defaults to
+#' \code{1e4}.
 #' @inheritParams log_besselI_scaled
-#' @return TODO
+#' @return A scalar with the evaluated MISE at the given bandwidths.
+#' @references
+#' García-Portugués, E., Crujeiras, R. M., and González-Manteiga, W. (2013).
+#' Kernel density estimation for directional-linear data. \emph{Journal of
+#' Multivariate Analysis}, 121:152--175. \doi{10.1016/j.jmva.2013.06.009}.
 #' @examples
 #' h <- seq(0.01, 1, l = 100)
 #' log_mise_h <- sapply(h, function(hi) {
@@ -880,7 +903,52 @@ bw_lcv_min_epa <- function(X, d, kernel_type = c("prod", "sph")[1]) {
 #'   })
 #' plot(h, log_mise_h)
 #' @noRd
-exact_mise_vmf <- function(h, n, mu, kappa, p, d, M = 1e4, spline = FALSE) {
+exact_mise_vmf_polysph <- function(h, n, mu, kappa, p, d, M = 1e4,
+                                   spline = FALSE, seed_psi = NULL) {
+
+  # Check mixture inputs
+  r <- length(d)
+  mu <- rbind(mu)
+  kappa <- cbind(kappa)
+  m <- length(p)
+  stopifnot(nrow(kappa) == m)
+  stopifnot(ncol(kappa) == r)
+  stopifnot(ncol(mu) == sum(d + 1))
+  stopifnot(length(h) == r)
+
+  # Loop on spheres
+  ind_dj <- comp_ind_dj(d)
+  log_Dq_h <- 0
+  Psi_0 <- Psi_1 <- Psi_2 <- matrix(1, nrow = m, ncol = m)
+  for (j in 1:r) {
+
+    mise_j <- exact_mise_vmf(h = h[j], n = n,
+                             mu = mu[, (ind_dj[j] + 1):ind_dj[j + 1]],
+                             kappa = kappa[, j], p = p, d = d[j],
+                             M = 1e4, spline = spline,
+                             seed_psi = seed_psi + j - 1)
+
+    # Exploiting structure in Proposition 5 of "Kernel density estimation for
+    # directional-linear data" (https://doi.org/10.1016/j.jmva.2013.06.009)
+    log_Dq_h <- log_Dq_h + mise_j$log_Dq_h
+    Psi_0 <- Psi_0 * mise_j$Psi_0
+    Psi_1 <- Psi_1 * mise_j$Psi_1
+    Psi_2 <- Psi_2 * mise_j$Psi_2
+
+  }
+
+  # MISE
+  mise <- exp(-(log_Dq_h + log(n))) +
+    drop(t(p) %*% ((1 - 1 / n) * Psi_2 - 2 * Psi_1 + Psi_0) %*% p)
+  return(list("mise" = mise, "Psi_0" = Psi_0, "Psi_1" = Psi_1, "Psi_2" = Psi_2,
+              "log_Dq_h" = log_Dq_h))
+
+}
+
+
+#' @noRd
+exact_mise_vmf <- function(h, n, mu, kappa, p, d, M = 1e4, spline = FALSE,
+                           seed_psi = NULL) {
 
   # Check mixture inputs
   m <- length(p)
@@ -890,6 +958,7 @@ exact_mise_vmf <- function(h, n, mu, kappa, p, d, M = 1e4, spline = FALSE) {
   stopifnot(nrow(mu) == m)
   stopifnot(length(kappa) == m)
   stopifnot(length(d) == 1)
+  stopifnot(length(h) == 1)
 
   # mu_i * kappa_i
   mu_kappa <- mu  * kappa
@@ -897,20 +966,25 @@ exact_mise_vmf <- function(h, n, mu, kappa, p, d, M = 1e4, spline = FALSE) {
   # Psi_0
   # ||kappa_i mu_i + kappa_j mu_j||^2 = kappa_i^2 + kappa_j^2
   #                                    + 2 * kappa_i * kappa_j * mu_i'mu_j
-  log_C_kappa <- polykde:::fast_log_c_vMF(p = d + 1, kappa = kappa,
-                                          spline = spline)
+  log_C_kappa <- fast_log_c_vMF(p = d + 1, kappa = kappa, spline = spline)
   kappa_mu_i_kappa_mu_j <-
     sqrt(outer(kappa^2, kappa^2, "+") + 2 * tcrossprod(mu_kappa))
   log_C_kappa_mu_i_kappa_mu_j <-
-    polykde:::fast_log_c_vMF(p = d + 1, kappa = kappa_mu_i_kappa_mu_j,
-                             spline = spline)
+    fast_log_c_vMF(p = d + 1, kappa = kappa_mu_i_kappa_mu_j, spline = spline)
   Psi_0 <- exp(outer(log_C_kappa, log_C_kappa, "+") -
                  log_C_kappa_mu_i_kappa_mu_j)
 
+  # Set seeds for the Monte Carlos in the Psi_1 and Psi_2 and restore
+  # at the exit
+  if (!is.null(seed_psi)) {
+
+    set.seed(seed_psi, kind = "Mersenne-Twister")
+
+  }
+
   # Psi_1 and Psi_2 using weighted MC
   Psi_1 <- Psi_2 <- matrix(0, nrow = m, ncol = m)
-  log_C_h <- polykde:::fast_log_c_vMF(p = d + 1, kappa = 1 / h^2,
-                                      spline = spline)
+  log_C_h <- fast_log_c_vMF(p = d + 1, kappa = 1 / h^2, spline = spline)
   for (j in seq_len(m)) {
 
     # Sample vMF(mu[j], kappa[j])
@@ -935,13 +1009,9 @@ exact_mise_vmf <- function(h, n, mu, kappa, p, d, M = 1e4, spline = FALSE) {
       h_x_kappa_mu_j <- sqrt(colSums((t(vmf_samp_ij / h^2) +
                                         kappa[j] * mu[j, ])^2))
       log_C_h_x_kappa_mu_i <-
-        polykde:::fast_log_c_vMF(p = d + 1,
-                                 kappa = h_x_kappa_mu_i,
-                                 spline = spline)
+        fast_log_c_vMF(p = d + 1, kappa = h_x_kappa_mu_i, spline = spline)
       log_C_h_x_kappa_mu_j <-
-        polykde:::fast_log_c_vMF(p = d + 1,
-                                 kappa = h_x_kappa_mu_j,
-                                 spline = spline)
+        fast_log_c_vMF(p = d + 1, kappa = h_x_kappa_mu_j, spline = spline)
 
       # Psi_1
       Psi_1[i, j] <- mean(exp(log_C_h + log_C_kappa[i] + log_C_kappa[j] +
@@ -960,55 +1030,12 @@ exact_mise_vmf <- function(h, n, mu, kappa, p, d, M = 1e4, spline = FALSE) {
   Psi_2[lower.tri(Psi_2)] <- Psi_2[upper.tri(Psi_2)]
 
   # Dq constant (careful: it is the inverse of what is reported in the paper!)
-  log_C_h <- polykde:::fast_log_c_vMF(p = d + 1, kappa = 1 / h^2,
-                           spline = spline)
+  log_C_h <- fast_log_c_vMF(p = d + 1, kappa = 1 / h^2, spline = spline)
   log_Dq_h <- -2 * log_C_h +
-    polykde:::fast_log_c_vMF(p = d + 1, kappa = 2 / h^2, spline = spline)
+    fast_log_c_vMF(p = d + 1, kappa = 2 / h^2, spline = spline)
 
   # MISE in Proposition 4 of "Kernel density estimation for
   # directional-linear data" (https://doi.org/10.1016/j.jmva.2013.06.009)
-  mise <- exp(-(log_Dq_h + log(n))) +
-    drop(t(p) %*% ((1 - 1 / n) * Psi_2 - 2 * Psi_1 + Psi_0) %*% p)
-  return(list("mise" = mise, "Psi_0" = Psi_0, "Psi_1" = Psi_1, "Psi_2" = Psi_2,
-              "log_Dq_h" = log_Dq_h))
-
-}
-
-
-#' @noRd
-exact_mise_vmf_polysph <- function(h, n, mu, kappa, p, d, M = 1e4,
-                                   spline = FALSE) {
-
-  r <- length(d)
-  mu <- rbind(mu)
-  kappa <- cbind(kappa)
-  m <- length(p)
-  stopifnot(length(h) == r)
-  stopifnot(nrow(kappa) == m)
-  stopifnot(ncol(kappa) == r)
-  stopifnot(ncol(mu) == sum(d + 1))
-
-  # Loop on spheres
-  ind_dj <- comp_ind_dj(d)
-  log_Dq_h <- 0
-  Psi_0 <- Psi_1 <- Psi_2 <- matrix(1, nrow = m, ncol = m)
-  for (j in 1:r) {
-
-    mise_j <- exact_mise_vmf(h = h[j], n = n,
-                             mu = mu[, (ind_dj[j] + 1):ind_dj[j + 1]],
-                             kappa = kappa[, j], p = p, d = d[j],
-                             M = 1e4, spline = spline)
-
-    # Exploiting structure in Proposition 5 of "Kernel density estimation for
-    # directional-linear data" (https://doi.org/10.1016/j.jmva.2013.06.009)
-    log_Dq_h <- log_Dq_h + mise_j$log_Dq_h
-    Psi_0 <- Psi_0 * mise_j$Psi_0
-    Psi_1 <- Psi_1 * mise_j$Psi_1
-    Psi_2 <- Psi_2 * mise_j$Psi_2
-
-  }
-
-  # MISE
   mise <- exp(-(log_Dq_h + log(n))) +
     drop(t(p) %*% ((1 - 1 / n) * Psi_2 - 2 * Psi_1 + Psi_0) %*% p)
   return(list("mise" = mise, "Psi_0" = Psi_0, "Psi_1" = Psi_1, "Psi_2" = Psi_2,

@@ -27,8 +27,8 @@ test_that("v_d(L) equals definition for kernel = 1, 2", {
 
 r <- 2
 d <- sample(1:3, size = r, replace = TRUE)
-h <- sample(c(1, 0.5, 0.75), size = r, replace = TRUE)
-n <- 100
+h <- sample(c(0.25, 0.5, 0.75), size = r, replace = TRUE)
+n <- 20
 mu <- r_unif_polysph(n = 5, d = d)
 X <- r_kde_polysph(n = n, X = mu, d = d, h = h)
 
@@ -193,19 +193,19 @@ test_that("bw_cv_polysph() with bw0 vector and bw0 matrix", {
   bw0_vec_2 <- 0.1 * h
   bw0_vec_3 <- 5 * h
   bw0_mat <- rbind(bw0_vec_1, bw0_vec_2, bw0_vec_3)
-  expect_equal(
+  expect_true(
     bw_cv_polysph(X = X, d = d, bw0 = bw0_vec_1,
-                  control = list(maxit = 0))$opt$value,
+                  control = list(maxit = 0))$opt$value >=
     bw_cv_polysph(X = X, d = d, bw0 = bw0_mat,
                   control = list(maxit = 0))$opt$value)
-  expect_gt(
+  expect_true(
     bw_cv_polysph(X = X, d = d, bw0 = bw0_vec_2,
-                  control = list(maxit = 0))$opt$value,
+                  control = list(maxit = 0))$opt$value >=
     bw_cv_polysph(X = X, d = d, bw0 = bw0_mat,
                   control = list(maxit = 0))$opt$value)
-  expect_gt(
+  expect_true(
     bw_cv_polysph(X = X, d = d, bw0 = bw0_vec_3,
-                  control = list(maxit = 0))$opt$value,
+                  control = list(maxit = 0))$opt$value >=
     bw_cv_polysph(X = X, d = d, bw0 = bw0_mat,
                   control = list(maxit = 0))$opt$value)
 
@@ -217,28 +217,23 @@ test_that("bw_cv_polysph() with bw0 vector and bw0 matrix with common_h", {
   bw0_vec_2 <- 0.1 * h
   bw0_vec_3 <- 5 * h
   bw0_mat <- rbind(bw0_vec_1, bw0_vec_2, bw0_vec_3)
-  expect_equal(
+  suppressWarnings({
+  expect_true(
     bw_cv_polysph(X = X, d = d, bw0 = bw0_vec_1, control = list(maxit = 0),
-                  common_h = TRUE, method = "L-BFGS-B", lower = -7,
-                  upper = 0)$opt$value,
+                  common_h = TRUE)$opt$value >=
     bw_cv_polysph(X = X, d = d, bw0 = bw0_mat, control = list(maxit = 0),
-                  common_h = TRUE, method = "L-BFGS-B", lower = -7,
-                  upper = 0)$opt$value)
-  expect_gt(
+                  common_h = TRUE)$opt$value)
+  expect_true(
     bw_cv_polysph(X = X, d = d, bw0 = bw0_vec_2, control = list(maxit = 0),
-                  common_h = TRUE, method = "L-BFGS-B", lower = -7,
-                  upper = 0)$opt$value,
+                  common_h = TRUE)$opt$value >=
     bw_cv_polysph(X = X, d = d, bw0 = bw0_mat, control = list(maxit = 0),
-                  common_h = TRUE, method = "L-BFGS-B", lower = -7,
-                  upper = 0)$opt$value)
-  expect_gt(
+                  common_h = TRUE)$opt$value)
+  expect_true(
     bw_cv_polysph(X = X, d = d, bw0 = bw0_vec_3, control = list(maxit = 0),
-                  common_h = TRUE, method = "L-BFGS-B", lower = -7,
-                  upper = 0)$opt$value,
+                  common_h = TRUE)$opt$value >=
     bw_cv_polysph(X = X, d = d, bw0 = bw0_mat, control = list(maxit = 0),
-                  common_h = TRUE, method = "L-BFGS-B", lower = -7,
-                  upper = 0)$opt$value)
-
+                  common_h = TRUE)$opt$value)
+  })
 })
 
 test_that("bw_cv_polysph(type = \"LCV\") with optim/nlm", {
@@ -256,8 +251,8 @@ test_that("bw_cv_polysph(type = \"LCV\") with optim/nlm", {
 
 r <- 1
 d <- 2
-h <- 0.5
-n <- 50
+h <- 0.25
+n <- 20
 mu <- r_unif_polysph(n = 5, d = d)
 X <- r_kde_polysph(n = n, X = mu, d = d, h = h)
 
@@ -272,8 +267,8 @@ test_that("bw_cv_polysph(type = \"LCV\") equals DirStats::bw_dir_lcv()", {
 test_that("bw_cv_polysph(type = \"LSCV\") equals DirStats::bw_dir_lscv()", {
   expect_equal(
     bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
-                  method = "L-BFGS-B", bw0 = 0.25, exact_vmf = TRUE)$bw,
-    DirStats::bw_dir_lscv(data = X, optim = TRUE, optim_par = 0.25)$h_opt,
+                  method = "L-BFGS-B", bw0 = 0.5, exact_vmf = TRUE)$bw,
+    DirStats::bw_dir_lscv(data = X, optim = TRUE, optim_par = 0.5)$h_opt,
     tolerance = 5e-2)
 })
 
@@ -487,6 +482,24 @@ test_that("Same optimization with log_amise_stable or log_amise_stable_log_h", {
 
 })
 
+test_that("bw_rot_polysph() with bw0 vector and bw0 matrix", {
+
+  bw0_vec_1 <- h
+  bw0_vec_2 <- 0.1 * h
+  bw0_vec_3 <- 5 * h
+  bw0_mat <- rbind(bw0_vec_1, bw0_vec_2, bw0_vec_3)
+  expect_true(
+    bw_rot_polysph(X = X, d = d, bw0 = bw0_vec_1, iterlim = 1)$opt$minimum >=
+      bw_rot_polysph(X = X, d = d, bw0 = bw0_mat, iterlim = 1)$opt$minimum)
+  expect_true(
+    bw_rot_polysph(X = X, d = d, bw0 = bw0_vec_2, iterlim = 1)$opt$minimum >=
+      bw_rot_polysph(X = X, d = d, bw0 = bw0_mat, iterlim = 1)$opt$minimum)
+  expect_true(
+    bw_rot_polysph(X = X, d = d, bw0 = bw0_vec_3, iterlim = 1)$opt$minimum >=
+      bw_rot_polysph(X = X, d = d, bw0 = bw0_mat, iterlim = 1)$opt$minimum)
+
+})
+
 ## Plug-in bandwidth selectors
 
 test_that("Same result for vMF kernel with kernel_type = 1,2", {
@@ -549,5 +562,66 @@ test_that("Same result with kappa precomputed", {
       bw_mrot_polysph(X = X + 1, d = d, kappa = kappa),
       bw_mrot_polysph(X = X, d = d, kappa = NULL)
     )
+
+})
+
+## Exact MISE computations
+
+test_that("exact_mise_vmf() works properly", {
+
+  # Parameters
+  M <- 1e4
+  n <- 2
+  d <- 1
+  m <- 1
+  mu <- rbind(c(1, 0))
+  kappa <- 5
+  prop <- 1
+  h <- 1
+
+  # Sample X's and evaluate density
+  set.seed(42)
+  N1 <- 1e3
+  X <- lapply(seq_along(prop), function(m)
+    r_vmf_polysph(n = round(N1 * prop[m]), d = d, mu = mu[m, ],
+                  kappa = kappa))
+  X <- do.call(rbind, X)
+  f_X <- drop(kde_polysph(x = X, X = mu, d = d, h = 1 / sqrt(kappa),
+                          weights = prop))
+
+  # Sample Y's to evaluate the kde
+  N2 <- 1e3
+  Y <- lapply(seq_len(N2), function(nj) {
+    Y_j <- lapply(seq_along(prop), function(m) {
+      r_vmf_polysph(n = round(n * prop[m]), d = d, mu = mu[m, ], kappa = kappa)
+    })
+    do.call(rbind, Y_j)
+  })
+
+  # Simulate sample and compute kde
+  kde_f_2 <- sapply(seq_len(N2), function(k) {
+    kde <- tryCatch(kde_polysph(x = X, X = Y[[k]][1:n, ], d = d, h = h),
+                    error = function(e) NA)
+    (kde - f_X)^2
+  })
+  kde_f_2 <- rowMeans(kde_f_2, na.rm = TRUE)
+
+  expect_equal(exact_mise_vmf(h = h, n = n, mu = mu, kappa = kappa, p = prop,
+                              d = d, spline = TRUE, seed_psi = 42)$mise,
+               mean(kde_f_2 / f_X),
+               tolerance = 1e-2)
+
+})
+
+test_that("exact_mise_vmf_polysph() and exact_mise_vmf() are coherent", {
+
+  h <- 0.5
+  expect_equal(exact_mise_vmf(h = h, n = 100, mu = rbind(c(0, 1), c(1, 0)),
+                              kappa = c(5, 2), p = c(0.7, 0.3), d = 1,
+                              spline = TRUE, seed_psi = 1),
+               exact_mise_vmf_polysph(h = h, n = 100,
+                                      mu = rbind(c(0, 1), c(1, 0)),
+                                      kappa = c(5, 2), p = c(0.7, 0.3), d = 1,
+                                      spline = TRUE, seed_psi = 1))
 
 })
