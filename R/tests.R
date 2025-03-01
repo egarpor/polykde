@@ -17,7 +17,7 @@
 #' test for the equality of two scatter matrices; \code{"hd"}, a test comparing
 #' the kernel density estimators for two groups using the Hellinger distance.
 #' @param B number of permutations to use. Defaults to \code{1e3}.
-#' @param M number of Monte Carlo replicates to use when approximating the
+#' @param M number of Monte Carlo samples to use when approximating the
 #' Hellinger/Jensen--Shannon distance. Defaults to \code{1e4}.
 #' @param cv_jsd use cross-validation to approximate the Jensen--Shannon
 #' distance? Does not require Monte Carlo. Defaults to \code{TRUE}.
@@ -396,12 +396,17 @@ hom_test_polysph <- function(X, d, labels,
 
   }
 
-  # Original statistic
+  # Set seeds for the Monte Carlos inside the JSD statistic and restore
+  # at the exit
   if (!is.null(seed_jsd) && type == "jsd") {
 
+    old_seed <- .Random.seed
+    on.exit({.Random.seed <<- old_seed})
     set.seed(seed_jsd, kind = "Mersenne-Twister")
 
   }
+
+  # Original statistic
   Tn_orig <- Tn(perm_index = 1:N)
   if (!is.finite(Tn_orig) || Tn_orig == 0) {
 
@@ -411,14 +416,6 @@ hom_test_polysph <- function(X, d, labels,
 
   # Permutations
   perms <- t(replicate(B, sample(N)))
-
-  # Set seeds for the Monte Carlos inside the JSD and restore at the exit
-  if (!is.null(seed_jsd) && type == "jsd") {
-
-    old_seed <- .Random.seed
-    on.exit({.Random.seed <<- old_seed})
-
-  }
 
   # Perform permutations
   pb <- txtProgressBar(style = 3)
