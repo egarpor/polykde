@@ -1,5 +1,5 @@
 
-#' @title Kernels on the hypersphere and their derivatives
+#' @title Kernels on the sphere and their derivatives
 #'
 #' @description An isotropic kernel \eqn{L} on \eqn{\mathcal{S}^d} and its
 #' normalizing constant are such that \eqn{\int_{\mathcal{S}^d} c(h, d, L)
@@ -64,7 +64,7 @@ L <- function(t, kernel = "1", squared = FALSE, deriv = 0, k = 10,
   # Stop if invalid kernel
   if (!(kernel %in% c(1:3, "1", "2", "3"))) {
 
-    stop("\"kernel\" must be 1, 2, or 3.")
+    stop("kernel must be 1, 2, or 3.")
 
   }
 
@@ -146,7 +146,7 @@ c_kern <- function(h, d, kernel = "1", kernel_type = "1", k = 10, log = FALSE,
 
     } else {
 
-      stop("\"kernel_type\" must be 1 or 2.")
+      stop("kernel_type must be 1 or 2.")
 
     }
 
@@ -180,7 +180,7 @@ c_kern <- function(h, d, kernel = "1", kernel_type = "1", k = 10, log = FALSE,
 
       } else {
 
-        stop("\"kernel_type\" must be 1 or 2.")
+        stop("kernel_type must be 1 or 2.")
 
       }
 
@@ -230,7 +230,7 @@ c_kern <- function(h, d, kernel = "1", kernel_type = "1", k = 10, log = FALSE,
 
       } else {
 
-        stop("\"kernel_type\" must be 1 or 2.")
+        stop("kernel_type must be 1 or 2.")
 
       }
 
@@ -273,13 +273,13 @@ c_kern <- function(h, d, kernel = "1", kernel_type = "1", k = 10, log = FALSE,
 
       } else {
 
-        stop("\"kernel_type\" must be 1 or 2.")
+        stop("kernel_type must be 1 or 2.")
 
       }
 
     } else {
 
-      stop("\"kernel\" must be 1, 2, or 3.")
+      stop("kernel must be 1, 2, or 3.")
 
     }
 
@@ -311,7 +311,7 @@ hess_L <- function(x, y, h, kernel = 1, k = 10) {
 #' @title Sample from the angular kernel density
 #'
 #' @description Simulation from the angular density function of an isotropic
-#' kernel on the hypersphere \eqn{\mathcal{S}^d}.
+#' kernel on the sphere \eqn{\mathcal{S}^d}.
 #'
 #' @inheritParams r_unif_polysph
 #' @inheritParams kde_polysph
@@ -416,7 +416,7 @@ r_g_kern <- function(n, d, h, kernel = "1", k = 10) {
 
   } else {
 
-    stop("\"kernel\" must be 1, 2, or 3.")
+    stop("kernel must be 1, 2, or 3.")
 
   }
 
@@ -429,7 +429,7 @@ r_g_kern <- function(n, d, h, kernel = "1", k = 10) {
 #' \cdots \times \mathcal{S}^{d_r}} and efficiencies of kernels on
 #' \eqn{(\mathcal{S}^d)^r}.
 #'
-#' @param d a scalar with the common dimension of each hypersphere
+#' @param d a scalar with the common dimension of each sphere
 #' \eqn{\mathcal{S}^d}.
 #' @param r a scalar with the number of polyspheres of the same dimension.
 #' @inheritParams kde_polysph
@@ -444,7 +444,7 @@ r_g_kern <- function(n, d, h, kernel = "1", k = 10) {
 #' \code{upper}, \code{abs.tol}, \code{rel.tol}, etc.
 #' @return
 #' \itemize{
-#' \item{\code{b_d}: a vector with the first kernel moment on each hypersphere
+#' \item{\code{b_d}: a vector with the first kernel moment on each sphere
 #' (common if \code{kernel_type = "sph"}).}
 #' \item{\code{v_d}: a vector with the second kernel moment if
 #' \code{kernel_type = "prod"}, or a scalar if \code{kernel_type = "sph"}.}
@@ -474,13 +474,13 @@ eff_kern <- function(d, r, k = 10, kernel, kernel_type = c("prod", "sph")[1],
   if (is.numeric(kernel_type)) {
 
     kernel_type <- switch(kernel_type, "1" = "prod", "2" = "sph",
-                          stop("\"kernel_type\" must be 1 or 2."))
+                          stop("kernel_type must be 1 or 2."))
 
   }
   if (is.numeric(kernel_ref_type)) {
 
     kernel_ref_type <- switch(kernel_ref_type, "1" = "prod", "2" = "sph",
-                              stop("\"kernel_type\" must be 1 or 2."))
+                              stop("kernel_type must be 1 or 2."))
 
   }
 
@@ -503,7 +503,7 @@ eff_kern <- function(d, r, k = 10, kernel, kernel_type = c("prod", "sph")[1],
 
     } else {
 
-      stop("\"kernel_type\" must be either \"prod\" or \"sph\".")
+      stop("kernel_type must be either \"prod\" or \"sph\".")
 
     }
     return(C)
@@ -526,7 +526,7 @@ b_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
   if (is.numeric(kernel_type)) {
 
     kernel_type <- switch(kernel_type, "1" = "prod", "2" = "sph",
-                          stop("\"kernel_type\" must be 1 or 2."))
+                          stop("kernel_type must be 1 or 2."))
 
   }
 
@@ -553,7 +553,7 @@ b_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
 
     } else {
 
-      stop("\"kernel_type\" must be either \"prod\" or \"sph\".")
+      stop("kernel_type must be either \"prod\" or \"sph\".")
 
     }
 
@@ -576,7 +576,7 @@ b_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
 
       } else {
 
-        stop("\"kernel_type\" must be either \"prod\" or \"sph\".")
+        stop("kernel_type must be either \"prod\" or \"sph\".")
 
       }
 
@@ -599,13 +599,13 @@ b_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
 
       } else {
 
-        stop("\"kernel_type\" must be either \"prod\" or \"sph\".")
+        stop("kernel_type must be either \"prod\" or \"sph\".")
 
       }
 
     } else {
 
-      stop("\"kernel\" must be 1 (vMF), 2 (Epa), 3 (softplus), or a function.")
+      stop("kernel must be 1 (vMF), 2 (Epa), 3 (softplus), or a function.")
 
     }
 
@@ -630,7 +630,7 @@ v_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
   if (is.numeric(kernel_type)) {
 
     kernel_type <- switch(kernel_type, "1" = "prod", "2" = "sph",
-                          stop("\"kernel_type\" must be 1 or 2."))
+                          stop("kernel_type must be 1 or 2."))
 
   }
 
@@ -660,7 +660,7 @@ v_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
 
     } else {
 
-      stop("\"kernel_type\" must be either \"prod\" or \"sph\".")
+      stop("kernel_type must be either \"prod\" or \"sph\".")
 
     }
 
@@ -679,7 +679,7 @@ v_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
 
       } else {
 
-        stop("\"kernel_type\" must be either \"prod\" or \"sph\".")
+        stop("kernel_type must be either \"prod\" or \"sph\".")
 
       }
 
@@ -698,7 +698,7 @@ v_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
 
       } else {
 
-        stop("\"kernel_type\" must be either \"prod\" or \"sph\".")
+        stop("kernel_type must be either \"prod\" or \"sph\".")
 
       }
 
@@ -721,13 +721,13 @@ v_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
 
       } else {
 
-        stop("\"kernel_type\" must be either \"prod\" or \"sph\".")
+        stop("kernel_type must be either \"prod\" or \"sph\".")
 
       }
 
     } else {
 
-      stop("\"kernel\" must be 1 (vMF), 2 (Epa), 3 (softplus), or a function.")
+      stop("kernel must be 1 (vMF), 2 (Epa), 3 (softplus), or a function.")
 
     }
 

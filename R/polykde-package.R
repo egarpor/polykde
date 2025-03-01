@@ -1,7 +1,7 @@
 
 #' @title \code{polykde}: Polyspherical Kernel Density Estimation
 #'
-#' @description Kernel density estimation on the polysphere, hypersphere, and
+#' @description Kernel density estimation on the polysphere, (hyper)sphere, and
 #' circle. Includes functions for density estimation, regression estimation,
 #' ridge estimation, bandwidth selection, kernels, samplers, and homogeneity
 #' tests. Companion package to García-Portugués and Meilán-Vila (2024)
