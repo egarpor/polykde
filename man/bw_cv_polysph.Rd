@@ -48,9 +48,9 @@ estimation? Defaults to \code{FALSE}.}
 
 \item{deriv}{derivative order to perform the upscaling. Defaults to \code{0}.}
 
-\item{imp_mc}{use importance sampling in the Monte Carlo simulations used
-to estimate the integral in the LSCV loss? It is more accurate but also more
-time consuming. Defaults to \code{TRUE}.}
+\item{imp_mc}{use importance sampling in the Monte Carlo approximation of
+the integral in the LSCV loss? It is more accurate but also more time
+consuming. Defaults to \code{TRUE}.}
 
 \item{seed_mc}{seed for the Monte Carlo simulations used to estimate the
 integral in the LSCV loss. Defaults to \code{NULL} (no seed is fixed for
@@ -62,21 +62,25 @@ von Mises--Fisher kernel? Defaults to \code{FALSE}.}
 \item{common_h}{use the same bandwidth for all dimensions? Defaults to
 \code{FALSE}.}
 
-\item{spline}{TODO}
+\item{spline}{use a faster spline approximation to compute Bessel functions?
+Defaults to \code{FALSE}.}
 
-\item{opt}{TODO}
+\item{opt}{optimizer to use; either \code{"\link{optim}"} (default) or
+\code{"\link{nlm}"}.}
 
 \item{ncores}{number of cores used during the optimization. Defaults to
 \code{1}.}
 
 \item{...}{further arguments passed to \code{\link{optim}} or
 \code{\link{nlm}} (if \code{ncores = 1}) or
-\code{\link[optimParallel]{optimParallel}} (if \code{ncores > 1}).}
+\code{\link[optimParallel]{optimParallel::optimParallel}} (if
+\code{ncores > 1}).}
 }
 \value{
 A list with entries \code{bw} (optimal bandwidth) and \code{opt},
 the latter containing the output of \code{\link[stats]{nlm}},
-\code{\link[stats]{optim}}, or \code{\link[optimParallel]{optimParallel}}.
+\code{\link[stats]{optim}}, or
+\code{\link[optimParallel]{optimParallel::optimParallel}}.
 }
 \description{
 Likelihood Cross-Validation (LCV) and Least Squares

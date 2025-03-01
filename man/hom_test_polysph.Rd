@@ -34,7 +34,7 @@ the kernel density estimators for two groups using the Hellinger distance.}
 
 \item{B}{number of permutations to use. Defaults to \code{1e3}.}
 
-\item{M}{number of Monte Carlo replicates to use when approximating the
+\item{M}{number of Monte Carlo samples to use when approximating the
 Hellinger/Jensen--Shannon distance. Defaults to \code{1e4}.}
 
 \item{plot_boot}{flag to display a graphical output of the test decision.
