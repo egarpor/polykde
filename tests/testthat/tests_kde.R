@@ -50,6 +50,17 @@ test_that("Kernel normalization", {
   }
 })
 
+test_that("Edge cases kde_polysph()", {
+  expect_error(kde_polysph(x = x, X = X, d = d, h = h, kernel = 4))
+  expect_error(kde_polysph(x = x, X = X, d = d, h = h, kernel = 2,
+                           kernel_type = 4))
+  expect_error(kde_polysph(x = cbind(x, 1), X = X, d = d, h = h))
+  expect_error(kde_polysph(x = cbind(x, 1), X = cbind(X, 1), d = d, h = h))
+  expect_error(kde_polysph(x = x, X = X, d = d, h = c(h, 1)))
+  expect_error(kde_polysph(x = x, X = X, d = c(d, 1), h = h))
+  expect_error(kde_polysph(x = x, X = X, d = d, h = 0 * h))
+})
+
 ## Integration
 
 test_that("Integration for vMF kernel", {
@@ -242,6 +253,15 @@ test_that("Log-cv kde with weights is compatible with kde", {
                          log = TRUE, kernel = kernel))
         }))
   }
+})
+
+test_that("Edge cases log_cv_kde_polysph()", {
+  expect_error(log_cv_kde_polysph(X = cbind(X, 1), d = d, h = h))
+  expect_error(log_cv_kde_polysph(X = X, d = d, h = c(h, 1)))
+  expect_error(log_cv_kde_polysph(X = X, d = c(d, 1), h = h))
+  expect_error(log_cv_kde_polysph(X = X, d = d, h = 0 * h))
+  expect_equal(log_cv_kde_polysph(X = 2 * X, d = d, h = h, norm_X = TRUE),
+               log_cv_kde_polysph(X = X, d = d, h = h))
 })
 
 ## Weights
