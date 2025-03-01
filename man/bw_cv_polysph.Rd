@@ -73,14 +73,12 @@ Defaults to \code{FALSE}.}
 
 \item{...}{further arguments passed to \code{\link{optim}} or
 \code{\link{nlm}} (if \code{ncores = 1}) or
-\code{\link[optimParallel]{optimParallel::optimParallel}} (if
-\code{ncores > 1}).}
+\code{\link[optimParallel]{optimParallel}} (if \code{ncores > 1}).}
 }
 \value{
 A list with entries \code{bw} (optimal bandwidth) and \code{opt},
 the latter containing the output of \code{\link[stats]{nlm}},
-\code{\link[stats]{optim}}, or
-\code{\link[optimParallel]{optimParallel::optimParallel}}.
+\code{\link[stats]{optim}}, or \code{\link[optimParallel]{optimParallel}}.
 }
 \description{
 Likelihood Cross-Validation (LCV) and Least Squares
