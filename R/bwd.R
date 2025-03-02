@@ -198,11 +198,11 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
     } else {
 
-      # Set seeds for the Monte Carlo and restore at the exit
+      # Set seeds for the Monte Carlo
       if (!is.null(seed_mc)) {
 
-        old_seed <- .Random.seed
-        on.exit({.Random.seed <<- old_seed})
+        # old_seed <- .Random.seed
+        # on.exit({.Random.seed <<- old_seed})
         set.seed(seed_mc, kind = "Mersenne-Twister")
 
       }
@@ -980,12 +980,11 @@ exact_mise_vmf <- function(h, n, mu, kappa, p, d, M = 1e4, spline = FALSE,
   Psi_0 <- exp(outer(log_C_kappa, log_C_kappa, "+") -
                  log_C_kappa_mu_i_kappa_mu_j)
 
-  # Set seeds for the Monte Carlos in the Psi_1 and Psi_2 and restore
-  # at the exit
+  # Set seeds for the Monte Carlos in the Psi_1 and Psi_2
   if (!is.null(seed_psi)) {
 
-    old_seed <- .Random.seed
-    on.exit({.Random.seed <<- old_seed})
+    # old_seed <- .Random.seed
+    # on.exit({.Random.seed <<- old_seed})
     set.seed(seed_psi, kind = "Mersenne-Twister")
 
   }
