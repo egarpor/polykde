@@ -396,12 +396,11 @@ hom_test_polysph <- function(X, d, labels,
 
   }
 
-  # Set seeds for the Monte Carlos inside the JSD statistic and restore
-  # at the exit
+  # Set seeds for the Monte Carlos inside the JSD statistic
   if (!is.null(seed_jsd) && type == "jsd") {
 
-    old_seed <- .Random.seed
-    on.exit({.Random.seed <<- old_seed})
+    # old_seed <- .Random.seed
+    # on.exit({.Random.seed <<- old_seed})
     set.seed(seed_jsd, kind = "Mersenne-Twister")
 
   }
