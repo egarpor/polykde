@@ -198,14 +198,18 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
     } else {
 
+      # Set seeds for the Monte Carlo and restore at the exit
+      if (!is.null(seed_mc)) {
+
+        old_seed <- .Random.seed
+        on.exit({.Random.seed <<- old_seed})
+        set.seed(seed_mc, kind = "Mersenne-Twister")
+
+      }
+
       # Common uniform Monte Carlo sample
       if (!imp_mc) {
 
-        if (!is.null(seed_mc)) {
-
-          set.seed(seed_mc, kind = "Mersenne-Twister")
-
-        }
         mc_samp <- r_unif_polysph(n = M, d = d)
 
       }
@@ -239,11 +243,14 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
           # Use importance-sampling Monte Carlo?
           if (imp_mc) {
 
+            # Set seeds for the Monte Carlo
             if (!is.null(seed_mc)) {
 
               set.seed(seed_mc, kind = "Mersenne-Twister")
 
             }
+
+            # h-dependent Monte Carlo
             mc_kde_samp <- r_kde_polysph(n = M, X = X, d = d,
                                          h = h_pos, kernel = kernel,
                                          kernel_type = kernel_type, k = k,
@@ -256,6 +263,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
           } else {
 
+            # Uniform Monte Carlo
             log_kde2_mc <- 2 * kde_polysph(x = mc_samp, X = X, d = d,
                                            h = h_pos, wrt_unif = FALSE,
                                            kernel = kernel, kernel_type =
@@ -976,6 +984,8 @@ exact_mise_vmf <- function(h, n, mu, kappa, p, d, M = 1e4, spline = FALSE,
   # at the exit
   if (!is.null(seed_psi)) {
 
+    old_seed <- .Random.seed
+    on.exit({.Random.seed <<- old_seed})
     set.seed(seed_psi, kind = "Mersenne-Twister")
 
   }
