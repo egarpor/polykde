@@ -204,3 +204,20 @@ test_that("Edge cases of log_besselI_scaled()", {
   expect_error(log_besselI_scaled(nu = 1:3, x = 0, spline = TRUE))
 
 })
+
+test_that("Asymptotic Bessel approximation", {
+
+  paper_asymp <- function(x, d) {
+    log1p(-d * (d - 2) / (8 * x)) - log(2 * pi * x) / 2
+  }
+  Bessel_asymp <- function(x, d) {
+    Bessel::besselIasym(x = x, nu = (d - 1) / 2, expon.scaled = TRUE,
+                        log = TRUE, k.max = 1)
+  }
+  for (d in 1:10) {
+
+    expect_equal(paper_asymp(x = c(50:100, 1e4, 1e5), d = d),
+                 Bessel_asymp(x = c(50:100, 1e4, 1e5), d = d))
+  }
+
+})
