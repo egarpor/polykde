@@ -235,7 +235,7 @@ J_d_k <- function(d, k = 10, upper = Inf, ...) {
 #' @param spline if \code{TRUE}, uses spline interpolation for the values of
 #' the Bessel function. Otherwise, calls the \code{\link{besselI}} function.
 #' For \code{x} larger than \code{1e4}, an asymptotic approximation with
-#' \code{\link[Bessel]{Bessel::besselIasym}} is used. Defaults to \code{FALSE}.
+#' \code{\link[Bessel]{besselIasym}} is used. Defaults to \code{FALSE}.
 #' @details The approximation is based on interpolating the values of the Bessel
 #' function with a spline.
 #' @return A vector of size \code{length(x)} with the evaluated function.
@@ -245,6 +245,7 @@ J_d_k <- function(d, k = 10, upper = Inf, ...) {
 #' curve(polykde:::log_besselI_scaled(nu = 0.5, x = x, spline = FALSE),
 #'       n = 200, add = TRUE, col = 2)
 #' @noRd
+# #' @export
 log_besselI_scaled <- function(nu, x, spline = FALSE) {
 
   # Needed an asymptotic interpolation?
