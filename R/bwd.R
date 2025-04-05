@@ -172,7 +172,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
                                           spline = FALSE))
 
           # Compute X_{il}'X_{jl} / h_l^2 and
-          # sum_l log(c_vMF(||X_{il}'X_{jl}|| / h_l^2))
+          # \sum_l \log(c_vMF(||X_{il}'X_{jl}|| / h_l^2))
           Xi_Xj_l_h <- .colSums(Xi_Xj_l * h_pos2, m = r, n = n2)
           log_c_norm_Xi_Xj_l_h <- numeric(n2)
           for (l in seq_len(r)) {
@@ -413,6 +413,134 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 }
 
 
+#' @title Minimum bandwidth allowed in likelihood cross-validation for
+#' Epanechnikov kernels
+#'
+#' @description This function computes the minimum bandwidth allowed in
+#' likelihood cross-validation with Epanechnikov kernels, for a given dataset
+#' and dimension.
+#'
+#' @inheritParams bw_cv_polysph
+#' @return The minimum bandwidth allowed.
+#' @examples
+#' n <- 5
+#' d <- 1:3
+#' X <- r_unif_polysph(n = n, d = d)
+#' h_min <- rep(bw_lcv_min_epa(X = X, d = d), length(d))
+#' log_cv_kde_polysph(X = X, d = d, h = h_min - 1e-4, kernel = 2) # Problem
+#' log_cv_kde_polysph(X = X, d = d, h = h_min + 1e-4, kernel = 2) # OK
+#' @export
+bw_lcv_min_epa <- function(X, d, kernel_type = c("prod", "sph")[1]) {
+
+  # Make kernel_type character
+  if (is.numeric(kernel_type)) {
+
+    kernel_type <- switch(kernel_type, "1" = "prod", "2" = "sph",
+                          stop("kernel_type must be 1 or 2."))
+
+  }
+
+  # Check dimensions
+  if (ncol(X) != sum(d + 1)) {
+
+    stop("X and d are incompatible.")
+
+  }
+  n <- nrow(X)
+  r <- length(d)
+
+  # Index for accessing each S^dj with ind[j]:(ind[j + 1] - 1)
+  ind <- cumsum(c(1, d + 1))
+
+  if (kernel_type == "prod") {
+
+    # Compute max_k X_i,k' X_j,k
+    prods <- matrix(0, nrow = n, ncol = n)
+    for (i in seq_len(n - 1)) {
+      for (j in (i + 1):n) {
+        prods[i, j] <- max(sapply(1:r, function(k) {
+          ind_k <- ind[k]:(ind[k + 1] - 1)
+          1 - sum(X[i, ind_k] * X[j, ind_k])
+        }))
+      }
+    }
+
+    # Symmetrize
+    prods <- prods + t(prods)
+    diag(prods) <- Inf
+
+    # Apply max_i min_{j\neq i}
+    return(sqrt(max(apply(prods, 1, min))))
+
+  } else if (kernel_type == "sph") {
+
+    stop("Not implemented yet.")
+
+  } else {
+
+    stop("kernel_type must be either \"prod\" or \"sph\".")
+
+  }
+
+}
+
+
+#' @title Curvature of a polyspherical von Mises--Fisher density
+#'
+#' @description Computes the curvature matrix
+#' \eqn{\boldsymbol{R}(\boldsymbol{\kappa})} of a product of von Mises--Fisher
+#' densities on the polysphere. This curvature is used in the rule-of-thumb
+#' selector \code{\link{bw_rot_polysph}}.
+#'
+#' @inheritParams r_vmf_polysph
+#' @param log compute the (entrywise) logarithm of the curvature matrix?
+#' Defaults to \code{FALSE}.
+#' @return A matrix of size \code{c(length(r), length(r))}.
+#' @examples
+#' # Curvature matrix
+#' d <- 2:4
+#' kappa <- 1:3
+#' curv_vmf_polysph(kappa = kappa, d = d)
+#' curv_vmf_polysph(kappa = kappa, d = d, log = TRUE)
+#'
+#' # Equivalence on the sphere with DirStats::R_Psi_mixvmf
+#' drop(curv_vmf_polysph(kappa = kappa[1], d = d[1]))
+#' d[1]^2 * DirStats::R_Psi_mixvmf(q = d[1], mu = rbind(c(rep(0, d[1]), 1)),
+#'                                 kappa = kappa[1], p = 1)
+#' @export
+curv_vmf_polysph <- function(kappa, d, log = FALSE) {
+
+  # Dimension check
+  stopifnot(length(d) %in% c(1, length(kappa)))
+
+  # Log-Bessels
+  log_I_1 <- log(besselI(x = 2 * kappa, nu = (d + 1) / 2, expon.scaled = TRUE))
+  log_I_2 <- log(besselI(x = 2 * kappa, nu = (d - 1) / 2, expon.scaled = TRUE))
+  log_I_3 <- log(besselI(x = kappa, nu = (d - 1) / 2, expon.scaled = TRUE))
+  I <- exp(log_I_1 - log_I_2)
+
+  # Auxiliary functions
+  v_kappa <- d * kappa * (2 * (2 + d) * kappa - (d * d - d + 2) * I)
+  u_kappa <- d * kappa * I
+  R0_kappa <- sum(((d - 1) / 2) * log(kappa) + log_I_2 -
+                    d * log(2) - ((d + 1) / 2) * log(pi) - 2 * log_I_3)
+
+  # log(R(kappa))
+  R_kappa <- tcrossprod(u_kappa)
+  diag(R_kappa) <- 0.5 * v_kappa
+  R_kappa <- log(R_kappa) + log(0.25) + R0_kappa
+
+  # Logarithm or not?
+  if (!log) {
+
+    R_kappa <- exp(R_kappa)
+
+  }
+  return(R_kappa)
+
+}
+
+
 #' @title Rule-of-thumb bandwidth selection for polyspherical kernel
 #' density estimator
 #'
@@ -610,62 +738,6 @@ bw_rot_polysph <- function(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
 }
 
 
-#' @title Curvature of a polyspherical von Mises--Fisher density
-#'
-#' @description Computes the curvature matrix
-#' \eqn{\boldsymbol{R}(\boldsymbol{\kappa})} of a product of von Mises--Fisher
-#' densities on the polysphere. This curvature is used in the rule-of-thumb
-#' selector \code{\link{bw_rot_polysph}}.
-#'
-#' @inheritParams r_vmf_polysph
-#' @param log compute the (entrywise) logarithm of the curvature matrix?
-#' Defaults to \code{FALSE}.
-#' @return A matrix of size \code{c(length(r), length(r))}.
-#' @examples
-#' # Curvature matrix
-#' d <- 2:4
-#' kappa <- 1:3
-#' curv_vmf_polysph(kappa = kappa, d = d)
-#' curv_vmf_polysph(kappa = kappa, d = d, log = TRUE)
-#'
-#' # Equivalence on the sphere with DirStats::R_Psi_mixvmf
-#' drop(curv_vmf_polysph(kappa = kappa[1], d = d[1]))
-#' d[1]^2 * DirStats::R_Psi_mixvmf(q = d[1], mu = rbind(c(rep(0, d[1]), 1)),
-#'                                 kappa = kappa[1], p = 1)
-#' @export
-curv_vmf_polysph <- function(kappa, d, log = FALSE) {
-
-  # Dimension check
-  stopifnot(length(d) %in% c(1, length(kappa)))
-
-  # Log-Bessels
-  log_I_1 <- log(besselI(x = 2 * kappa, nu = (d + 1) / 2, expon.scaled = TRUE))
-  log_I_2 <- log(besselI(x = 2 * kappa, nu = (d - 1) / 2, expon.scaled = TRUE))
-  log_I_3 <- log(besselI(x = kappa, nu = (d - 1) / 2, expon.scaled = TRUE))
-  I <- exp(log_I_1 - log_I_2)
-
-  # Auxiliary functions
-  v_kappa <- d * kappa * (2 * (2 + d) * kappa - (d * d - d + 2) * I)
-  u_kappa <- d * kappa * I
-  R0_kappa <- sum(((d - 1) / 2) * log(kappa) + log_I_2 -
-                    d * log(2) - ((d + 1) / 2) * log(pi) - 2 * log_I_3)
-
-  # log(R(kappa))
-  R_kappa <- tcrossprod(u_kappa)
-  diag(R_kappa) <- 0.5 * v_kappa
-  R_kappa <- log(R_kappa) + log(0.25) + R0_kappa
-
-  # Logarithm or not?
-  if (!log) {
-
-    R_kappa <- exp(R_kappa)
-
-  }
-  return(R_kappa)
-
-}
-
-
 #' @title Marginal rule-of-thumb bandwidth selection for polyspherical kernel
 #' density estimator
 #'
@@ -686,7 +758,7 @@ curv_vmf_polysph <- function(kappa, d, log = FALSE) {
 #' bw_mrot_polysph(X = X, d = d)
 #' @export
 bw_mrot_polysph <- function(X, d, kernel = 1, k = 10, upscale = FALSE,
-                            deriv = 0, kappa = NULL, ...) {
+                            deriv = 0, kappa = NULL) {
 
   # Check dimensions
   if (ncol(X) != sum(d + 1)) {
@@ -781,271 +853,3 @@ bw_mrot_polysph <- function(X, d, kernel = 1, k = 10, upscale = FALSE,
 
 }
 
-
-#' @title Minimum bandwidth allowed in likelihood cross-validation for
-#' Epanechnikov kernels
-#'
-#' @description This function computes the minimum bandwidth allowed in
-#' likelihood cross-validation with Epanechnikov kernels, for a given dataset
-#' and dimension.
-#'
-#' @inheritParams bw_cv_polysph
-#' @return The minimum bandwidth allowed.
-#' @examples
-#' n <- 5
-#' d <- 1:3
-#' X <- r_unif_polysph(n = n, d = d)
-#' h_min <- rep(bw_lcv_min_epa(X = X, d = d), length(d))
-#' log_cv_kde_polysph(X = X, d = d, h = h_min - 1e-4, kernel = 2) # Problem
-#' log_cv_kde_polysph(X = X, d = d, h = h_min + 1e-4, kernel = 2) # OK
-#' @export
-bw_lcv_min_epa <- function(X, d, kernel_type = c("prod", "sph")[1]) {
-
-  # Make kernel_type character
-  if (is.numeric(kernel_type)) {
-
-    kernel_type <- switch(kernel_type, "1" = "prod", "2" = "sph",
-                          stop("kernel_type must be 1 or 2."))
-
-  }
-
-  # Check dimensions
-  if (ncol(X) != sum(d + 1)) {
-
-    stop("X and d are incompatible.")
-
-  }
-  n <- nrow(X)
-  r <- length(d)
-
-  # Index for accessing each S^dj with ind[j]:(ind[j + 1] - 1)
-  ind <- cumsum(c(1, d + 1))
-
-  if (kernel_type == "prod") {
-
-    # Compute max_k X_i,k' X_j,k
-    prods <- matrix(0, nrow = n, ncol = n)
-    for (i in seq_len(n - 1)) {
-      for (j in (i + 1):n) {
-        prods[i, j] <- max(sapply(1:r, function(k) {
-          ind_k <- ind[k]:(ind[k + 1] - 1)
-          1 - sum(X[i, ind_k] * X[j, ind_k])
-        }))
-      }
-    }
-
-    # Symmetrize
-    prods <- prods + t(prods)
-    diag(prods) <- Inf
-
-    # Apply max_i min_{j\neq i}
-    return(sqrt(max(apply(prods, 1, min))))
-
-  } else if (kernel_type == "sph") {
-
-    stop("Not implemented yet.")
-
-  } else {
-
-    stop("kernel_type must be either \"prod\" or \"sph\".")
-
-  }
-
-}
-
-
-#' @title Computation of the exact MISE for mixtures of von Mises--Fisher
-#' distributions on the polysphere
-#'
-#' @description The function \code{exact_mise_vmf_polysph} computes the
-#' exact Mean Integrated Squared Error (MISE) of the kernel density estimator
-#' on the polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times
-#' \mathcal{S}^{d_r}} with respect to a density \eqn{f_m(\boldsymbol{x}) =
-#' \sum_{j=1}^m p_j
-#' f_{\mathrm{vMF}}(\boldsymbol{x}; \boldsymbol{\mu}_j, \kappa_j)} of an
-#' \eqn{m}-mixture of von Mises--Fisher distributions. The MISE is
-#' \deqn{\mathrm{MISE}_m[\hat{f}(\cdot;\boldsymbol{h})]=\mathbb{E}\left[
-#' \int_{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}
-#' \left(\hat{f}(\boldsymbol{x};\boldsymbol{h})-f_m(\boldsymbol{x})\right)^2
-#' \,\mathrm{d}\boldsymbol{x}\right]}
-#' and can be computed exactly from Propositions 4 and 5 in García-Portugués
-#' et al. (2013), using importance-sampling Monte Carlo to evaluate the matrices
-#' \eqn{\boldsymbol{\Psi_1}} and \eqn{\boldsymbol{\Psi_2}}.
-#'
-#' @inheritParams kde_polysph
-#' @param n sample size.
-#' @param mu a matrix of size \code{c(m, sum(d + 1))} with the means of
-#' each mixture components in the rows.
-#' @param kappa a matrix of size \code{c(m, r)} with the concentrations of
-#' each mixture components in the rows.
-#' @param p a vector of size \code{m} with the proportions of the mixture
-#' components.
-#' @param M number of importance-sampling Monte Carlo samples. Defaults to
-#' \code{1e4}.
-#' @inheritParams log_besselI_scaled
-#' @return A scalar with the evaluated MISE at the given bandwidths.
-#' @references
-#' García-Portugués, E., Crujeiras, R. M., and González-Manteiga, W. (2013).
-#' Kernel density estimation for directional-linear data. \emph{Journal of
-#' Multivariate Analysis}, 121:152--175. \doi{10.1016/j.jmva.2013.06.009}.
-#' @examples
-#' h <- seq(0.01, 1, l = 100)
-#' log_mise_h <- sapply(h, function(hi) {
-#'   set.seed(1)
-#'   log(polykde:::exact_mise_vmf(h = hi, n = 100, mu = rbind(c(0, 1),
-#'                                                            c(1, 0)),
-#'                                kappa = c(5, 2), p = c(0.7, 0.3), d = 1,
-#'                                spline = TRUE)$mise)
-#'   })
-#' plot(h, log_mise_h)
-#' log_mise_h <- sapply(h, function(hi) {
-#'   set.seed(1)
-#'   log(polykde:::exact_mise_vmf_polysph(h = rep(hi, 3), n = 100,
-#'                                        mu = rbind(c(0, 0, 1, 0, 1, 0, 1),
-#'                                                   c(0, 0, -1, 0, -1, 0, 1)),
-#'                                        kappa = rbind(1:3, 3:1),
-#'                                        p = c(0.7, 0.3), d = c(2, 1, 1),
-#'                                        spline = TRUE)$mise)
-#'   })
-#' plot(h, log_mise_h)
-#' @noRd
-exact_mise_vmf_polysph <- function(h, n, mu, kappa, p, d, M = 1e4,
-                                   spline = FALSE, seed_psi = NULL) {
-
-  # Check mixture inputs
-  r <- length(d)
-  mu <- rbind(mu)
-  kappa <- cbind(kappa)
-  m <- length(p)
-  stopifnot(nrow(kappa) == m)
-  stopifnot(ncol(kappa) == r)
-  stopifnot(ncol(mu) == sum(d + 1))
-  stopifnot(length(h) == r)
-
-  # Loop on spheres
-  ind_dj <- comp_ind_dj(d)
-  log_Dq_h <- 0
-  Psi_0 <- Psi_1 <- Psi_2 <- matrix(1, nrow = m, ncol = m)
-  for (j in 1:r) {
-
-    mise_j <- exact_mise_vmf(h = h[j], n = n,
-                             mu = mu[, (ind_dj[j] + 1):ind_dj[j + 1]],
-                             kappa = kappa[, j], p = p, d = d[j],
-                             M = 1e4, spline = spline,
-                             seed_psi = seed_psi + j - 1)
-
-    # Exploiting structure in Proposition 5 of "Kernel density estimation for
-    # directional-linear data" (https://doi.org/10.1016/j.jmva.2013.06.009)
-    log_Dq_h <- log_Dq_h + mise_j$log_Dq_h
-    Psi_0 <- Psi_0 * mise_j$Psi_0
-    Psi_1 <- Psi_1 * mise_j$Psi_1
-    Psi_2 <- Psi_2 * mise_j$Psi_2
-
-  }
-
-  # MISE
-  mise <- exp(-(log_Dq_h + log(n))) +
-    drop(t(p) %*% ((1 - 1 / n) * Psi_2 - 2 * Psi_1 + Psi_0) %*% p)
-  return(list("mise" = mise, "Psi_0" = Psi_0, "Psi_1" = Psi_1, "Psi_2" = Psi_2,
-              "log_Dq_h" = log_Dq_h))
-
-}
-
-
-#' @noRd
-exact_mise_vmf <- function(h, n, mu, kappa, p, d, M = 1e4, spline = FALSE,
-                           seed_psi = NULL) {
-
-  # Check mixture inputs
-  m <- length(p)
-  mu <- rbind(mu)
-  stopifnot(sum(p) == 1)
-  stopifnot(ncol(mu) == d + 1)
-  stopifnot(nrow(mu) == m)
-  stopifnot(length(kappa) == m)
-  stopifnot(length(d) == 1)
-  stopifnot(length(h) == 1)
-
-  # mu_i * kappa_i
-  mu_kappa <- mu  * kappa
-
-  # Psi_0
-  # ||kappa_i mu_i + kappa_j mu_j||^2 = kappa_i^2 + kappa_j^2
-  #                                    + 2 * kappa_i * kappa_j * mu_i'mu_j
-  log_C_kappa <- fast_log_c_vMF(p = d + 1, kappa = kappa, spline = spline)
-  kappa_mu_i_kappa_mu_j <-
-    sqrt(outer(kappa^2, kappa^2, "+") + 2 * tcrossprod(mu_kappa))
-  log_C_kappa_mu_i_kappa_mu_j <-
-    fast_log_c_vMF(p = d + 1, kappa = kappa_mu_i_kappa_mu_j, spline = spline)
-  Psi_0 <- exp(outer(log_C_kappa, log_C_kappa, "+") -
-                 log_C_kappa_mu_i_kappa_mu_j)
-
-  # Set seeds for the Monte Carlos in the Psi_1 and Psi_2
-  if (!is.null(seed_psi)) {
-
-    # old_seed <- .Random.seed
-    # on.exit({.Random.seed <<- old_seed})
-    set.seed(seed_psi, kind = "Mersenne-Twister")
-
-  }
-
-  # Psi_1 and Psi_2 using weighted MC
-  Psi_1 <- Psi_2 <- matrix(0, nrow = m, ncol = m)
-  log_C_h <- fast_log_c_vMF(p = d + 1, kappa = 1 / h^2, spline = spline)
-  for (j in seq_len(m)) {
-
-    # Sample vMF(mu[j], kappa[j])
-    vmf_samp_j <- rotasym::r_vMF(n = M, mu = mu[j, ], kappa = kappa[j])
-
-    for (i in seq_len(j)) {
-
-      # Sample vMF(mu[i], kappa[i])
-      vmf_samp_i <- rotasym::r_vMF(n = M, mu = mu[i, ], kappa = kappa[i])
-
-      # Combined sample for estimation based on mixture
-      vmf_samp_ij <- rbind(vmf_samp_i, vmf_samp_j)
-
-      # Evaluate mixture
-      log_dens_ij <- log(0.5 * (
-        rotasym::d_vMF(x = vmf_samp_ij, mu = mu[i, ], kappa = kappa[i]) +
-          rotasym::d_vMF(x = vmf_samp_ij, mu = mu[j, ], kappa = kappa[j])))
-
-      # Compute C(||x/h^2 + kappa_i mu_i||) and C(||x/h^2 + kappa_j mu_j||)
-      h_x_kappa_mu_i <- sqrt(colSums((t(vmf_samp_ij / h^2) +
-                                        kappa[i] * mu[i, ])^2))
-      h_x_kappa_mu_j <- sqrt(colSums((t(vmf_samp_ij / h^2) +
-                                        kappa[j] * mu[j, ])^2))
-      log_C_h_x_kappa_mu_i <-
-        fast_log_c_vMF(p = d + 1, kappa = h_x_kappa_mu_i, spline = spline)
-      log_C_h_x_kappa_mu_j <-
-        fast_log_c_vMF(p = d + 1, kappa = h_x_kappa_mu_j, spline = spline)
-
-      # Psi_1
-      Psi_1[i, j] <- mean(exp(log_C_h + log_C_kappa[i] + log_C_kappa[j] +
-                                kappa[j] * vmf_samp_ij %*% mu[j, ] -
-                                log_C_h_x_kappa_mu_i - log_dens_ij))
-
-      # Psi_2
-      Psi_2[i, j] <- mean(exp(2 * log_C_h + log_C_kappa[i] + log_C_kappa[j] -
-                                log_C_h_x_kappa_mu_i - log_C_h_x_kappa_mu_j -
-                                log_dens_ij))
-
-    }
-
-  }
-  Psi_1[lower.tri(Psi_1)] <- Psi_1[upper.tri(Psi_1)]
-  Psi_2[lower.tri(Psi_2)] <- Psi_2[upper.tri(Psi_2)]
-
-  # Dq constant (careful: it is the inverse of what is reported in the paper!)
-  log_C_h <- fast_log_c_vMF(p = d + 1, kappa = 1 / h^2, spline = spline)
-  log_Dq_h <- -2 * log_C_h +
-    fast_log_c_vMF(p = d + 1, kappa = 2 / h^2, spline = spline)
-
-  # MISE in Proposition 4 of "Kernel density estimation for
-  # directional-linear data" (https://doi.org/10.1016/j.jmva.2013.06.009)
-  mise <- exp(-(log_Dq_h + log(n))) +
-    drop(t(p) %*% ((1 - 1 / n) * Psi_2 - 2 * Psi_1 + Psi_0) %*% p)
-  return(list("mise" = mise, "Psi_0" = Psi_0, "Psi_1" = Psi_1, "Psi_2" = Psi_2,
-              "log_Dq_h" = log_Dq_h))
-
-}
