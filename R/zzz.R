@@ -3,7 +3,7 @@
 
   # Assign global variables
   env <- asNamespace(pkgname)
-  nus <- seq(0, 45, by = 5)
+  nus <- seq(0, 60, by = 5)
   nus_char <- sprintf("%02d", nus)
   for (nu_i in nus_char) {
 
