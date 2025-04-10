@@ -8,7 +8,7 @@ x_bessel <- c(10^seq(-10, -5, by = 1),
               seq(1000 + 1e1, 5e4, by = 2e1))
 
 # Evaluate log-Bessels
-nus <- seq(0, 45, by = 5)
+nus <- seq(0, 60, by = 5)
 nus_char <- sprintf("%02d", nus)
 for (nu_i in nus_char) {
 

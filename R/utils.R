@@ -228,7 +228,7 @@ J_d_k <- function(d, k = 10, upper = Inf, ...) {
 #'
 #' @description Computes a fast approximation of the logarithm of the scaled
 #' modified Bessel function of the first kind for orders \eqn{\nu = 0, 0.5,
-#' 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5} using spline interpolation.
+#' 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5.5, 6} using spline interpolation.
 #'
 #' @param nu a scalar with the order of the Bessel function.
 #' @param x vector with evaluation points for the Bessel function.
@@ -266,10 +266,10 @@ log_besselI_scaled <- function(nu, x, spline = FALSE) {
     # Any spline interpolation?
     if (!all_asymp) {
 
-      if (!(nu %in% seq(0, 4.5, by = 0.5))) {
+      if (!(nu %in% seq(0, 6.0, by = 0.5))) {
 
         stop(paste("nu =", nu, "must be",
-                   paste(seq(0, 4.5, by = 0.5), collapse = ", "),
+                   paste(seq(0, 6.0, by = 0.5), collapse = ", "),
                    "if spline = TRUE."))
 
       }
