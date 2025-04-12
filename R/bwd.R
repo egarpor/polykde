@@ -642,21 +642,13 @@ bw_rot_polysph <- function(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
     ifelse(kernel_type == "prod", log(tcrossprod(b)), 2 * log(b[1]))
   log_var <- sum(log(v)) - log(n)
 
-  # log(exp(log_x) + exp(y))
-  log_sum_exp <- function(x) {
-
-    M <- max(x)
-    M + log(sum(exp(x - M)))
-
-  }
-
   # AMISE and gradient functions
   f_log_amise_stable_log_h <- function(log_h) {
 
     h <- exp(log_h)
     log_var2 <- log_var - sum(d * log_h)
     logs <- log(tcrossprod(h^2)) + log_bias2 - log_var2
-    log_obj <- log_var2 + log_sum_exp(x = c(logs, 0))
+    log_obj <- log_var2 + log_sum_exp(logs = c(logs, 0))
     attr(log_obj, "gradient") <-
       (exp(log(4) + log_bias2 - log_obj + log_h) %*% h^2 -
          exp(log(d) + log_var2 - log_obj - log_h)) * h
@@ -667,7 +659,7 @@ bw_rot_polysph <- function(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
   #
   #   log_var2 <- log_var - sum(d * log_h)
   #   logs <- log(tcrossprod(exp(2 * log_h))) + log_bias2 - log_var2
-  #   log_obj <- log_var2 + log_sum_exp(x = c(logs, 0))
+  #   log_obj <- log_var2 + log_sum_exp(logs = c(logs, 0))
   #   return(log_obj)
   #
   # }
@@ -676,7 +668,7 @@ bw_rot_polysph <- function(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
   #   h <- exp(log_h)
   #   log_var2 <- log_var - sum(d * log_h)
   #   logs <- log(tcrossprod(h^2)) + log_bias2 - log_var2
-  #   log_obj <- log_var2 + log_sum_exp(x = c(logs, 0))
+  #   log_obj <- log_var2 + log_sum_exp(logs = c(logs, 0))
   #   gr <- (exp(log(4) + log_bias2 - log_obj + log_h) %*% h^2 -
   #     exp(log(d) + log_var2 - log_obj - log_h)) * h
   #   return(gr)

@@ -221,3 +221,12 @@ test_that("Asymptotic Bessel approximation", {
   }
 
 })
+
+
+## log_sum_exp()
+
+test_that("log_sum_exp() is correct", {
+  x <- c(1, 2, 3)
+  expect_equal(log_sum_exp(logs = x), log(sum(exp(x))))
+  expect_equal(log_sum_exp(logs = x, avg = TRUE), log(mean(exp(x))))
+})

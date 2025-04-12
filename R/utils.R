@@ -296,3 +296,24 @@ log_besselI_scaled <- function(nu, x, spline = FALSE) {
   return(res)
 
 }
+
+
+#' @title Safe evaluation of \eqn{\log(\sum_{i=1}^n e^{x_i})}
+#'
+#' @description Computes \eqn{\log(\sum_{i=1}^n e^{x_i})} using the "LogSumExp
+#' trick".
+#'
+#' @param logs vector with \eqn{x_i} values.
+#' @param avg replace the sum by the average? Defaults to \code{FALSE}.
+#' @return A vector of size \code{length(x)} with the evaluated function.
+#' @examples
+#' logs <- c(1e5, 1)
+#' log(sum(exp(logs)))
+#' polykde:::log_sum_exp(logs)
+# #' @export
+log_sum_exp <- function(logs, avg = FALSE) {
+
+  logs_M <- max(logs)
+  return(logs_M + log(sum(exp(logs - logs_M))) - avg * log(length(logs)))
+
+}

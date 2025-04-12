@@ -376,7 +376,7 @@ log_amise_stable <- function(h) {
   log_h <- log(abs(h))
   log_var2 <- log_var - sum(d * log_h)
   logs <- log(tcrossprod(h^2)) + log_bias2 - log_var2
-  log_obj <- log_var2 + log_sum_exp(x = c(logs, 0))
+  log_obj <- log_var2 + polykde:::log_sum_exp(logs = c(logs, 0))
   attr(log_obj, "gradient") <-
     exp(log(4) + log_bias2 - log_obj + log_h) %*% h^2 -
     exp(log(d) + log_var2 - log_obj - log_h)
@@ -388,7 +388,7 @@ log_amise_stable_log_h <- function(log_h) {
   h <- exp(log_h)
   log_var2 <- log_var - sum(d * log_h)
   logs <- log(tcrossprod(h^2)) + log_bias2 - log_var2
-  log_obj <- log_var2 + log_sum_exp(x = c(logs, 0))
+  log_obj <- log_var2 + polykde:::log_sum_exp(logs = c(logs, 0))
   attr(log_obj, "gradient") <-
     (exp(log(4) + log_bias2 - log_obj + log_h) %*% h^2 -
        exp(log(d) + log_var2 - log_obj - log_h)) * h
