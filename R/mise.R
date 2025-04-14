@@ -115,7 +115,7 @@ exact_mise_vmf <- function(h, n, mu, kappa, prop, d, M_psi = 1e4,
   # Check mixture inputs
   m <- length(prop)
   mu <- rbind(mu)
-  stopifnot(sum(prop) == 1)
+  stopifnot(abs(sum(prop) - 1) < 1e-15)
   stopifnot(ncol(mu) == d + 1)
   stopifnot(nrow(mu) == m)
   stopifnot(length(kappa) == m)
