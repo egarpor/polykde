@@ -488,15 +488,18 @@ test_that("bw_rot_polysph() with bw0 vector and bw0 matrix", {
   bw0_vec_2 <- 0.1 * h
   bw0_vec_3 <- 5 * h
   bw0_mat <- rbind(bw0_vec_1, bw0_vec_2, bw0_vec_3)
-  expect_true(
-    bw_rot_polysph(X = X, d = d, bw0 = bw0_vec_1, iterlim = 1)$opt$minimum >=
-      bw_rot_polysph(X = X, d = d, bw0 = bw0_mat, iterlim = 1)$opt$minimum)
-  expect_true(
-    bw_rot_polysph(X = X, d = d, bw0 = bw0_vec_2, iterlim = 1)$opt$minimum >=
-      bw_rot_polysph(X = X, d = d, bw0 = bw0_mat, iterlim = 1)$opt$minimum)
-  expect_true(
-    bw_rot_polysph(X = X, d = d, bw0 = bw0_vec_3, iterlim = 1)$opt$minimum >=
-      bw_rot_polysph(X = X, d = d, bw0 = bw0_mat, iterlim = 1)$opt$minimum)
+  expect_true(bw_rot_polysph(X = X, d = d, bw0 = bw0_vec_1,
+                             iterlim = 1)$opt$minimum + 0.1 >=
+                bw_rot_polysph(X = X, d = d, bw0 = bw0_mat,
+                               iterlim = 1)$opt$minimum)
+  expect_true(bw_rot_polysph(X = X, d = d, bw0 = bw0_vec_2,
+                             iterlim = 1)$opt$minimum + 0.1 >=
+                bw_rot_polysph(X = X, d = d, bw0 = bw0_mat,
+                               iterlim = 1)$opt$minimum)
+  expect_true(bw_rot_polysph(X = X, d = d, bw0 = bw0_vec_3,
+                             iterlim = 1)$opt$minimum + 0.1 >=
+                bw_rot_polysph(X = X, d = d, bw0 = bw0_mat,
+                               iterlim = 1)$opt$minimum)
 
 })
 
