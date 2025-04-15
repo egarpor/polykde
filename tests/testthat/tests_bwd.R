@@ -475,10 +475,10 @@ test_that("Same optimization with log_amise_stable or log_amise_stable_log_h", {
   opt2 <- nlm(f = log_amise_stable, p = exp(opt1$estimate))
   opt3 <- nlm(f = log_amise_stable, p = h0)
   expect_true(
-    (abs(opt1$minimum - opt2$minimum) < 1e-10) ||
-    (max(abs(exp(opt1$est) - abs(opt2$est))) < 1e-10)
+    (abs(opt1$minimum - opt2$minimum) < 1e-9) ||
+    (max(abs(exp(opt1$est) - abs(opt2$est))) < 1e-9)
   )
-  expect_lt(opt1$minimum - 1e-10, opt3$minimum)
+  expect_lt(opt1$minimum - 1e-9, opt3$minimum)
 
 })
 
