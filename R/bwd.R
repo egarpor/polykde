@@ -844,4 +844,3 @@ bw_mrot_polysph <- function(X, d, kernel = 1, k = 10, upscale = FALSE,
   return(bw)
 
 }
-
