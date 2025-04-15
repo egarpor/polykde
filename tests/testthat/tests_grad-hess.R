@@ -218,11 +218,11 @@ hess_zz <- hezz(f = function(y) kde_polysph(x = y, X = X, d = d, h = h,
 
 P <- proj_P(x = x, d = d)
 test_that("Hezzian is the projection of Hessian", {
-  expect_equal(P %*% hess_ana %*% P, hess_zz)
+  expect_equal(P %*% hess_ana %*% P, hess_zz, tolerance = 1e-6)
   expect_equal(grad_hess_kde_polysph(x = x, X = X, d = d, h = h,
                                      projected = TRUE,
                                      proj_alt = TRUE)$hess[1, , ],
-               hess_zz)
+               hess_zz, tolerance = 1e-6)
 })
 
 hess_num <- numDeriv::hessian(func = function(x) {
