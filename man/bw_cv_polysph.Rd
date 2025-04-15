@@ -91,11 +91,11 @@ row of bandwidths that is most promising for the optimization, i.e., the
 bandwidths that minimized the CV loss.
 }
 \examples{
-n <- 50
+n <- 20
 d <- 1:2
 kappa <- rep(10, 2)
 X <- r_vmf_polysph(n = n, d = d, mu = r_unif_polysph(n = 1, d = d),
                    kappa = kappa)
 bw_cv_polysph(X = X, d = d, type = "LCV")$bw
-bw_cv_polysph(X = X, d = d, type = "LSCV")$bw
+bw_cv_polysph(X = X, d = d, type = "LSCV", exact_vmf = TRUE)$bw
 }
