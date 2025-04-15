@@ -47,13 +47,13 @@
 #' the latter containing the output of \code{\link[stats]{nlm}},
 #' \code{\link[stats]{optim}}, or \code{\link[optimParallel]{optimParallel}}.
 #' @examples
-#' n <- 50
+#' n <- 20
 #' d <- 1:2
 #' kappa <- rep(10, 2)
 #' X <- r_vmf_polysph(n = n, d = d, mu = r_unif_polysph(n = 1, d = d),
 #'                    kappa = kappa)
 #' bw_cv_polysph(X = X, d = d, type = "LCV")$bw
-#' bw_cv_polysph(X = X, d = d, type = "LSCV")$bw
+#' bw_cv_polysph(X = X, d = d, type = "LSCV", exact_vmf = TRUE)$bw
 #' @export
 bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
                           intrinsic = FALSE, type = c("LCV", "LSCV")[1],
