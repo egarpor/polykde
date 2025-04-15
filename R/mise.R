@@ -63,7 +63,6 @@
 
 #' @noRd
 #' @rdname exact_mise
-# #' @export
 exact_mise_vmf_polysph <- function(h, n, mu, kappa, prop, d, M_psi = 1e4,
                                    seed_psi = NULL, spline = FALSE) {
 
@@ -241,9 +240,13 @@ log1p_mise_exact <- function(log_h, n, d, mu, kappa, prop, M_psi = 1e4,
 #' @return A list with entries \code{bw} (optimal bandwidth) and \code{opt},
 #' the latter containing the output of \code{\link[stats]{nlm}}.
 #' @examples
-#' # TODO
+#' polykde:::bw_mise_polysph(n = 100, d = 2, bw0 = 1,
+#'                           mu = rbind(c(1, 0, 0)), kappa = rbind(1),
+#'                           prop = 1, seed_psi = 1)
+#' polykde:::bw_mise_polysph(n = 1000, d = 2, bw0 = 1,
+#'                           mu = rbind(c(1, 0, 0)), kappa = rbind(1),
+#'                           prop = 1, seed_psi = 1)
 #' @noRd
-# #' @export
 bw_mise_polysph <- function(n, d, bw0 = NULL, upscale = FALSE, deriv = 0,
                             mu = NULL, kappa = NULL, prop = NULL,
                             M_psi = 1e4, seed_psi = NULL, spline = FALSE, ...) {

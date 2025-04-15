@@ -245,7 +245,6 @@ J_d_k <- function(d, k = 10, upper = Inf, ...) {
 #' curve(polykde:::log_besselI_scaled(nu = 0.5, x = x, spline = FALSE),
 #'       n = 200, add = TRUE, col = 2)
 #' @noRd
-# #' @export
 log_besselI_scaled <- function(nu, x, spline = FALSE) {
 
   # Needed an asymptotic interpolation?
@@ -298,7 +297,7 @@ log_besselI_scaled <- function(nu, x, spline = FALSE) {
 }
 
 
-#' @title Safe evaluation of \eqn{\log(\sum_{i=1}^n e^{x_i})}
+#' @title Stable evaluation of \eqn{\log(\sum_{i=1}^n e^{x_i})}
 #'
 #' @description Computes \eqn{\log(\sum_{i=1}^n e^{x_i})} using the "LogSumExp
 #' trick".
@@ -310,7 +309,7 @@ log_besselI_scaled <- function(nu, x, spline = FALSE) {
 #' logs <- c(1e5, 1)
 #' log(sum(exp(logs)))
 #' polykde:::log_sum_exp(logs)
-# #' @export
+#' @noRd
 log_sum_exp <- function(logs, avg = FALSE) {
 
   logs_M <- max(logs)
