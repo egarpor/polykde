@@ -30,18 +30,20 @@ d <- sample(1:3, size = r, replace = TRUE)
 h <- sample(c(0.25, 0.5, 0.75), size = r, replace = TRUE)
 n <- 20
 seed <- 30
-set.seed(seed)
+set.seed(seed, kind = "Mersenne-Twister")
 mu <- r_unif_polysph(n = 5, d = d)
 X <- r_kde_polysph(n = n, X = mu, d = d, h = h)
 
 # CV helper functions
 M <- 1e4
+seed <- 30
+set.seed(seed, kind = "Mersenne-Twister")
 mc_samp <- r_unif_polysph(n = M, d = d)
 cv_naive <- function(h, X, d, mc_samp, kde_samp = FALSE) {
 
   if (kde_samp) {
 
-    set.seed(seed)
+    set.seed(seed, kind = "Mersenne-Twister")
     mc_kde_samp <- r_kde_polysph(n = M, X = X, d = d, h = h, kernel = 1)
     cv_1 <- mean(kde_polysph(x = mc_kde_samp, X = X, d = d, kernel = 1, h = h,
                              wrt_unif = FALSE))
