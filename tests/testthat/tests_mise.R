@@ -1,5 +1,5 @@
 
-test_that("exact_mise_vmf() works properly", {
+test_that("exact_mise_vmf() does the job on computing exactly the MISE", {
 
   # Parameters
   M <- 1e4
@@ -38,10 +38,39 @@ test_that("exact_mise_vmf() works properly", {
   })
   kde_f_2 <- rowMeans(kde_f_2, na.rm = TRUE)
 
-  expect_equal(exact_mise_vmf(h = h, n = n, mu = mu, kappa = kappa, prop = prop,
-                              d = d, seed_psi = 42, spline = TRUE)$mise,
+  expect_equal(drop(exact_mise_vmf(h = h, n = n, mu = mu, kappa = kappa,
+                                     prop = prop, d = d, seed_psi = 42,
+                                     spline = TRUE)$mise),
                mean(kde_f_2 / f_X),
                tolerance = 1e-2)
+
+})
+
+test_that("exact_mise_vmf() is properly vectorized in h and n", {
+
+  h <- c(0.1, 0.2)
+  n <- c(10, 20)
+  mu <- rbind(c(0, 1), c(1, 0))
+  kappa <- c(5, 2)
+  prop <- c(0.7, 0.3)
+  expect_equal(exact_mise_vmf(h = h, n = n, mu = mu, kappa = kappa,
+                              prop = prop, d = 1, seed_psi = 1, M_psi = 10,
+                              spline = TRUE)$mise,
+               c(exact_mise_vmf(h = h[1], n = n[1], mu = mu, kappa = kappa,
+                                prop = prop, d = 1, seed_psi = 1, M_psi = 10,
+                                spline = TRUE)$mise,
+                 exact_mise_vmf(h = h[2], n = n[2], mu = mu, kappa = kappa,
+                                prop = prop, d = 1, seed_psi = 1, M_psi = 10,
+                                spline = TRUE)$mise))
+  expect_equal(exact_mise_vmf(h = h, n = n[1], mu = mu, kappa = kappa,
+                              prop = prop, d = 1, seed_psi = 1, M_psi = 10,
+                              spline = TRUE)$mise,
+               c(exact_mise_vmf(h = h[1], n = n[1], mu = mu, kappa = kappa,
+                                prop = prop, d = 1, seed_psi = 1, M_psi = 10,
+                                spline = TRUE)$mise,
+                 exact_mise_vmf(h = h[2], n = n[1], mu = mu, kappa = kappa,
+                                prop = prop, d = 1, seed_psi = 1, M_psi = 10,
+                                spline = TRUE)$mise))
 
 })
 
