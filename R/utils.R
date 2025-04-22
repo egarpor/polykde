@@ -247,13 +247,17 @@ J_d_k <- function(d, k = 10, upper = Inf, ...) {
 #' @noRd
 log_besselI_scaled <- function(nu, x, spline = FALSE) {
 
+  # Any NAs?
+  res <- rep(NA, length(x))
+  x_na <- is.na(x)
+  x <- x[!x_na]
+
   # Needed an asymptotic interpolation?
   ind_asymp <- x >= 10000
   all_asymp <- all(ind_asymp)
   any_asymp <- all_asymp || any(ind_asymp)
 
   # Spline interpolation and asymptotic approximation
-  res <- numeric(length(x))
   if (spline) {
 
     if (length(nu) != 1) {
@@ -274,22 +278,23 @@ log_besselI_scaled <- function(nu, x, spline = FALSE) {
       }
 
       # Call spline approximation
-      res <- get(paste0("log_besselI_scaled_spline_",
-                        sprintf("%02d", 10 * nu)))(x)
+      res[!x_na] <- get(paste0("log_besselI_scaled_spline_",
+                               sprintf("%02d", 10 * nu)))(x)
 
     }
 
     # Asymptotic approximation
     if (any_asymp) {
 
-      res[ind_asymp] <- Bessel::besselIasym(x = x[ind_asymp], nu = nu,
-                                            expon.scaled = TRUE, log = TRUE)
+      res[!x_na][ind_asymp] <- Bessel::besselIasym(x = x[ind_asymp], nu = nu,
+                                                   expon.scaled = TRUE,
+                                                   log = TRUE)
 
     }
 
   } else {
 
-    res <- log(besselI(x = x, nu = nu, expon.scaled = TRUE))
+    res[!x_na] <- log(besselI(x = x, nu = nu, expon.scaled = TRUE))
 
   }
   return(res)

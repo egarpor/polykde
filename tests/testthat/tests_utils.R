@@ -172,7 +172,6 @@ test_that("polylog_minus_exp_mu() edge cases", {
 
 test_that("Accuracy of log_besselI_scaled(nu = seq(0, 6, by = 0.5)) with
           spline approximations", {
-
   x <- seq(1e-8, 1e4, l = 1e3)
   nus <- seq(0, 6, by = 0.5)
   for (nu in nus) {
@@ -181,12 +180,10 @@ test_that("Accuracy of log_besselI_scaled(nu = seq(0, 6, by = 0.5)) with
       polykde:::log_besselI_scaled(nu = nu, x = x, spline = FALSE),
       tolerance = 1e-9)
   }
-
 })
 
 test_that("Accuracy of log_besselI_scaled(nu = seq(0, 6, by = 0.5)) with
           asymptotic approximations", {
-
   x <- seq(1e4, 1e5, l = 100)
   nus <- seq(0, 10, by = 1)
   for (nu in nus) {
@@ -195,18 +192,14 @@ test_that("Accuracy of log_besselI_scaled(nu = seq(0, 6, by = 0.5)) with
       polykde:::log_besselI_scaled(nu = nu, x = x, spline = FALSE),
       tolerance = 1e-9)
   }
-
 })
 
 test_that("Edge cases of log_besselI_scaled()", {
-
   expect_error(log_besselI_scaled(nu = 10, x = 0, spline = TRUE))
   expect_error(log_besselI_scaled(nu = 1:3, x = 0, spline = TRUE))
-
 })
 
 test_that("Asymptotic Bessel approximation", {
-
   paper_asymp <- function(x, d) {
     log1p(-d * (d - 2) / (8 * x)) - log(2 * pi * x) / 2
   }
@@ -215,13 +208,19 @@ test_that("Asymptotic Bessel approximation", {
                         log = TRUE, k.max = 1)
   }
   for (d in 1:10) {
-
     expect_equal(paper_asymp(x = c(50:100, 1e4, 1e5), d = d),
                  Bessel_asymp(x = c(50:100, 1e4, 1e5), d = d))
   }
-
 })
 
+
+test_that("log_besselI_scaled() with NAs", {
+  x <- c(1, 2, NA, 1e5)
+  expect_equal(log_besselI_scaled(nu = 1, x = x, spline = TRUE),
+               log_besselI_scaled(nu = 1, x = x, spline = FALSE))
+  expect_equal(log_besselI_scaled(nu = 5.5, x = x, spline = TRUE),
+               log_besselI_scaled(nu = 5.5, x = x, spline = FALSE))
+})
 
 ## log_sum_exp()
 
