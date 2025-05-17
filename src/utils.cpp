@@ -8,7 +8,7 @@
 arma::mat proj_polysph(arma::mat x, arma::uvec ind_dj);
 arma::vec dist_polysph(arma::mat x, arma::mat y, arma::uvec ind_dj,
                        bool norm_x, bool norm_y, bool std);
-
+arma::mat s(arma::mat A, bool add);
 
 //' @title Computation of the softplus function
 //'
@@ -258,21 +258,34 @@ arma::mat dist_polysph_cross(arma::mat x, arma::mat y, arma::uvec ind_dj,
 }
 
 
-//' @title Diamond cross-product
+//' @title Diamond cross-products
 //'
-//' @description Given a matrix \eqn{\boldsymbol{X}} whose \eqn{n} rows are on a
-//' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}},
-//' the function computes the cube whose rows are
-//' \eqn{\boldsymbol{X}_i \diamond \boldsymbol{X}_i'}, \eqn{i = 1, \ldots, n},
-//' and \eqn{\diamond} is a block-by-block product.
+//' @description Given a matrix \eqn{\boldsymbol{X}} whose \eqn{n} rows are on
+//' a polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}
+//' \subset \mathbb{R}^p,}:
+//' \itemize{
+//' \item{\code{diamond_crossprod} computes the \eqn{n\times p\times p} cube
+//' whose rows are \eqn{\boldsymbol{X}_i \diamond \boldsymbol{X}_i'},
+//' \eqn{i = 1, \ldots, n}, and \eqn{\diamond} is a block-by-block product.}
+//' \item{\code{diamond_rcrossprod} computes the \eqn{n\times n\times r} cube
+//' formed by \eqn{(\boldsymbol{X}_{ik}' \boldsymbol{X}_{jk})_{ijk}},
+//' \eqn{k = 1, \ldots, r}.}
+//' }
 //'
 //' @inheritParams kde_polysph
 //' @inheritParams proj_polysph
-//' @return An array of size \code{c(nrow(X), ncol(X), ncol(X))}.
+//' @return
+//' \itemize{
+//' \item{\code{diamond_crossprod}: an array of size \code{c(nrow(X), ncol(X),
+//'  ncol(X))}.}
+//' \item{\code{diamond_rcrossprod}: an array of size \code{c(nrow(X), nrow(X),
+//' r)}.}
+//' }
 //' @examples
 //' d <- c(1, 2)
 //' X <- r_unif_polysph(n = 2, d = d)
 //' polykde:::diamond_crossprod(X = X, ind_dj = comp_ind_dj(d))
+//' polykde:::diamond_rcrossprod(X = X, ind_dj = comp_ind_dj(d))
 //' @noRd
 // [[Rcpp::export]]
 arma::cube diamond_crossprod(arma::mat X, arma::uvec ind_dj) {
@@ -320,6 +333,53 @@ arma::cube diamond_crossprod(arma::mat X, arma::uvec ind_dj) {
     }
   }
 
+  return X_diamond;
+
+}
+
+
+//' @name diamond_crossprod
+//' @noRd
+// [[Rcpp::export]]
+arma::cube diamond_rcrossprod(arma::mat X, arma::uvec ind_dj) {
+
+  // How many S^dj's
+  arma::uword r = ind_dj.n_elem - 1;
+
+  // Dimensions
+  arma::uword n = X.n_rows;
+  arma::uword p = X.n_cols;
+  if (p != ind_dj(r)) {
+
+   Rcpp::stop("Dimension of X mismatches with ind_dj.");
+
+  }
+
+  // Loop on the k-component
+  arma::cube X_diamond = arma::zeros(n, n, r);
+  for (arma::uword dk = 0; dk < r; dk++) {
+
+    // Begin and end of each sphere
+    arma::uword ini_dk = ind_dj(dk);
+    arma::uword end_dk = ind_dj(dk + 1) - 1;
+    arma::mat X_k = X.cols(ini_dk, end_dk);
+
+    // Matrix (X_ik'X_jk)_{ij}
+    for (arma::uword i = 0; i < n; i++) {
+
+      for (arma::uword j = 0; j <= i; j++) {
+
+        X_diamond(i, j, dk) = arma::as_scalar(X_k.row(i) * X_k.row(j).t());
+
+      }
+
+    }
+
+    // Symmetrize
+    X_diamond.slice(dk) = s(X_diamond.slice(dk), true);
+    X_diamond.slice(dk).diag() /= 2;
+
+  }
   return X_diamond;
 
 }

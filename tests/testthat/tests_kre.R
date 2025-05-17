@@ -17,6 +17,11 @@ test_that("Equivalent bandwidth selection with fast and slow CV in NW", {
                bw_cv_kre_polysph(X = X, Y = Y, d = d, p = 0, fast = TRUE)$cvm)
 })
 
+test_that("Edge cases bw_cv_kre_polysph", {
+  expect_error(bw_cv_kre_polysph(X = X, Y = Y, d = d, p = 1))
+  expect_error(kre_polysph(x = X, X = X, Y = Y, d = d, p = 2, h = 1))
+})
+
 test_that("NW interpolates for very small bandwidth", {
   expect_lt(suppressWarnings(
     max(dist_polysph(x = kre_polysph(x = X, X = X, Y = Y,
@@ -70,7 +75,9 @@ sc3$points3d(kre_polysph(x = x_grid, X = X, Y = Y, d = 2, h = h1, p = 1),
              pch = 16, type = "l", col = 3, lwd = 2)
 sc3$points3d(kre_polysph(x = x_grid2, X = X, Y = Y, d = 2, h = h1, p = 1),
              pch = 16, type = "l", col = 3)
-L <- 100; tth <- seq(0, 2 * pi, l = L); pph <- seq(0, pi, l = L)
+L <- 100
+tth <- seq(0, 2 * pi, l = L)
+pph <- seq(0, pi, l = L)
 for (ph in seq(0, pi, l = 21))
   sc3$points3d(DirStats::to_sph(th = tth, ph = rep(ph, L)), type = "l",
                col = gray(0.5, alpha = 0.25))

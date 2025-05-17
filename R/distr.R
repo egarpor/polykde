@@ -56,3 +56,33 @@ d_unif_polysph <- function(x, d, log = FALSE) {
   return(log_dens)
 
 }
+
+
+#' @title Fast evaluation of the von Mises--Fisher normalizing constant
+#'
+#' @description Computes the normalizing constant of the von Mises--Fisher
+#' distribution on the sphere \eqn{\mathcal{S}^{p-1}} as in
+#' \code{\link[rotasym]{c_vMF}} but using a fast spline approximation for the
+#' logarithm of (a limited number of) Bessel functions.
+#'
+#' @param p positive integer giving the dimension of the ambient space that
+#' contains the sphere \eqn{\mathcal{S}^{p-1}}. Can be a vector only for
+#' \code{spline = FALSE}.
+#' @param kappa concentration parameter of the von Mises--Fisher distribution.
+#' Can be a vector.
+#' @inheritParams log_besselI_scaled
+#' @return A vector of the size of \code{kappa} with the normalizing constants.
+#' @examples
+#' polykde:::fast_log_c_vMF(p = 3, kappa = 1:10, spline = FALSE)
+#' polykde:::fast_log_c_vMF(p = 3, kappa = 1:10, spline = TRUE)
+#' @noRd
+fast_log_c_vMF <- function(p, kappa, spline = FALSE) {
+
+  log_bessel <- log_besselI_scaled(nu = 0.5 * (p - 2), x = kappa,
+                                   spline = spline)
+  log_c_vMF <- (0.5 * (p - 2)) * log(kappa) - (0.5 * p) * log(2 * pi) -
+    kappa - log_bessel
+  log_c_vMF[kappa == 0] <- -rotasym::w_p(p = p, log = TRUE)
+  return(log_c_vMF)
+
+}

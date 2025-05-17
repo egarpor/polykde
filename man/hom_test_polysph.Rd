@@ -34,14 +34,15 @@ the kernel density estimators for two groups using the Hellinger distance.}
 
 \item{B}{number of permutations to use. Defaults to \code{1e3}.}
 
-\item{M}{number of Monte Carlo replicates to use when approximating the
+\item{M}{number of Monte Carlo samples to use when approximating the
 Hellinger/Jensen--Shannon distance. Defaults to \code{1e4}.}
 
 \item{plot_boot}{flag to display a graphical output of the test decision.
 Defaults to \code{FALSE}.}
 
 \item{seed_jsd}{seed for the Monte Carlo simulations used to estimate the
-integrals in the Jensen--Shannon distance.}
+integrals in the Jensen--Shannon distance in the original and bootstrapped
+statistics. Defaults to \code{NULL} (no seed is fixed).}
 
 \item{cv_jsd}{use cross-validation to approximate the Jensen--Shannon
 distance? Does not require Monte Carlo. Defaults to \code{TRUE}.}

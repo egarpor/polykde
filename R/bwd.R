@@ -11,36 +11,57 @@
 #' \code{"LSCV"}.
 #' @param M Monte Carlo samples to use for approximating the integral in
 #' the LSCV loss.
-#' @param bw0 initial bandwidth for minimizing the CV loss. If \code{NULL}, it
-#' is computed internally by magnifying the \code{\link{bw_rot_polysph}}
-#' bandwidths by 50\%.
+#' @param bw0 initial bandwidth vector for minimizing the CV loss. If
+#' \code{NULL}, it is computed internally by magnifying the
+#' \code{\link{bw_rot_polysph}} bandwidths by 50\%. Can be also a matrix of
+#' initial bandwidth vectors.
 #' @param na.rm remove \code{NA}s in the objective function? Defaults to
 #' \code{FALSE}.
-#' @param ncores number of cores used during the optimization. Defaults to
-#' \code{1}.
 #' @param h_min minimum h enforced (componentwise). Defaults to \code{0}.
 #' @inheritParams bw_rot_polysph
 #' @param upscale rescale the resulting bandwidths to work for derivative
 #' estimation? Defaults to \code{FALSE}.
-#' @param ... further arguments passed to \code{\link{optim}}
-#' (if \code{ncores = 1}) or \code{\link[optimParallel]{optimParallel}}
-#' (if \code{ncores > 1}).
-#' @return A list as \code{\link[stats]{optim}} or
-#' \code{\link[optimParallel]{optimParallel}} output. In particular, the
-#' optimal bandwidth is stored in \code{par}.
+#' @param imp_mc use importance sampling in the Monte Carlo approximation of
+#' the integral in the LSCV loss? It is more accurate but also more time
+#' consuming. Defaults to \code{TRUE}.
+#' @param seed_mc seed for the Monte Carlo simulations used to estimate the
+#' integral in the LSCV loss. Defaults to \code{NULL} (no seed is fixed for
+#' different bandwidths).
+#' @param exact_vmf use the closed-form for the LSCV loss with the
+#' von Mises--Fisher kernel? Defaults to \code{FALSE}.
+#' @param common_h use the same bandwidth for all dimensions? Defaults to
+#' \code{FALSE}.
+#' @param spline use a faster spline approximation to compute Bessel functions?
+#' Defaults to \code{FALSE}.
+#' @param opt optimizer to use; either \code{"\link{optim}"} (default) or
+#' \code{"\link{nlm}"}.
+#' @param ncores number of cores used during the optimization. Defaults to
+#' \code{1}.
+#' @param ... further arguments passed to \code{\link{optim}} or
+#' \code{\link{nlm}} (if \code{ncores = 1}) or
+#' \code{\link[optimParallel]{optimParallel}} (if \code{ncores > 1}).
+#' @details If \code{bw0} is a matrix, then the optimization is started at that
+#' row of bandwidths that is most promising for the optimization, i.e., the
+#' bandwidths that minimized the CV loss.
+#' @return A list with entries \code{bw} (optimal bandwidth) and \code{opt},
+#' the latter containing the output of \code{\link[stats]{nlm}},
+#' \code{\link[stats]{optim}}, or \code{\link[optimParallel]{optimParallel}}.
 #' @examples
-#' n <- 50
+#' n <- 20
 #' d <- 1:2
 #' kappa <- rep(10, 2)
 #' X <- r_vmf_polysph(n = n, d = d, mu = r_unif_polysph(n = 1, d = d),
 #'                    kappa = kappa)
-#' bw_cv_polysph(X = X, d = d, type = "LCV")$par
-#' bw_cv_polysph(X = X, d = d, type = "LSCV")$par
+#' bw_cv_polysph(X = X, d = d, type = "LCV")$bw
+#' bw_cv_polysph(X = X, d = d, type = "LSCV", exact_vmf = TRUE)$bw
 #' @export
 bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
-                          type = c("LCV", "LSCV")[1], M = 1e4,
-                          bw0 = NULL, na.rm = FALSE, ncores = 1,
-                          h_min = 0, upscale = FALSE, deriv = 0, ...) {
+                          intrinsic = FALSE, type = c("LCV", "LSCV")[1],
+                          M = 1e4, bw0 = NULL, na.rm = FALSE, h_min = 0,
+                          upscale = FALSE, deriv = 0, imp_mc = TRUE,
+                          seed_mc = NULL, exact_vmf = FALSE, common_h = FALSE,
+                          spline = FALSE, opt = c("optim", "nlm")[1],
+                          ncores = 1, ...) {
 
   # Check dimensions
   if (ncol(X) != sum(d + 1)) {
@@ -54,7 +75,15 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
   # Objective function
   if (type == "LCV") {
 
+    # LCV loss
     obj <- function(log_h) {
+
+      # Replicate bandwidths if common_h
+      if (common_h) {
+
+        log_h <- rep(log_h, r)
+
+      }
 
       # Ensure positivity and lower bound (if not enforced by optim())
       h_pos <- exp(log_h)
@@ -67,13 +96,13 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
       }
 
-      # Wrap in a tryCatch to avoid too small bandwidth errors
+      # Wrap in a tryCatch() to avoid too small bandwidth errors
       loss <- tryCatch({
 
         # Log-cv kernels
         log_cv <- log_cv_kde_polysph(X = X, d = d, h = h_pos, wrt_unif = TRUE,
                                      kernel = kernel, kernel_type = kernel_type,
-                                     k = k)
+                                     k = k, intrinsic = intrinsic)
 
         # -LCV
         loss <- -sum(log_cv, na.rm = na.rm) + penalty
@@ -86,67 +115,190 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
   } else if (type == "LSCV") {
 
-    # Common Monte Carlo sample
-    mc_samp <- r_unif_polysph(n = M, d = d)
+    if (kernel == "1" && exact_vmf) {
 
-    obj <- function(log_h) {
+      if (intrinsic) {
 
-      # Ensure positivity and lower bound (if not enforced by optim())
-      h_pos <- exp(log_h)
-      penalty <- 0
-      if (any(h_pos < h_min)) {
-
-        message("h left-truncated to h_min")
-        penalty <- 1e6 * sum((h_pos - h_min)^2)
-        h_pos <- pmax(h_pos, h_min)
+        stop("Intrinsic LSCV loss is not available with exact_vmf = TRUE.")
 
       }
 
-      # Wrap in a tryCatch to avoid too small bandwidth errors
-      loss <- tryCatch({
+      # Precompute matrix with the lower triangular parts of the matrices
+      # (X_{il}'X_{jl})_{ij}, l = 1, ..., r.
+      ind_dj <- comp_ind_dj(d = d)
+      Xi_Xj_l <- diamond_rcrossprod(X = X, ind_dj = ind_dj)
+      Xi_Xj_l <- sapply(seq_len(r), function(j) {
 
-        # Integral part with LogSumExp trick
-        log_kde2_mc <- 2 * kde_polysph(x = mc_samp, X = X, d = d, h = h_pos,
-                                       wrt_unif = TRUE, kernel = kernel,
-                                       kernel_type = kernel_type, k = k,
-                                       log = TRUE) - log(M)
-        max_log_kde2_mc <- max(log_kde2_mc)
-        log_int_kde2 <- ifelse(is.finite(max_log_kde2_mc),
-                               max_log_kde2_mc +
-                                 log(sum(exp(log_kde2_mc - max_log_kde2_mc))),
-                               -Inf)
+        Xi_Xj_l[, , j][lower.tri(Xi_Xj_l[, , j], diag = FALSE)]
 
-        # Sum part with LogSumExp trick
-        log_cv_kde <- log_cv_kde_polysph(X = X, d = d, h = h_pos,
-                                         wrt_unif = TRUE, kernel = kernel,
-                                         kernel_type = kernel_type, k = k) -
-          log(n) + log(2)
-        max_log_cv_kde <- max(log_cv_kde)
-        log_sum_cv_kde <- ifelse(is.finite(max_log_cv_kde),
-                                 max_log_cv_kde +
-                                   log(sum(exp(log_cv_kde - max_log_cv_kde))),
-                                 -Inf)
+      })
+      Xi_Xj_l <- t(Xi_Xj_l) # For better column recycling later
+      norm_Xi_Xj_l <- sqrt(2 * (1 + Xi_Xj_l))
 
-        # Logarithm of CV loss -- we assume
-        # LSCV(h) is always negative, i.e., log_int_kde2 < log_sum_cv_kde
-        if (log_int_kde2 > log_sum_cv_kde) {
+      # Precompute other fixed objects in the LSCV loss
+      log_n <- log(n)
+      log_2_n1 <- log(2 / (n - 1))
+      n2 <- n * (n - 1) / 2
 
-          warning("LSCV(h) is not negative, which is assumed.")
+      # LSCV loss
+      obj <- function(log_h) {
+
+        # Replicate bandwidths if common_h
+        if (common_h) {
+
+          log_h <- rep(log_h, r)
 
         }
-        max_log <- max(c(log_int_kde2, log_sum_cv_kde))
-        min_log <- min(c(log_int_kde2, log_sum_cv_kde))
-        log_abs_cv <- max_log + log1p(-exp(min_log - max_log))
 
-        # Set the sign of log-CV loss
-        log_cv <- sign(log_int_kde2 - log_sum_cv_kde) * log_abs_cv
+        # Ensure positivity and lower bound (if not enforced by optim())
+        h_pos <- exp(log_h)
+        penalty <- 0
+        if (any(h_pos < h_min)) {
 
-        # LSCV
-        loss <- log_cv + penalty
-        ifelse(!is.finite(loss), 1e6, loss)
+          message("h left-truncated to h_min")
+          penalty <- 1e6 * sum((h_pos - h_min)^2)
+          h_pos <- pmax(h_pos, h_min)
 
-      }, error = function(e) 1e6)
-      return(loss)
+        }
+
+        # Wrap in a tryCatch() to avoid too small bandwidth errors
+        exact_loss <- tryCatch({
+
+          # Log-constants
+          h_pos2 <- 1 / h_pos^2
+          log_c_h2 <- sum(fast_log_c_vMF(p = d + 1, kappa = h_pos2,
+                                         spline = FALSE))
+          log_c_2h2 <- sum(fast_log_c_vMF(p = d + 1, kappa = 2 * h_pos2,
+                                          spline = FALSE))
+
+          # Compute X_{il}'X_{jl} / h_l^2 and
+          # \sum_l \log(c_vMF(||X_{il}'X_{jl}|| / h_l^2))
+          Xi_Xj_l_h <- .colSums(Xi_Xj_l * h_pos2, m = r, n = n2)
+          log_c_norm_Xi_Xj_l_h <- numeric(n2)
+          for (l in seq_len(r)) {
+
+            log_c_norm_Xi_Xj_l_h <- log_c_norm_Xi_Xj_l_h +
+              fast_log_c_vMF(p = d[l] + 1, kappa = norm_Xi_Xj_l[l, ] *
+                               h_pos2[l], spline = spline)
+
+          }
+
+          # CV loss
+          cv_1 <- exp(2 * log_c_h2 - log_c_2h2 - log_n)
+          cv_2 <- 2 * sum(exp(Xi_Xj_l_h + log_c_h2 + (log_2_n1 - log_n)) -
+                            exp(2 * (log_c_h2 - log_n) - log_c_norm_Xi_Xj_l_h))
+          cv <- cv_1 - cv_2
+          loss <- cv + penalty
+          ifelse(!is.finite(loss), 1e6, loss)
+
+        }, error = function(e) 1e6)
+        return(exact_loss)
+
+      }
+
+    } else {
+
+      # Set seeds for the Monte Carlo
+      if (!is.null(seed_mc)) {
+
+        # old_seed <- .Random.seed
+        # on.exit({.Random.seed <<- old_seed})
+        set.seed(seed_mc, kind = "Mersenne-Twister")
+
+      }
+
+      # Common uniform Monte Carlo sample
+      if (!imp_mc) {
+
+        mc_samp <- r_unif_polysph(n = M, d = d)
+
+      }
+
+      # LSCV loss
+      obj <- function(log_h) {
+
+        # Replicate bandwidths if common_h
+        if (common_h) {
+
+          log_h <- rep(log_h, r)
+
+        }
+
+        # Ensure positivity and lower bound (if not enforced by optim())
+        h_pos <- exp(log_h)
+        penalty <- 0
+        if (any(h_pos < h_min)) {
+
+          message("h left-truncated to h_min")
+          penalty <- 1e6 * sum((h_pos - h_min)^2)
+          h_pos <- pmax(h_pos, h_min)
+
+        }
+
+        # Wrap in a tryCatch() to avoid too small bandwidth errors
+        loss <- tryCatch({
+
+          # Integral part with LogSumExp trick
+
+          # Use importance-sampling Monte Carlo?
+          if (imp_mc) {
+
+            # Set seeds for the Monte Carlo
+            if (!is.null(seed_mc)) {
+
+              set.seed(seed_mc, kind = "Mersenne-Twister")
+
+            }
+
+            # h-dependent Monte Carlo
+            mc_kde_samp <- r_kde_polysph(n = M, X = X, d = d,
+                                         h = h_pos, kernel = kernel,
+                                         kernel_type = kernel_type, k = k,
+                                         intrinsic = intrinsic)
+            log_kde2_mc <- kde_polysph(x = mc_kde_samp, X = X, d = d,
+                                       h = h_pos, wrt_unif = FALSE,
+                                       kernel = kernel, kernel_type =
+                                         kernel_type, k = k, log = TRUE,
+                                       intrinsic = intrinsic) - log(M)
+
+          } else {
+
+            # Uniform Monte Carlo
+            log_kde2_mc <- 2 * kde_polysph(x = mc_samp, X = X, d = d,
+                                           h = h_pos, wrt_unif = FALSE,
+                                           kernel = kernel, kernel_type =
+                                             kernel_type, k = k,
+                                           log = TRUE, intrinsic = intrinsic) -
+              log(M) + sum(rotasym::w_p(p = d + 1, log = TRUE))
+
+          }
+          max_log_kde2_mc <- max(log_kde2_mc)
+          log_int_kde2 <- ifelse(is.finite(max_log_kde2_mc),
+                                 max_log_kde2_mc +
+                                   log(sum(exp(log_kde2_mc - max_log_kde2_mc))),
+                                 -Inf)
+
+          # Sum part with LogSumExp trick
+          log_cv_kde <- log_cv_kde_polysph(X = X, d = d, h = h_pos,
+                                           wrt_unif = FALSE, kernel = kernel,
+                                           kernel_type = kernel_type, k = k,
+                                           intrinsic = intrinsic) -
+            log(n) + log(2)
+          max_log_cv_kde <- max(log_cv_kde)
+          log_sum_cv_kde <- ifelse(is.finite(max_log_cv_kde),
+                                   max_log_cv_kde +
+                                     log(sum(exp(log_cv_kde - max_log_cv_kde))),
+                                   -Inf)
+
+          # CV loss
+          cv <- exp(log_int_kde2) - exp(log_sum_cv_kde)
+          loss <- cv + penalty
+          ifelse(!is.finite(loss), 1e6, loss)
+
+        }, error = function(e) 1e6)
+        return(loss)
+
+      }
 
     }
 
@@ -163,102 +315,128 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
     bw0 <- 1.5 * bw_rot_polysph(X = X, d = d, kernel = kernel,
                                 kernel_type = kernel_type, k = k,
                                 upscale = FALSE, deriv = 0)$bw
+    bw0 <- rbind(bw0)
 
   } else {
 
-    if (r != length(bw0)) {
+    bw0 <- rbind(bw0)
+    if (r != ncol(bw0)) {
 
       stop("bw0 and d are incompatible.")
 
     }
 
   }
-  if (!is.null(list(...)$control$trace) && list(...)$control$trace > 0) {
+
+  # Find the best starting bandwidths to run the optimization on it
+  if (nrow(bw0) > 1) {
+
+    if (common_h) {
+
+      bw0 <- cbind(rowMeans(bw0))
+
+    }
+    ind_best <- which.min(apply(log(bw0), 1, obj))
+    bw0 <- bw0[ind_best, ]
+
+  } else {
+
+    # Replicate bandwidths if common_h
+    if (common_h) {
+
+      bw0 <- rowMeans(bw0)
+
+    } else {
+
+      bw0 <- drop(bw0)
+
+    }
+
+  }
+  if ((!is.null(list(...)$control$trace) && list(...)$control$trace > 0) ||
+      (!is.null(list(...)$print.level) && list(...)$print.level > 0)) {
 
     message("bw0 = ", bw0)
 
   }
 
   # Optimization
-  if (ncores == 1) {
+  if (opt == "nlm") {
 
-    opt <- optim(par = log(bw0), fn = obj, ...)
+    if (ncores == 1) {
+
+      opt <- nlm(f = obj, p = log(bw0), ...)
+      bw <- exp(opt$estimate)
+
+    } else {
+
+      stop("nlm() with ncores > 1 not available.")
+
+    }
 
   } else {
 
-    cl <- parallel::makeCluster(spec = ncores)
-    parallel::setDefaultCluster(cl = cl)
-    parallel::clusterExport(cl = cl, varlist = ls(), envir = environment())
-    parallel::clusterCall(cl, function() {
-      library("polykde")
-    })
-    opt <- optimParallel::optimParallel(par = log(bw0), fn = obj,
-                                        parallel = list(cl = cl, forward = TRUE,
-                                                        loginfo = TRUE),
-                                        ...)
-    parallel::stopCluster(cl)
+    if (ncores == 1) {
+
+      opt <- optim(par = log(bw0), fn = obj, ...)
+      bw <- exp(opt$par)
+
+    } else {
+
+      cl <- parallel::makeCluster(spec = ncores)
+      parallel::setDefaultCluster(cl = cl)
+      parallel::clusterExport(cl = cl, varlist = ls(), envir = environment())
+      parallel::clusterCall(cl, function() {
+        library("polykde")
+      })
+      opt <- optimParallel::optimParallel(par = log(bw0), fn = obj,
+                                          parallel = list(cl = cl,
+                                                          forward = FALSE,
+                                                          loginfo = TRUE),
+                                          ...)
+      parallel::stopCluster(cl)
+      bw <- exp(opt$par)
+
+    }
 
   }
 
   # Upscale?
-  bw <- exp(opt$par)
   if (upscale > 0) {
 
     n_up <- n^(1 / (d * r + 4)) * n^(-1 / (d * r + 2 * deriv + 4))
     bw <- bw * n_up
 
   }
-  opt$par <- bw
-  return(opt)
+  return(list("bw" = unname(bw), "opt" = opt))
 
 }
 
 
-#' @title Rule-of-thumb bandwidth selection for polyspherical kernel
-#' density estimator
+#' @title Minimum bandwidth allowed in likelihood cross-validation for
+#' Epanechnikov kernels
 #'
-#' @description Computes the rule-of-thumb bandwidth for the polyspherical
-#' kernel density estimator using a product of von Mises--Fisher distributions
-#' as reference in the Asymptotic Mean Integrated Squared Error (AMISE).
+#' @description This function computes the minimum bandwidth allowed in
+#' likelihood cross-validation with Epanechnikov kernels, for a given dataset
+#' and dimension.
 #'
-#' @inheritParams kde_polysph
-#' @param bw0 initial bandwidth for minimizing the CV loss. If \code{NULL}, it
-#' is computed internally by magnifying the \code{\link{bw_mrot_polysph}}
-#' bandwidths by 50\%.
-#' @param upscale rescale bandwidths to work on
-#' \eqn{\mathcal{S}^{d_1}\times\cdots\times \mathcal{S}^{d_r}} and for
-#' derivative estimation?
-#' Defaults to \code{FALSE}. If \code{upscale = 1}, the order \code{n} is
-#' upscaled. If \code{upscale = 2}, then also the kernel constant is upscaled.
-#' @param deriv derivative order to perform the upscaling. Defaults to \code{0}.
-#' @param kappa estimate of the concentration parameters. Computed if not
-#' provided (default).
-#' @param ... further arguments passed to \code{\link[stats]{nlm}}.
-#' @details The selector assumes that the density curvature matrix
-#' \eqn{\boldsymbol{R}} of the unknown density is approximable by that of a
-#' product of von Mises--Fisher densities,
-#' \eqn{\boldsymbol{R}(\boldsymbol{\kappa})}. The estimation of the
-#' concentration parameters \eqn{\boldsymbol{\kappa}} is done by maximum
-#' likelihood.
-#' @return A list with entries \code{bw} (optimal bandwidth) and \code{opt},
-#' the latter containing the output of \code{\link[stats]{nlm}}.
+#' @inheritParams bw_cv_polysph
+#' @return The minimum bandwidth allowed.
 #' @examples
-#' n <- 100
-#' d <- 1:2
-#' kappa <- rep(10, 2)
-#' X <- r_vmf_polysph(n = n, d = d, mu = r_unif_polysph(n = 1, d = d),
-#'                    kappa = kappa)
-#' bw_rot_polysph(X = X, d = d)$bw
+#' n <- 5
+#' d <- 1:3
+#' X <- r_unif_polysph(n = n, d = d)
+#' h_min <- rep(bw_lcv_min_epa(X = X, d = d), length(d))
+#' log_cv_kde_polysph(X = X, d = d, h = h_min - 1e-4, kernel = 2) # Problem
+#' log_cv_kde_polysph(X = X, d = d, h = h_min + 1e-4, kernel = 2) # OK
 #' @export
-bw_rot_polysph <- function(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
-                           bw0 = NULL, upscale = FALSE, deriv = 0, k = 10,
-                           kappa = NULL, ...) {
+bw_lcv_min_epa <- function(X, d, kernel_type = c("prod", "sph")[1]) {
 
   # Make kernel_type character
   if (is.numeric(kernel_type)) {
 
     kernel_type <- switch(kernel_type, "1" = "prod", "2" = "sph",
-                          stop("\"kernel_type\" must be 1 or 2."))
+                          stop("kernel_type must be 1 or 2."))
 
   }
 
@@ -271,129 +449,38 @@ bw_rot_polysph <- function(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
   n <- nrow(X)
   r <- length(d)
 
-  # Estimate kappa
-  if (is.null(kappa)) {
+  # Index for accessing each S^dj with ind[j]:(ind[j + 1] - 1)
+  ind <- cumsum(c(1, d + 1))
 
-    ind <- cumsum(c(1, d + 1))
-    kappa <- sapply(seq_along(d), function(j) {
+  if (kernel_type == "prod") {
 
-      # Prepare data + fit vMF
-      data <- X[, ind[j]:(ind[j + 1] - 1)]
-      min(DirStats::norm2(movMF::movMF(x = data, k = 1, type = "S",
-                                       maxit = 300)$theta),
-          5e4) # Breaking point for later Bessels
-
-    })
-
-  } else {
-
-    stopifnot(length(kappa) == r)
-
-  }
-
-  # We use that
-  # (h^2)' R h^2 = tr[(h^2)' R h^2]
-  #              = tr[(h^2 (h^2)') R] # tr(AB') = 1' (A o B) 1 = sum(A o B)
-  #              = sum[(h^2 (h^2)') o R]
-  # And then we compute the logarithms inside the sum:
-  # log[(h^2 (h^2)') o R] = log[h^2 (h^2)'] + log(R)
-  # This gives a matrix of logarithms, which is ready to log-sum-exp it.
-  # Therefore,
-  # bias2 = (b o h^2)' R (h^2 o b)
-  #       = (h^2)' [R o (bb')] h^2
-  # log(R o (bb')) = log(R) + log(bb')
-
-  # Common objects
-  log_R_kappa <- curv_vmf_polysph(kappa = kappa, d = d, log = TRUE)
-  b <- b_d(kernel = kernel, d = d, k = k, kernel_type = kernel_type)
-  v <- v_d(kernel = kernel, d = d, k = k, kernel_type = kernel_type)
-  log_bias2 <- log_R_kappa +
-    ifelse(kernel_type == "prod", log(tcrossprod(b)), 2 * log(b[1]))
-  log_var <- sum(log(v)) - log(n)
-
-  # log(exp(log_x) + exp(y))
-  log_sum_exp <- function(x) {
-
-    M <- max(x)
-    M + log(sum(exp(x - M)))
-
-  }
-
-  # AMISE and gradient functions
-  f_log_amise_stable_log_h <- function(log_h) {
-
-    h <- exp(log_h)
-    log_var2 <- log_var - sum(d * log_h)
-    logs <- log(tcrossprod(h^2)) + log_bias2 - log_var2
-    log_obj <- log_var2 + log_sum_exp(x = c(logs, 0))
-    attr(log_obj, "gradient") <-
-      (exp(log(4) + log_bias2 - log_obj + log_h) %*% h^2 -
-         exp(log(d) + log_var2 - log_obj - log_h)) * h
-    return(log_obj)
-
-  }
-  # fn_log_amise_stable <- function(log_h) {
-  #
-  #   log_var2 <- log_var - sum(d * log_h)
-  #   logs <- log(tcrossprod(exp(2 * log_h))) + log_bias2 - log_var2
-  #   log_obj <- log_var2 + log_sum_exp(x = c(logs, 0))
-  #   return(log_obj)
-  #
-  # }
-  # gr_log_amise_stable <- function(log_h) {
-  #
-  #   h <- exp(log_h)
-  #   log_var2 <- log_var - sum(d * log_h)
-  #   logs <- log(tcrossprod(h^2)) + log_bias2 - log_var2
-  #   log_obj <- log_var2 + log_sum_exp(x = c(logs, 0))
-  #   gr <- (exp(log(4) + log_bias2 - log_obj + log_h) %*% h^2 -
-  #     exp(log(d) + log_var2 - log_obj - log_h)) * h
-  #   return(gr)
-  #
-  # }
-
-  # Set initial bandwidths
-  if (is.null(bw0)) {
-
-    # 50% larger ROT bandwidths
-    bw0 <- 1.5 * bw_mrot_polysph(X = X, d = d, kernel = kernel,
-                                 kappa = kappa, upscale = FALSE, deriv = 0)
-
-  }
-
-  # Optimization. Run several starting values?
-  if (is.matrix(bw0) && nrow(bw0) > 1) {
-
-    opt <- apply(bw0, 1, function(bw0_j) {
-
-      nlm(p = log(bw0_j), f = f_log_amise_stable_log_h, ...)
-      # optim(par = log(bw0_j), fn = fn_log_amise_stable,
-      #       gr = gr_log_amise_stable, method = "L-BFGS-B", ...)
-
-    })
-    opt <- opt[[which.min(sapply(opt, function(op) op$minimum))]]
-    bw <- exp(opt$estimate)
-
-  } else {
-
-    opt <- nlm(p = log(bw0), f = f_log_amise_stable_log_h, ...)
-    bw <- exp(opt$estimate)
-
-  }
-
-  # Upscale?
-  if (upscale > 0) {
-
-    n_up <- n^(1 / (d + 4)) * n^(-1 / (d * r + 2 * deriv + 4))
-    if (upscale > 1) {
-
-      stop("Not supported!")
-
+    # Compute max_k X_i,k' X_j,k
+    prods <- matrix(0, nrow = n, ncol = n)
+    for (i in seq_len(n - 1)) {
+      for (j in (i + 1):n) {
+        prods[i, j] <- max(sapply(1:r, function(k) {
+          ind_k <- ind[k]:(ind[k + 1] - 1)
+          1 - sum(X[i, ind_k] * X[j, ind_k])
+        }))
+      }
     }
-    bw <- bw * n_up
+
+    # Symmetrize
+    prods <- prods + t(prods)
+    diag(prods) <- Inf
+
+    # Apply max_i min_{j\neq i}
+    return(sqrt(max(apply(prods, 1, min))))
+
+  } else if (kernel_type == "sph") {
+
+    stop("Not implemented yet.")
+
+  } else {
+
+    stop("kernel_type must be either \"prod\" or \"sph\".")
 
   }
-  return(list("bw" = bw, "opt" = opt))
 
 }
 
@@ -454,6 +541,195 @@ curv_vmf_polysph <- function(kappa, d, log = FALSE) {
 }
 
 
+#' @title Rule-of-thumb bandwidth selection for polyspherical kernel
+#' density estimator
+#'
+#' @description Computes the rule-of-thumb bandwidth for the polyspherical
+#' kernel density estimator using a product of von Mises--Fisher distributions
+#' as reference in the Asymptotic Mean Integrated Squared Error (AMISE).
+#'
+#' @inheritParams kde_polysph
+#' @param bw0 initial bandwidth for minimizing the CV loss. If \code{NULL}, it
+#' is computed internally by magnifying the \code{\link{bw_mrot_polysph}}
+#' bandwidths by 50\%. Can be also a matrix of initial bandwidth vectors.
+#' @param upscale rescale bandwidths to work on
+#' \eqn{\mathcal{S}^{d_1}\times\cdots\times \mathcal{S}^{d_r}} and for
+#' derivative estimation?
+#' Defaults to \code{FALSE}. If \code{upscale = 1}, the order \code{n} is
+#' upscaled. If \code{upscale = 2}, then also the kernel constant is upscaled.
+#' @param deriv derivative order to perform the upscaling. Defaults to \code{0}.
+#' @param kappa estimate of the concentration parameters. Computed if not
+#' provided (default).
+#' @param ... further arguments passed to \code{\link[stats]{nlm}}.
+#' @details The selector assumes that the density curvature matrix
+#' \eqn{\boldsymbol{R}} of the unknown density is approximable by that of a
+#' product of von Mises--Fisher densities,
+#' \eqn{\boldsymbol{R}(\boldsymbol{\kappa})}. The estimation of the
+#' concentration parameters \eqn{\boldsymbol{\kappa}} is done by maximum
+#' likelihood.
+#'
+#' If \code{bw0} is a matrix, then the optimization is started at that row of
+#' bandwidths that is most promising for the optimization, i.e., the bandwidths
+#' that minimized the CV loss.
+#' @return A list with entries \code{bw} (optimal bandwidth) and \code{opt},
+#' the latter containing the output of \code{\link[stats]{nlm}}.
+#' @examples
+#' n <- 100
+#' d <- 1:2
+#' kappa <- rep(10, 2)
+#' X <- r_vmf_polysph(n = n, d = d, mu = r_unif_polysph(n = 1, d = d),
+#'                    kappa = kappa)
+#' bw_rot_polysph(X = X, d = d)$bw
+#' @export
+bw_rot_polysph <- function(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
+                           bw0 = NULL, upscale = FALSE, deriv = 0, k = 10,
+                           kappa = NULL, ...) {
+
+  # Make kernel_type character
+  if (is.numeric(kernel_type)) {
+
+    kernel_type <- switch(kernel_type, "1" = "prod", "2" = "sph",
+                          stop("kernel_type must be 1 or 2."))
+
+  }
+
+  # Check dimensions
+  if (ncol(X) != sum(d + 1)) {
+
+    stop("X and d are incompatible.")
+
+  }
+  n <- nrow(X)
+  r <- length(d)
+
+  # Estimate kappa
+  if (is.null(kappa)) {
+
+    ind <- cumsum(c(1, d + 1))
+    kappa <- sapply(seq_along(d), function(j) {
+
+      # Prepare data + fit vMF
+      data <- X[, ind[j]:(ind[j + 1] - 1)]
+      min(DirStats::norm2(movMF::movMF(x = data, k = 1, type = "S",
+                                       maxit = 300)$theta),
+          5e4) # Breaking point for later Bessels
+
+    })
+
+  } else {
+
+    stopifnot(length(kappa) == r)
+
+  }
+
+  # We use that
+  # (h^2)' R h^2 = tr[(h^2)' R h^2]
+  #              = tr[(h^2 (h^2)') R] # tr(AB') = 1' (A o B) 1 = sum(A o B)
+  #              = sum[(h^2 (h^2)') o R]
+  # And then we compute the logarithms inside the sum:
+  # log[(h^2 (h^2)') o R] = log[h^2 (h^2)'] + log(R)
+  # This gives a matrix of logarithms, which is ready to log-sum-exp it.
+  # Therefore,
+  # bias2 = (b o h^2)' R (h^2 o b)
+  #       = (h^2)' [R o (bb')] h^2
+  # log(R o (bb')) = log(R) + log(bb')
+
+  # Common objects
+  log_R_kappa <- curv_vmf_polysph(kappa = kappa, d = d, log = TRUE)
+  b <- b_d(kernel = kernel, d = d, k = k, kernel_type = kernel_type)
+  v <- v_d(kernel = kernel, d = d, k = k, kernel_type = kernel_type)
+  log_bias2 <- log_R_kappa +
+    ifelse(kernel_type == "prod", log(tcrossprod(b)), 2 * log(b[1]))
+  log_var <- sum(log(v)) - log(n)
+
+  # AMISE and gradient functions
+  f_log_amise_stable_log_h <- function(log_h) {
+
+    h <- exp(log_h)
+    log_var2 <- log_var - sum(d * log_h)
+    logs <- log(tcrossprod(h^2)) + log_bias2 - log_var2
+    log_obj <- log_var2 + log_sum_exp(logs = c(logs, 0))
+    attr(log_obj, "gradient") <-
+      (exp(log(4) + log_bias2 - log_obj + log_h) %*% h^2 -
+         exp(log(d) + log_var2 - log_obj - log_h)) * h
+    return(log_obj)
+
+  }
+  # fn_log_amise_stable <- function(log_h) {
+  #
+  #   log_var2 <- log_var - sum(d * log_h)
+  #   logs <- log(tcrossprod(exp(2 * log_h))) + log_bias2 - log_var2
+  #   log_obj <- log_var2 + log_sum_exp(logs = c(logs, 0))
+  #   return(log_obj)
+  #
+  # }
+  # gr_log_amise_stable <- function(log_h) {
+  #
+  #   h <- exp(log_h)
+  #   log_var2 <- log_var - sum(d * log_h)
+  #   logs <- log(tcrossprod(h^2)) + log_bias2 - log_var2
+  #   log_obj <- log_var2 + log_sum_exp(logs = c(logs, 0))
+  #   gr <- (exp(log(4) + log_bias2 - log_obj + log_h) %*% h^2 -
+  #     exp(log(d) + log_var2 - log_obj - log_h)) * h
+  #   return(gr)
+  #
+  # }
+
+  # Set initial bandwidths
+  if (is.null(bw0)) {
+
+    # 50% larger ROT bandwidths
+    bw0 <- 1.5 * bw_mrot_polysph(X = X, d = d, kernel = kernel,
+                                 kappa = kappa, upscale = FALSE, deriv = 0)
+    bw0 <- rbind(bw0)
+
+  } else {
+
+    bw0 <- rbind(bw0)
+    if (r != ncol(bw0)) {
+
+      stop("bw0 and d are incompatible.")
+
+    }
+
+  }
+
+  # Find the best starting bandwidths to run the optimization on it
+  if (nrow(bw0) > 1) {
+
+    ind_best <- which.min(apply(log(bw0), 1, f_log_amise_stable_log_h))
+    bw0 <- bw0[ind_best, ]
+
+  }
+  if (!is.null(list(...)$print.level) && list(...)$print.level > 0) {
+
+    message("bw0 = ", bw0)
+
+  }
+
+  # Optimization
+  opt <- nlm(p = log(bw0), f = f_log_amise_stable_log_h, ...)
+  # opt <- optim(par = log(bw0), fn = fn_log_amise_stable,
+  #              gr = gr_log_amise_stable, method = "L-BFGS-B", ...)
+  bw <- exp(opt$estimate)
+
+  # Upscale?
+  if (upscale > 0) {
+
+    n_up <- n^(1 / (d + 4)) * n^(-1 / (d * r + 2 * deriv + 4))
+    if (upscale > 1) {
+
+      stop("Not supported!")
+
+    }
+    bw <- bw * n_up
+
+  }
+  return(list("bw" = unname(bw), "opt" = opt))
+
+}
+
+
 #' @title Marginal rule-of-thumb bandwidth selection for polyspherical kernel
 #' density estimator
 #'
@@ -474,7 +750,7 @@ curv_vmf_polysph <- function(kappa, d, log = FALSE) {
 #' bw_mrot_polysph(X = X, d = d)
 #' @export
 bw_mrot_polysph <- function(X, d, kernel = 1, k = 10, upscale = FALSE,
-                            deriv = 0, kappa = NULL, ...) {
+                            deriv = 0, kappa = NULL) {
 
   # Check dimensions
   if (ncol(X) != sum(d + 1)) {
@@ -521,7 +797,7 @@ bw_mrot_polysph <- function(X, d, kernel = 1, k = 10, upscale = FALSE,
 
     } else {
 
-      stop("\"kernel\" must be 1, 2, or 3.")
+      stop("kernel must be 1, 2, or 3.")
 
     }
 
@@ -566,77 +842,5 @@ bw_mrot_polysph <- function(X, d, kernel = 1, k = 10, upscale = FALSE,
 
   }
   return(bw)
-
-}
-
-
-#' @title Minimum bandwidth allowed in likelihood cross-validation for
-#' Epanechnikov kernels
-#'
-#' @description This function computes the minimum bandwidth allowed in
-#' likelihood cross-validation with Epanechnikov kernels, for a given dataset
-#' and dimension.
-#'
-#' @inheritParams bw_cv_polysph
-#' @return The minimum bandwidth allowed.
-#' @examples
-#' n <- 5
-#' d <- 1:3
-#' X <- r_unif_polysph(n = n, d = d)
-#' h_min <- rep(bw_lcv_min_epa(X = X, d = d), length(d))
-#' log_cv_kde_polysph(X = X, d = d, h = h_min - 1e-4, kernel = 2) # Problem
-#' log_cv_kde_polysph(X = X, d = d, h = h_min + 1e-4, kernel = 2) # OK
-#' @export
-bw_lcv_min_epa <- function(X, d, kernel_type = c("prod", "sph")[1]) {
-
-  # Make kernel_type character
-  if (is.numeric(kernel_type)) {
-
-    kernel_type <- switch(kernel_type, "1" = "prod", "2" = "sph",
-                          stop("\"kernel_type\" must be 1 or 2."))
-
-  }
-
-  # Check dimensions
-  if (ncol(X) != sum(d + 1)) {
-
-    stop("X and d are incompatible.")
-
-  }
-  n <- nrow(X)
-  r <- length(d)
-
-  # Index for accessing each S^dj with ind[j]:(ind[j + 1] - 1)
-  ind <- cumsum(c(1, d + 1))
-
-  if (kernel_type == "prod") {
-
-    # Compute max_k X_i,k' X_j,k
-    prods <- matrix(0, nrow = n, ncol = n)
-    for (i in seq_len(n - 1)) {
-      for (j in (i + 1):n) {
-        prods[i, j] <- max(sapply(1:r, function(k) {
-          ind_k <- ind[k]:(ind[k + 1] - 1)
-          1 - sum(X[i, ind_k] * X[j, ind_k])
-        }))
-      }
-    }
-
-    # Symmetrize
-    prods <- prods + t(prods)
-    diag(prods) <- Inf
-
-    # Apply max_i min_{j\neq i}
-    return(sqrt(max(apply(prods, 1, min))))
-
-  } else if (kernel_type == "sph") {
-
-    stop("Not implemented yet.")
-
-  } else {
-
-    stop("\"kernel_type\" must be either \"prod\" or \"sph\".")
-
-  }
 
 }

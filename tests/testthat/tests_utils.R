@@ -80,7 +80,7 @@ test_that("dist_polysph_cross() equals dist_polysph()", {
     tolerance = 1e-6)
 })
 
-## diamond_crossprod()
+## diamond_crossprod() and diamond_rcrossprod()
 
 # Randomize testing
 r <- 2
@@ -97,6 +97,15 @@ test_that("Simple case in diamond_crossprod()", {
             cbind(tcrossprod(X[i, 4:7], X[i, 1:3]), tcrossprod(X[i, 4:7])))
       )
   }
+})
+
+test_that("Simple case in diamond_rcrossprod()", {
+  expect_equal(
+    diamond_rcrossprod(X = X, ind_dj = ind_dj)[, , 1],
+    tcrossprod(X[, 1:3]))
+  expect_equal(
+    diamond_rcrossprod(X = X, ind_dj = ind_dj)[, , 2],
+    tcrossprod(X[, 4:7]))
 })
 
 ## s()
@@ -151,4 +160,72 @@ test_that("polylog_minus_exp_mu() is smooth on half arguments", {
                  polylog_minus_exp_mu(s = s + 1e-6, mu = k),
                  tolerance = 1e-5)
   }
+})
+test_that("polylog_minus_exp_mu() edge cases", {
+  expect_equal(polylog_minus_exp_mu(s = c(0.5, 1.5), mu = 1),
+               c(polylog_minus_exp_mu(s = 0.5, mu = 1),
+                 polylog_minus_exp_mu(s = 1.5, mu = 1)))
+  expect_error(polylog_minus_exp_mu(s = 1:3, mu = 1:2))
+})
+
+## log_besselI_scaled()
+
+test_that("Accuracy of log_besselI_scaled(nu = seq(0, 6, by = 0.5)) with
+          spline approximations", {
+  x <- seq(1e-8, 1e4, l = 1e3)
+  nus <- seq(0, 6, by = 0.5)
+  for (nu in nus) {
+    expect_equal(
+      polykde:::log_besselI_scaled(nu = nu, x = x, spline = TRUE),
+      polykde:::log_besselI_scaled(nu = nu, x = x, spline = FALSE),
+      tolerance = 1e-9)
+  }
+})
+
+test_that("Accuracy of log_besselI_scaled(nu = seq(0, 6, by = 0.5)) with
+          asymptotic approximations", {
+  x <- seq(1e4, 1e5, l = 100)
+  nus <- seq(0, 10, by = 1)
+  for (nu in nus) {
+    expect_equal(
+      polykde:::log_besselI_scaled(nu = nu, x = x, spline = TRUE),
+      polykde:::log_besselI_scaled(nu = nu, x = x, spline = FALSE),
+      tolerance = 1e-9)
+  }
+})
+
+test_that("Edge cases of log_besselI_scaled()", {
+  expect_error(log_besselI_scaled(nu = 10, x = 0, spline = TRUE))
+  expect_error(log_besselI_scaled(nu = 1:3, x = 0, spline = TRUE))
+})
+
+test_that("Asymptotic Bessel approximation", {
+  paper_asymp <- function(x, d) {
+    log1p(-d * (d - 2) / (8 * x)) - log(2 * pi * x) / 2
+  }
+  Bessel_asymp <- function(x, d) {
+    Bessel::besselIasym(x = x, nu = (d - 1) / 2, expon.scaled = TRUE,
+                        log = TRUE, k.max = 1)
+  }
+  for (d in 1:10) {
+    expect_equal(paper_asymp(x = c(50:100, 1e4, 1e5), d = d),
+                 Bessel_asymp(x = c(50:100, 1e4, 1e5), d = d))
+  }
+})
+
+
+test_that("log_besselI_scaled() with NAs", {
+  x <- c(1, 2, NA, 1e5)
+  expect_equal(log_besselI_scaled(nu = 1, x = x, spline = TRUE),
+               log_besselI_scaled(nu = 1, x = x, spline = FALSE))
+  expect_equal(log_besselI_scaled(nu = 5.5, x = x, spline = TRUE),
+               log_besselI_scaled(nu = 5.5, x = x, spline = FALSE))
+})
+
+## log_sum_exp()
+
+test_that("log_sum_exp() is correct", {
+  x <- c(1, 2, 3)
+  expect_equal(log_sum_exp(logs = x), log(sum(exp(x))))
+  expect_equal(log_sum_exp(logs = x, avg = TRUE), log(mean(exp(x))))
 })

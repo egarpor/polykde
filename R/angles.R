@@ -54,7 +54,7 @@ torus_to_angles <- function(x) {
   p <- ncol(x)
   if (p %% 2) {
 
-    stop("The dimension is not even")
+    stop("The dimension is not even.")
 
   }
 
@@ -68,14 +68,14 @@ torus_to_angles <- function(x) {
 
 
 #' @title Conversion between the angular and Cartesian coordinates of the
-#' hypersphere
+#' (hyper)sphere
 #'
 #' @description Transforms the angles \eqn{(\theta_1,\ldots,\theta_d)} in
 #' \eqn{[0,\pi)^{d-1}\times[-\pi,\pi)} into the Cartesian coordinates
 #' \deqn{(\cos(x_1),\sin(x_1)\cos(x_2),\ldots,
 #' \sin(x_1)\cdots\sin(x_{d-1})\cos(x_d),
 #' \sin(x_1)\cdots\sin(x_{d-1})\sin(x_d))}
-#' of the hypersphere \eqn{\mathcal{S}^{d}}, and vice versa.
+#' of the sphere \eqn{\mathcal{S}^{d}}, and vice versa.
 #'
 #' @param theta matrix of size \code{c(n, d)} with the angles.
 #' @param x matrix of size \code{c(n, d + 1)} with the Cartesian coordinates

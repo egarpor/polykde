@@ -83,17 +83,17 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
   arma::uword p = X.n_cols;
   if (p != x.n_cols) {
 
-    Rcpp::stop("Dimension of X mismatches with x.");
-
-  }
-  if (r != h.n_elem) {
-
-    Rcpp::stop("Size of h mismatches with d.");
+    Rcpp::stop("Dimensions of X and x mismatch.");
 
   }
   if (p != arma::accu(d + 1)) {
 
     Rcpp::stop("Dimension of X mismatches with d.");
+
+  }
+  if (r != h.n_elem) {
+
+    Rcpp::stop("Size of h mismatches with d.");
 
   }
 
@@ -209,7 +209,7 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
 
       } else {
 
-        Rcpp::stop("\"kernel_type\" must be 1 (product kernel) or 2 (spherically symmetric kernel");
+        Rcpp::stop("kernel must be 1, 2, or 3.");
 
       }
 
@@ -418,14 +418,14 @@ arma::vec log_cv_kde_polysph(arma::mat X, arma::uvec d, arma::vec h,
 
   // Dimensions
   arma::uword p = X.n_cols;
-  if (r != h.n_elem) {
-
-    Rcpp::stop("Size of h mismatches with d.");
-
-  }
   if (p != arma::accu(d + 1)) {
 
     Rcpp::stop("Dimension of X mismatches with d.");
+
+  }
+  if (r != h.n_elem) {
+
+    Rcpp::stop("Size of h mismatches with d.");
 
   }
 

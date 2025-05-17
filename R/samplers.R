@@ -179,7 +179,7 @@ r_vmf_polysph <- function(n, d, mu, kappa, norm_mu = FALSE) {
 #' }
 #' @export
 r_kern_polysph <- function(n, d, mu, h, kernel = 1, kernel_type = 1, k = 10,
-                           norm_mu = FALSE) {
+                           intrinsic = FALSE, norm_mu = FALSE) {
 
   # Check dimensions
   r <- length(h)
@@ -206,6 +206,13 @@ r_kern_polysph <- function(n, d, mu, h, kernel = 1, kernel_type = 1, k = 10,
       mu[ind_j] <- mu[ind_j] / sqrt(sum(mu[ind_j]^2))
 
     }
+
+  }
+
+  # Stop if intrinsic
+  if (intrinsic) {
+
+   stop("Sampling for intrisic kernels is not implemented yet.")
 
   }
 
@@ -322,7 +329,7 @@ r_kern_polysph <- function(n, d, mu, h, kernel = 1, kernel_type = 1, k = 10,
 #'               cex = 0.2)
 #' @export
 r_kde_polysph <- function(n, X, d, h, kernel = 1, kernel_type = 1, k = 10,
-                          norm_X = FALSE) {
+                          intrinsic = FALSE, norm_X = FALSE) {
 
   # Check dimensions
   r <- length(h)
@@ -361,7 +368,7 @@ r_kde_polysph <- function(n, X, d, h, kernel = 1, kernel_type = 1, k = 10,
     r_kern_polysph(n = ns$lengths[j], d = d, mu = X[ns$values[j], ,
                                                     drop = TRUE],
                    h = h, kernel = kernel, kernel_type = kernel_type, k = k,
-                   norm_mu = FALSE),
+                   intrinsic = intrinsic, norm_mu = FALSE),
     simplify = FALSE)))
 
   # Randomly permute

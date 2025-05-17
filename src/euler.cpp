@@ -50,7 +50,7 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
 //' to initiate the ridge path. The function \code{euler_ridge_parallel}
 //' parallelizes on the starting values \code{x}. The function
 //' \code{euler_ridge_block} runs the Euler algorithm marginally in blocks
-//' of hyperspheres, instead of jointly in the whole polysphere. This function
+//' of spheres, instead of jointly in the whole polysphere. This function
 //' requires that all the dimensions are the same.
 //' @return The three functions return a list with the following fields:
 //' \item{ridge_y}{a matrix of size \code{c(nx, sum(d) + r)} with the end
@@ -130,17 +130,17 @@ Rcpp::List euler_ridge(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
   arma::uword p = X.n_cols;
   if (p != x.n_cols) {
 
-    Rcpp::stop("Dimension of X mismatches with x.");
-
-  }
-  if (r != h.n_elem) {
-
-    Rcpp::stop("Size of h mismatches with d.");
+    Rcpp::stop("Dimensions of X and x mismatch.");
 
   }
   if (p != arma::accu(d + 1)) {
 
     Rcpp::stop("Dimension of X mismatches with d.");
+
+  }
+  if (r != h.n_elem) {
+
+    Rcpp::stop("Size of h mismatches with d.");
 
   }
 
