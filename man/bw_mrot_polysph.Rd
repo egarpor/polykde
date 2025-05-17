@@ -6,7 +6,7 @@
 density estimator}
 \usage{
 bw_mrot_polysph(X, d, kernel = 1, k = 10, upscale = FALSE, deriv = 0,
-  kappa = NULL, ...)
+  kappa = NULL)
 }
 \arguments{
 \item{X}{a matrix of size \code{c(n, sum(d) + r)} with the sample.}
@@ -28,8 +28,6 @@ upscaled. If \code{upscale = 2}, then also the kernel constant is upscaled.}
 
 \item{kappa}{estimate of the concentration parameters. Computed if not
 provided (default).}
-
-\item{...}{further arguments passed to \code{\link[stats]{nlm}}.}
 }
 \value{
 A vector of size \code{r} with the marginal optimal bandwidths.

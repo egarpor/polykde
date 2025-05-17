@@ -29,7 +29,7 @@
 #' to initiate the ridge path. The function \code{euler_ridge_parallel}
 #' parallelizes on the starting values \code{x}. The function
 #' \code{euler_ridge_block} runs the Euler algorithm marginally in blocks
-#' of hyperspheres, instead of jointly in the whole polysphere. This function
+#' of spheres, instead of jointly in the whole polysphere. This function
 #' requires that all the dimensions are the same.
 #' @return The three functions return a list with the following fields:
 #' \item{ridge_y}{a matrix of size \code{c(nx, sum(d) + r)} with the end
@@ -323,24 +323,43 @@ dist_polysph_cross <- function(x, y, ind_dj, norm_x = FALSE, norm_y = FALSE, std
     .Call(`_polykde_dist_polysph_cross`, x, y, ind_dj, norm_x, norm_y, std)
 }
 
-#' @title Diamond cross-product
+#' @title Diamond cross-products
 #'
-#' @description Given a matrix \eqn{\boldsymbol{X}} whose \eqn{n} rows are on a
-#' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}},
-#' the function computes the cube whose rows are
-#' \eqn{\boldsymbol{X}_i \diamond \boldsymbol{X}_i'}, \eqn{i = 1, \ldots, n},
-#' and \eqn{\diamond} is a block-by-block product.
+#' @description Given a matrix \eqn{\boldsymbol{X}} whose \eqn{n} rows are on
+#' a polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}
+#' \subset \mathbb{R}^p,}:
+#' \itemize{
+#' \item{\code{diamond_crossprod} computes the \eqn{n\times p\times p} cube
+#' whose rows are \eqn{\boldsymbol{X}_i \diamond \boldsymbol{X}_i'},
+#' \eqn{i = 1, \ldots, n}, and \eqn{\diamond} is a block-by-block product.}
+#' \item{\code{diamond_rcrossprod} computes the \eqn{n\times n\times r} cube
+#' formed by \eqn{(\boldsymbol{X}_{ik}' \boldsymbol{X}_{jk})_{ijk}},
+#' \eqn{k = 1, \ldots, r}.}
+#' }
 #'
 #' @inheritParams kde_polysph
 #' @inheritParams proj_polysph
-#' @return An array of size \code{c(nrow(X), ncol(X), ncol(X))}.
+#' @return
+#' \itemize{
+#' \item{\code{diamond_crossprod}: an array of size \code{c(nrow(X), ncol(X),
+#'  ncol(X))}.}
+#' \item{\code{diamond_rcrossprod}: an array of size \code{c(nrow(X), nrow(X),
+#' r)}.}
+#' }
 #' @examples
 #' d <- c(1, 2)
 #' X <- r_unif_polysph(n = 2, d = d)
 #' polykde:::diamond_crossprod(X = X, ind_dj = comp_ind_dj(d))
+#' polykde:::diamond_rcrossprod(X = X, ind_dj = comp_ind_dj(d))
 #' @noRd
 diamond_crossprod <- function(X, ind_dj) {
     .Call(`_polykde_diamond_crossprod`, X, ind_dj)
+}
+
+#' @name diamond_crossprod
+#' @noRd
+diamond_rcrossprod <- function(X, ind_dj) {
+    .Call(`_polykde_diamond_rcrossprod`, X, ind_dj)
 }
 
 #' @title Symmetrize a matrix

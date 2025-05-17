@@ -88,17 +88,17 @@ Rcpp::List grad_hess_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
   arma::uword p = X.n_cols;
   if (p != x.n_cols) {
 
-    Rcpp::stop("Dimension of X mismatches with x.");
-
-  }
-  if (r != h.n_elem) {
-
-    Rcpp::stop("Size of h mismatches with d.");
+    Rcpp::stop("Dimensions of X and x mismatch.");
 
   }
   if (p != arma::accu(d + 1)) {
 
     Rcpp::stop("Dimension of X mismatches with d.");
+
+  }
+  if (r != h.n_elem) {
+
+    Rcpp::stop("Size of h mismatches with d.");
 
   }
 
@@ -200,7 +200,7 @@ Rcpp::List grad_hess_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
 
     } else {
 
-      Rcpp::stop("Unsupported combination of (\"kernel\", \"kernel_type\"). Only these are available: (1, 1), (2, 1), (3, 1), (1, 2). Consider computing the estimator unnormalized?");
+      Rcpp::stop("Unsupported combination of (kernel, kernel_type). Only these are available: (1, 1), (2, 1), (3, 1), (1, 2). Consider computing the estimator unnormalized?");
 
     }
 

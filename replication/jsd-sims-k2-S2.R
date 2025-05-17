@@ -245,7 +245,7 @@ progressr::with_progress({
                         F_inv_kappa2 = F_inv_kappa2)$X)
     h_rot[i] <- bw_rot_polysph(X = X, d = d)$bw
     h_cv[i] <- bw_cv_polysph(X = X, d = d, method = "L-BFGS-B",
-                             bw0 = h_rot[i])$par
+                             bw0 = h_rot[i])$bw
     prog()
 
   }

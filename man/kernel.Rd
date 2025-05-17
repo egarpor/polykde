@@ -6,7 +6,7 @@
 \alias{c_kern}
 \alias{grad_L}
 \alias{hess_L}
-\title{Kernels on the hypersphere and their derivatives}
+\title{Kernels on the sphere and their derivatives}
 \usage{
 L(t, kernel = "1", squared = FALSE, deriv = 0, k = 10,
   inc_sfp = TRUE)

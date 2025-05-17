@@ -14,7 +14,7 @@ b_d(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...)
 v_d(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...)
 }
 \arguments{
-\item{d}{a scalar with the common dimension of each hypersphere
+\item{d}{a scalar with the common dimension of each sphere
 \eqn{\mathcal{S}^d}.}
 
 \item{r}{a scalar with the number of polyspheres of the same dimension.}
@@ -39,7 +39,7 @@ default).}
 }
 \value{
 \itemize{
-\item{\code{b_d}: a vector with the first kernel moment on each hypersphere
+\item{\code{b_d}: a vector with the first kernel moment on each sphere
 (common if \code{kernel_type = "sph"}).}
 \item{\code{v_d}: a vector with the second kernel moment if
 \code{kernel_type = "prod"}, or a scalar if \code{kernel_type = "sph"}.}

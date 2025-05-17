@@ -225,7 +225,7 @@ test_that("Tests do not reject H_0 when it is true", {
   X_2 <- r_vmf_polysph(n = n, mu = mu, d = d, kappa = kappa)
   pval_jsd <- hom_test_polysph(X = rbind(X_1, X_2), d = d,
                                labels = rep(1:2, each = n), type = "jsd",
-                               h = h, B = B)$p.value
+                               h = h, B = B, seed_jsd = 1)$p.value
   pval_mea <- hom_test_polysph(X = rbind(X_1, X_2), d = d,
                                labels = rep(1:2, each = n), type = "mean",
                                B = B)$p.value
@@ -257,7 +257,7 @@ test_that("Tests reject H_0 when it is false", {
   X_2 <- r_vmf_polysph(n = n, mu = mu2, d = d, kappa = kappa2)
   pval_jsd <- hom_test_polysph(X = rbind(X_1, X_2), d = d,
                                labels = rep(1:2, each = n), type = "jsd",
-                               h = h, B = B)$p.value
+                               h = h, B = B, seed_jsd = 1)$p.value
   pval_mea <- hom_test_polysph(X = rbind(X_1, X_2), d = d,
                                labels = rep(1:2, each = n), type = "mean",
                                B = B)$p.value
@@ -272,5 +272,19 @@ test_that("Tests reject H_0 when it is false", {
   expect_lt(pval_mea, 0.05)
   expect_lt(pval_sca, 0.05)
   expect_lt(pval_hel, 0.05)
+
+})
+
+## Others
+
+test_that("Edge cases hom_test_polysph()", {
+
+  expect_no_error(hom_test_polysph(X = X, d = d, labels = labels,
+                                   type = "jsd", B = 10, M = M,
+                                   plot_boot = TRUE))
+  expect_error(hom_test_polysph(X = X, d = d, labels = labels,
+                                type = "wrong", B = 1, M = M))
+  expect_error(hom_test_polysph(X = X, d = d, labels = labels,
+                                type = "jsd", h = 0 * d, B = 1, M = M))
 
 })

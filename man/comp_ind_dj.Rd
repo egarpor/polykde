@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{comp_ind_dj}
 \alias{comp_ind_dj}
-\title{Index of hyperspheres on a polysphere}
+\title{Index of spheres on a polysphere}
 \usage{
 comp_ind_dj(d)
 }
@@ -15,7 +15,7 @@ A vector of size \code{sum(d) + 1}.
 \description{
 Given Cartesian coordinates of polyspherical data, computes
 the \code{0}-based indexes at which the Cartesian coordinates for each
-hypersphere start and end.
+sphere start and end.
 }
 \examples{
 # Example on (S^1)^3

@@ -21,7 +21,7 @@ bw_rot_polysph(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
 
 \item{bw0}{initial bandwidth for minimizing the CV loss. If \code{NULL}, it
 is computed internally by magnifying the \code{\link{bw_mrot_polysph}}
-bandwidths by 50\%.}
+bandwidths by 50\%. Can be also a matrix of initial bandwidth vectors.}
 
 \item{upscale}{rescale bandwidths to work on
 \eqn{\mathcal{S}^{d_1}\times\cdots\times \mathcal{S}^{d_r}} and for
@@ -54,6 +54,10 @@ product of von Mises--Fisher densities,
 \eqn{\boldsymbol{R}(\boldsymbol{\kappa})}. The estimation of the
 concentration parameters \eqn{\boldsymbol{\kappa}} is done by maximum
 likelihood.
+
+If \code{bw0} is a matrix, then the optimization is started at that row of
+bandwidths that is most promising for the optimization, i.e., the bandwidths
+that minimized the CV loss.
 }
 \examples{
 n <- 100

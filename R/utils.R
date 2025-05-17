@@ -45,11 +45,11 @@ dist_polysph_matrix <- function(x, ind_dj, norm_x = FALSE, norm_y = FALSE,
 }
 
 
-#' @title Index of hyperspheres on a polysphere
+#' @title Index of spheres on a polysphere
 #'
 #' @description Given Cartesian coordinates of polyspherical data, computes
 #' the \code{0}-based indexes at which the Cartesian coordinates for each
-#' hypersphere start and end.
+#' sphere start and end.
 #'
 #' @inheritParams kde_polysph
 #' @return A vector of size \code{sum(d) + 1}.
@@ -220,5 +220,104 @@ J_d_k <- function(d, k = 10, upper = Inf, ...) {
     integrate(function(t)
       exp(2 * log(log1p(exp(k * (1 - t)))) + (di / 2 - 1) * log(t)),
       lower = 0, upper = upper, ...)$value)
+
+}
+
+
+#' @title Fast evaluation of \eqn{\log(e^{-x} \mathcal{I}_{\nu}(x))}
+#'
+#' @description Computes a fast approximation of the logarithm of the scaled
+#' modified Bessel function of the first kind for orders \eqn{\nu = 0, 0.5,
+#' 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5.5, 6} using spline interpolation.
+#'
+#' @param nu a scalar with the order of the Bessel function.
+#' @param x vector with evaluation points for the Bessel function.
+#' @param spline if \code{TRUE}, uses spline interpolation for the values of
+#' the Bessel function. Otherwise, calls the \code{\link{besselI}} function.
+#' For \code{x} larger than \code{1e4}, an asymptotic approximation with
+#' \code{\link[Bessel]{besselIasym}} is used. Defaults to \code{FALSE}.
+#' @details The approximation is based on interpolating the values of the Bessel
+#' function with a spline.
+#' @return A vector of size \code{length(x)} with the evaluated function.
+#' @examples
+#' curve(polykde:::log_besselI_scaled(nu = 0.5, x = x, spline = TRUE),
+#'       from = 0.01, to = 10, n = 200)
+#' curve(polykde:::log_besselI_scaled(nu = 0.5, x = x, spline = FALSE),
+#'       n = 200, add = TRUE, col = 2)
+#' @noRd
+log_besselI_scaled <- function(nu, x, spline = FALSE) {
+
+  # Any NAs?
+  res <- rep(NA, length(x))
+  x_na <- is.na(x)
+  x <- x[!x_na]
+
+  # Needed an asymptotic interpolation?
+  ind_asymp <- x >= 10000
+  all_asymp <- all(ind_asymp)
+  any_asymp <- all_asymp || any(ind_asymp)
+
+  # Spline interpolation and asymptotic approximation
+  if (spline) {
+
+    if (length(nu) != 1) {
+
+      stop("nu must be of length 1 if spline = TRUE.")
+
+    }
+
+    # Any spline interpolation?
+    if (!all_asymp) {
+
+      if (!(nu %in% seq(0, 6.0, by = 0.5))) {
+
+        stop(paste("nu =", nu, "must be",
+                   paste(seq(0, 6.0, by = 0.5), collapse = ", "),
+                   "if spline = TRUE."))
+
+      }
+
+      # Call spline approximation
+      res[!x_na] <- get(paste0("log_besselI_scaled_spline_",
+                               sprintf("%02d", 10 * nu)))(x)
+
+    }
+
+    # Asymptotic approximation
+    if (any_asymp) {
+
+      res[!x_na][ind_asymp] <- Bessel::besselIasym(x = x[ind_asymp], nu = nu,
+                                                   expon.scaled = TRUE,
+                                                   log = TRUE)
+
+    }
+
+  } else {
+
+    res[!x_na] <- log(besselI(x = x, nu = nu, expon.scaled = TRUE))
+
+  }
+  return(res)
+
+}
+
+
+#' @title Stable evaluation of \eqn{\log(\sum_{i=1}^n e^{x_i})}
+#'
+#' @description Computes \eqn{\log(\sum_{i=1}^n e^{x_i})} using the "LogSumExp
+#' trick".
+#'
+#' @param logs vector with \eqn{x_i} values.
+#' @param avg replace the sum by the average? Defaults to \code{FALSE}.
+#' @return A vector of size \code{length(x)} with the evaluated function.
+#' @examples
+#' logs <- c(1e5, 1)
+#' log(sum(exp(logs)))
+#' polykde:::log_sum_exp(logs)
+#' @noRd
+log_sum_exp <- function(logs, avg = FALSE) {
+
+  logs_M <- max(logs)
+  return(logs_M + log(sum(exp(logs - logs_M))) - avg * log(length(logs)))
 
 }

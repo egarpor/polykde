@@ -34,7 +34,6 @@ kre_polysph <- function(x, X, Y, d, h, p = 0) {
   stopifnot(is.matrix(Y))
   stopifnot(length(X) == nrow(Y))
   stopifnot(sum(d + 1) == ncol(Y))
-  stopifnot(p == 0 || p == 1)
 
   # Log-kernel weights
   nx <- length(x)
@@ -55,7 +54,7 @@ kre_polysph <- function(x, X, Y, d, h, p = 0) {
     # Weighted means
     Y_hat <- W %*% Y
 
-  } else {
+  } else if (p == 1) {
 
     Y_hat <- matrix(nrow = nx, ncol = ncol(Y))
     for (j in seq_len(nx)) {
@@ -64,6 +63,10 @@ kre_polysph <- function(x, X, Y, d, h, p = 0) {
                             w = W[j, ])$coefficients[1, ]
 
     }
+
+  } else {
+
+    stop("p must be either 0 or 1.")
 
   }
 
@@ -139,7 +142,7 @@ bw_cv_kre_polysph <- function(X, Y, d, p = 0, h_grid = bw.nrd(X) *
 
     } else {
 
-      stop("Not implemented yet")
+      stop("Not implemented yet.")
 
     }
 

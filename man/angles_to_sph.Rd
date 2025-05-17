@@ -4,7 +4,7 @@
 \alias{angles_to_sph}
 \alias{sph_to_angles}
 \title{Conversion between the angular and Cartesian coordinates of the
-hypersphere}
+(hyper)sphere}
 \usage{
 angles_to_sph(theta)
 
@@ -28,7 +28,7 @@ Transforms the angles \eqn{(\theta_1,\ldots,\theta_d)} in
 \deqn{(\cos(x_1),\sin(x_1)\cos(x_2),\ldots,
 \sin(x_1)\cdots\sin(x_{d-1})\cos(x_d),
 \sin(x_1)\cdots\sin(x_{d-1})\sin(x_d))}
-of the hypersphere \eqn{\mathcal{S}^{d}}, and vice versa.
+of the sphere \eqn{\mathcal{S}^{d}}, and vice versa.
 }
 \examples{
 # Check changes of coordinates
