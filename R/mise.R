@@ -1,5 +1,4 @@
 
-
 #' @title Computation of the exact MISE for the polyspherical kernel density
 #' estimator with von Mises--Fisher kernel for mixtures of von Mises--Fisher
 #' distributions
