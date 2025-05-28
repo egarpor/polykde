@@ -235,3 +235,40 @@ polysph_to_angles <- function(x, d) {
   return(theta)
 
 }
+
+
+#' @title Fibonacci lattice on the sphere
+#'
+#' @description Computes the Fibonacci lattice on the sphere \eqn{\mathcal{S}^2}
+#' to produce pseudo-equispaced points.
+#' @param n number of points to be produced.
+#' @return A matrix of size \code{c(n, 3)} with the spherical coordinates.
+#' @examples
+#' fib_latt(n = 10)
+#' @noRd
+fib_latt <- function(n) {
+
+  # Check https://extremelearning.com.au/how-to-evenly-distribute-points-on-a-
+  # sphere-more-effectively-than-the-canonical-fibonacci-lattice/
+  phi <- (1 + sqrt(5)) / 2
+  i <- 0:(n - 1)
+  theta <- 2 * pi * i / phi
+  phi <- acos(1 - 2 * (i + 0.5) / n)
+  return(angles_to_sph(cbind(phi, theta)))
+
+}
+
+
+#' @noRd
+sph_to_hammer <- function(x) {
+
+  stopifnot(ncol(x) == 3)
+  phi_theta <- sph_to_angles(x[, 3:1])
+  # 3:1 because sph_to_angles() has the spherical coordinates in reverse order
+  phi <- pi/2 - phi_theta[, 1] # Latitude, in [-pi/2, pi/2]
+  lambda <- phi_theta[, 2] - pi # Longitude, in [-pi, pi]
+  x <- 2 * sqrt(2) * cos(phi) * sin(lambda / 2)
+  y <- sqrt(2) * sin(phi)
+  cbind(x, y) / sqrt(1 + cos(phi) * cos(lambda / 2))
+
+}
