@@ -108,7 +108,7 @@ for (r in 1:2) {
   dev.off()
 }
 
-## Efficiency tables (Table 1 in Section B.3 of the SM)
+## Efficiency tables (Table 1 in the SM)
 
 dd <- c(1, 2, 3, 5, 10)
 rr <- c(1, 2, 3, 5, 10)
