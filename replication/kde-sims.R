@@ -1,6 +1,6 @@
 
 # This script reproduces Figures 5-8 in the SM. The "Simulation" block runs the
-# simulations (time-consuming, can be parallelized), and the "Analysis" block
+# simulations (parallelized and time-consuming), and the "Analysis" block
 # generates the figures. Faster outputs can be obtained by reducing M = 1e5 to
 # a smaller value, e.g., M = 1e3.
 
