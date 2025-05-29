@@ -1,8 +1,11 @@
 
-## Functions
+# This script reproduces Figures 9a-9c and 10a-10h in the SM. Comment/uncomment
+# "type" to run different tests ("jsd"/"mean"/"scatter"). The "Simulation" block
+# runs the simulations (parallelized and time-consuming), and the "Analysis"
+# block generates the figures. Faster outputs can be obtained by reducing
+# M = 1e4 to a smaller value, e.g., M = 5e2.
 
-# Set wd
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+## Functions
 
 # Required libraries
 library(foreach)
@@ -325,6 +328,8 @@ pow_ws <- t(sapply(alphas, function(alph, two = FALSE) {
   }
 }))
 rownames(pow_ws) <- alphas
+
+## Analysis
 
 # Plots
 for (type in c("jsd", "mean", "scatter")) {
