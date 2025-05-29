@@ -20,7 +20,8 @@ handlers(handler_progress(
   clear = FALSE))
 
 # Load data
-load("spokes.rda")
+data("hippocampus", package = "polykde")
+attach(hippocampus)
 
 # Data transformation. dirs is an array c(n = 177, r = 168, d = 2 + 1).
 # We need to transform it to the c(n, sum(d) + r) format that concatenates
