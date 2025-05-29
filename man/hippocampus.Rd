@@ -41,7 +41,7 @@ later developed autism.
 data("hippocampus")
 attach(hippocampus)
 
-# View ith hippocampi
+# View ith hippocampus s-rep
 i <- 50
 view_srep(base = base[i, , ], dirs = dirs[i, , ], bdry = bdry[i, , ])
 }
