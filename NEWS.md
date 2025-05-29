@@ -12,5 +12,5 @@
 
 # polykde 1.1.4
 
-* Add hippocampus dataset to give reproducibility to García-Portugués and
+* Add hippocampus dataset to give replicability to García-Portugués and
   Meilán-Vila (2024) (doi:10.48550/arXiv.2411.04166).

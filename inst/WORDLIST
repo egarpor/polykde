@@ -1,3 +1,4 @@
+al
 approximable
 affine
 AMISE
@@ -11,16 +12,19 @@ eigendecomposition
 entrywise
 Epa
 Epanechnikov
+et
 doi
 García
 GPLv
 GSL
 Hellinger
+hippocampi
 hypersphere
 hyperspheres
 kde
 Larriba
 LCV
+Liu
 LogSumExp
 LSCV
 MDS
@@ -30,6 +34,7 @@ Mises
 Nadaraya
 parametrizes
 parallelizes
+Pizer
 polylogarithm
 Polylogarithm
 polysphere
@@ -44,7 +49,10 @@ SIER
 softplus
 Springer
 Symmetrize
+unbranching
 upscaled
 upscaling
+Vicory
 vMF
 von
+Zhiyuan
