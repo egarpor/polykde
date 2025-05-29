@@ -9,4 +9,3 @@
 
 ## Comments
 
-* Fix error in r-devel-linux-x86_64-fedora-clang reported on 2025-04-15 
