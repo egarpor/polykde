@@ -3,7 +3,7 @@
 \name{hammer_to_sph}
 \alias{hammer_to_sph}
 \alias{sph_to_hammer}
-\title{Map Cartesian coordinates into Hammer projection.}
+\title{Map Cartesian coordinates into Hammer projection}
 \usage{
 sph_to_hammer(x)
 
@@ -13,11 +13,13 @@ hammer_to_sph(y)
 \item{x}{matrix of size \code{c(n, 3)} with the Cartesian coordinates on
 \eqn{\mathcal{S}^2}. Assumed to be of unit norm in the rows.}
 
-\item{y}{matrix of size \code{c(n, 2)} with the Hammer coordinates.
+\item{y}{matrix of size \code{c(n, 2)} with the Hammer coordinates.}
+}
+\value{
 \itemize{
 \item{\code{sph_to_hammer}: the matrix \code{y}.}
 \item{\code{hammer_to_sph}: the matrix \code{x}.}
-}}
+}
 }
 \description{
 Computes the Hammer projection of points on the sphere.
