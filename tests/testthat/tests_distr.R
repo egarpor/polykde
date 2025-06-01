@@ -21,6 +21,22 @@ test_that("fast_log_c_vMF() works properly with spline = TRUE / FALSE", {
 
 })
 
+## Mixture of von Mises--Fisher densities
+
+test_that("Check d_mvmf_polysph by inverse weighted sampling", {
+
+  M <- 1e3
+  d <- c(1, 2)
+  mu <- rbind(c(0, 1, 0, 1, 0), c(0, -1, 0, -1, 0))
+  kappa <- rbind(c(1, 1), c(2, 1))
+  prop <- c(0.7, 0.3)
+  x <- r_mvmf_polysph(n = M, d = d, mu = mu, kappa = kappa, prop = prop)
+  dens <- d_mvmf_polysph(x = x, d = d, mu = mu, kappa = kappa, prop = prop)
+  expect_equal(mean(1 / dens) / prod(rotasym::w_p(p = d + 1)), 1,
+               tolerance = 1e-1)
+
+})
+
 ## Uniform density
 
 test_that("Check d_unif_polysph by inverse weighted sampling", {
