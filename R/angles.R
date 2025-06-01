@@ -262,12 +262,13 @@ fib_latt <- function(n) {
 }
 
 
-#' @title Map Cartesian coordinates into Hammer projection.
+#' @title Map Cartesian coordinates into Hammer projection
 #'
 #' @description Computes the Hammer projection of points on the sphere.
 #' @param x matrix of size \code{c(n, 3)} with the Cartesian coordinates on
 #' \eqn{\mathcal{S}^2}. Assumed to be of unit norm in the rows.
 #' @param y matrix of size \code{c(n, 2)} with the Hammer coordinates.
+#' @return
 #' \itemize{
 #' \item{\code{sph_to_hammer}: the matrix \code{y}.}
 #' \item{\code{hammer_to_sph}: the matrix \code{x}.}
@@ -283,6 +284,7 @@ fib_latt <- function(n) {
 #' hammer_to_sph(sph_to_hammer(rbind(c(1, 0, 0), c(0, 1, 0))))
 #' sph_to_hammer(hammer_to_sph(rbind(c(0, 0), c(0.5, 0.5))))
 #' @name hammer_to_sph
+
 
 #' @rdname hammer_to_sph
 #' @export
@@ -308,6 +310,7 @@ sph_to_hammer <- function(x) {
   cbind(x, y, deparse.level = 0) / sqrt(1 + cos(phi) * cos(lambda / 2))
 
 }
+
 
 #' @rdname hammer_to_sph
 #' @export
