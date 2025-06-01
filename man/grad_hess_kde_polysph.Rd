@@ -52,7 +52,7 @@ and include it in the kernel density estimator. Defaults to \code{TRUE}.}
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 }
 \value{
-A list with the following components:
+A list with the following fields:
 \item{dens}{a column vector of size \code{c(nx, 1)} with the kernel
 density estimator evaluated at \code{x}.}
 \item{grad}{a matrix of size \code{c(nx, sum(d) + r)} with the gradient of
