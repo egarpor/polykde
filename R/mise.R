@@ -272,7 +272,7 @@ log1p_mise_exact <- function(log_h, n, d, mu, kappa, prop, M_psi = 1e4,
 #' @description Computes the bandwidths
 #' \deqn{\boldsymbol{h}_{\mathrm{MISE}}=\arg\min_{\boldsymbol{h}>0}
 #' \mathrm{MISE}_m[\hat{f}(\cdot;\boldsymbol{h})]}
-#' of the polyspherical kernel density estimator
+#' of the kernel density estimator on the polysphere
 #' \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}} for an
 #' \eqn{m}-mixture of von Mises--Fisher densities
 #' \eqn{f_m(\boldsymbol{x}) = \sum_{j=1}^m p_j
@@ -337,17 +337,42 @@ bw_mise_polysph <- function(n, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
 }
 
 
-#' @title TODO
-#' @description TODO
+#' @title Computation of the exact ISE for the polyspherical kernel density
+#' estimator with von Mises--Fisher kernel for mixtures of von Mises--Fisher
+#' distributions
+#'
+#' @description Computes the exact Integrated Squared Error (ISE) of the kernel
+#' density estimator on the polysphere
+#' \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}} with respect
+#' to a density \eqn{f_m(\boldsymbol{x}) = \sum_{j=1}^m p_j
+#' f_{\mathrm{vMF}}(\boldsymbol{x}; \boldsymbol{\mu}_j, \kappa_j)} of an
+#' \eqn{m}-mixture of von Mises--Fisher distributions. The ISE is
+#' \deqn{\mathrm{ISE}_m[\hat{f}(\cdot;\boldsymbol{h})]
+#' =\|\hat{f}(\cdot;\boldsymbol{h})-f_m\|_2^2
+#' =\int_{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}
+#' \left(\hat{f}(\boldsymbol{x};\boldsymbol{h})-f_m(\boldsymbol{x})\right)^2
+#' \,\mathrm{d}\boldsymbol{x}.}
+#'
 #' @inheritParams exact_mise
 #' @inheritParams r_mvmf_polysph
-#' @param M_psi TODO
-#' @param x_mvmf TODO
-#' @param f_mvmf TODO
-#' @param seed_psi TODO
-#' @param exact TODO
-#' @param p TODO
-#' @return TODO
+#' @param x_mvmf Monte Carlo sample of the mixture to conduct importance
+#' sampling. Computed internally if \code{NULL} (default).
+#' @param f_mvmf density evaluation on \code{x_mvmf}. Computed internally if
+#' \code{NULL} (default).
+#' @param seed_psi seed for approximating the ISE if \code{exact = FALSE}.
+#' Defaults to \code{NULL} (no seed is fixed).
+#' @param exact use the exact von Mises--Fisher formula for the ISE? It
+#' escalates quadratically on the sample size. Defaults to \code{FALSE}.
+#' @param p power to compute the \eqn{\|\cdot\|_p} norm if \code{exact = FALSE}.
+#' Defaults to \code{2}.
+#' @return A list with the following fields:
+#' \item{ise}{vector of size \code{k} with the evaluated ISEs.}
+#' \item{Psi_01}{vector of size \code{k} with the first term of the ISE. If
+#' \code{exact = FALSE}, it is \code{NULL}.}
+#' \item{Psi_02}{vector of size \code{k} with the second term of the ISE. If
+#' \code{exact = FALSE}, it is \code{NULL}.}
+#' \item{Psi_03}{vector of size \code{k} with the third term of the ISE. If
+#' \code{exact = FALSE}, it is \code{NULL}.}
 #' @examples
 #' M <- 1e4
 #' n <- 200
@@ -359,14 +384,14 @@ bw_mise_polysph <- function(n, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
 #'                          prop = prop)
 #' X <- r_mvmf_polysph(n = n, d = 2, mu = mu, kappa = kappa, prop = prop)
 #' h <- 10^seq(-2, 1, l = 100)
-#' plot(h, log1p(ise_vmf(X = X, d = 2, h = h,
-#'                       x_mvmf = x_mvmf, f_mvmf = f_mvmf)$ise))
+#' plot(h, log1p(polykde:::exact_ise_vmf(X = X, d = 2, h = h,
+#'                                       x_mvmf = x_mvmf, f_mvmf = f_mvmf)$ise))
 #' abline(v = polykde:::bw_ise_polysph(
 #'   X = X, d = 2, bw0 = 1, x_mvmf = x_mvmf, f_mvmf = f_mvmf)$bw, col = 2)
 #' @noRd
-ise_vmf <- function(X, d, h, mu, kappa, prop, M_psi = 1e4, x_mvmf = NULL,
-                    f_mvmf = NULL, seed_psi = NULL, spline = FALSE,
-                    exact = FALSE, p = 2) {
+exact_ise_vmf <- function(X, d, h, mu, kappa, prop, M_psi = 1e4, x_mvmf = NULL,
+                          f_mvmf = NULL, seed_psi = NULL, spline = FALSE,
+                          exact = FALSE, p = 2) {
 
   # Check mixture inputs
   h <- cbind(h)
@@ -388,7 +413,7 @@ ise_vmf <- function(X, d, h, mu, kappa, prop, M_psi = 1e4, x_mvmf = NULL,
   # Exact computation for mixture of vMFs or importance-sampling Monte Carlo?
   if (exact) {
 
-    stop("Not implemented yet")
+    stop("Not implemented yet!")
 
     # Common terms: mu_i * kappa_i and 1 / h^2
     mu_kappa <- mu * kappa
@@ -403,7 +428,7 @@ ise_vmf <- function(X, d, h, mu, kappa, prop, M_psi = 1e4, x_mvmf = NULL,
       sqrt(outer(kappa^2, kappa^2, "+") + 2 * tcrossprod(mu_kappa))
     log_C_kappa_mu_i_kappa_mu_j <-
       fast_log_c_vMF(p = d + 1, kappa = kappa_mu_i_kappa_mu_j, spline = spline)
-    Psi_0_2 <- sum(exp(outer(log_C_kappa, log_C_kappa, "+") -
+    Psi_02 <- sum(exp(outer(log_C_kappa, log_C_kappa, "+") -
                          log_C_kappa_mu_i_kappa_mu_j))
 
     # First Psi_0 term -- \sum_{i,j=1}^n \Psi_0(X_i, X_j)
@@ -416,10 +441,12 @@ ise_vmf <- function(X, d, h, mu, kappa, prop, M_psi = 1e4, x_mvmf = NULL,
       sqrt(outer(kappa^2, kappa^2, "+") + 2 * tcrossprod(mu_kappa))
     log_C_kappa_mu_i_kappa_mu_j <-
       fast_log_c_vMF(p = d + 1, kappa = kappa_mu_i_kappa_mu_j, spline = spline)
-    Psi_0_1 <- sum(exp(outer(log_C_kappa, log_C_kappa, "+") -
-                         log_C_kappa_mu_i_kappa_mu_j))
+    Psi_01 <- sum(exp(outer(log_C_kappa, log_C_kappa, "+") -
+                        log_C_kappa_mu_i_kappa_mu_j))
 
     # Third Psi_0 term -- \sum_{i=1}^n\sum_{j=1}^r \Psi_0(mu_i, X_j)
+
+    # TODO
 
     # ||h^{-2} X_i + h^{-2} X_j||^2 = 2 * h^{-4} (1 - X_i'X_j)
     log_C_h2_inv <- fast_log_c_vMF(p = d + 1, kappa = 1 / h^2, spline = spline)
@@ -427,11 +454,11 @@ ise_vmf <- function(X, d, h, mu, kappa, prop, M_psi = 1e4, x_mvmf = NULL,
       sqrt(outer(kappa^2, kappa^2, "+") + 2 * tcrossprod(mu_kappa))
     log_C_kappa_mu_i_kappa_mu_j <-
       fast_log_c_vMF(p = d + 1, kappa = kappa_mu_i_kappa_mu_j, spline = spline)
-    Psi_0_3 <- sum(exp(outer(log_C_kappa, log_C_kappa, "+") -
-                         log_C_kappa_mu_i_kappa_mu_j))
+    Psi_03 <- sum(exp(outer(log_C_kappa, log_C_kappa, "+") -
+                        log_C_kappa_mu_i_kappa_mu_j))
 
     # ISE
-    ise <- sqrt(Psi_0_1 + Psi_0_2 - 2 * Psi_0_3)
+    ise <- sqrt(Psi_01 + Psi_02 - 2 * Psi_03)
 
   } else {
 
@@ -456,27 +483,38 @@ ise_vmf <- function(X, d, h, mu, kappa, prop, M_psi = 1e4, x_mvmf = NULL,
     ise <- rep(NA, nrow(h))
     for (j in seq_len(nrow(h))) {
 
-      f_hat <- kde_polysph(x = x_mvmf, X = X, d = d, h = h[j, ])
+      f_hat <- kde_polysph(x = x_mvmf, X = X, d = d, h = h[j, ], kernel = 1)
       ise[j] <- mean(abs(f_hat - f_mvmf)^p / f_mvmf)^(1 / p)
 
     }
-    Psi_0_1 <- Psi_0_2 <- Psi_0_3 <- NULL
+    Psi_01 <- Psi_02 <- Psi_03 <- NULL
 
   }
   return(list("ise" = ise,
-              "Psi_0_1" = Psi_0_1, "Psi_0_2" = Psi_0_2, "Psi_0_3" = Psi_0_3))
+              "Psi_01" = Psi_01, "Psi_02" = Psi_02, "Psi_03" = Psi_03))
 
 }
 
 
-#' @title TODO
-#' @description TODO
+#' @title Exact ISE bandwidth selection for polyspherical kernel density
+#' estimator for a mixture of von Mises--Fisher distributions
+#'
+#' @description Computes the bandwidths
+#' \deqn{\boldsymbol{h}_{\mathrm{ISE}}=\arg\min_{\boldsymbol{h}>0}
+#' \mathrm{ISE}_m[\hat{f}(\cdot;\boldsymbol{h})]}
+#' of the kernel density estimator on the polysphere
+#' \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}} for an
+#' \eqn{m}-mixture of von Mises--Fisher densities
+#' \eqn{f_m(\boldsymbol{x}) = \sum_{j=1}^m p_j
+#' f_{\mathrm{vMF}}(\boldsymbol{x}; \boldsymbol{\mu}_j, \kappa_j)}.
+#'
 #' @inheritParams ise_vmf
 #' @inheritParams exact_mise
 #' @inheritParams r_mvmf_polysph
 #' @param bw0 initial bandwidth vector for minimizing the ISE loss. Can be
 #' also a matrix of initial bandwidth vectors.
-#' @return TODO
+#' @return A list with entries \code{bw} (optimal bandwidth) and \code{opt},
+#' the latter containing the output of \code{\link[stats]{nlm}}.
 #' @examples
 #' n <- 200
 #' mu <-  rbind(c(1, 0, 0), c(-1, 0, 0))
@@ -512,9 +550,9 @@ bw_ise_polysph <- function(X, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
   }
   log1p_ise <- function(log_h) {
 
-    log1p(ise_vmf(X = X, h = exp(log_h), d = d, mu = mu, kappa = kappa,
-                  prop = prop, x_mvmf = x_mvmf, f_mvmf = f_mvmf,
-                  spline = spline, exact = exact, p = p)$ise)
+    log1p(exact_ise_vmf(X = X, h = exp(log_h), d = d, mu = mu, kappa = kappa,
+                        prop = prop, x_mvmf = x_mvmf, f_mvmf = f_mvmf,
+                        spline = spline, exact = exact, p = p)$ise)
 
   }
 

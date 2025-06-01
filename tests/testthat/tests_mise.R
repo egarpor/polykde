@@ -111,3 +111,15 @@ test_that("bw_mise_polysph() minimizes the MISE on the sphere", {
   expect_lte(bw_mise$opt$minimum, min(log1p_mise_bw0))
 
 })
+
+test_that("exact_ise_vmf() does the job on computing exactly the MISE", {
+
+  # TODO
+
+})
+
+test_that("bw_ise_polysph() minimizes the ISE on the sphere", {
+
+  # TODO
+
+})
