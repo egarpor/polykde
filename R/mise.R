@@ -21,12 +21,7 @@
 #' @param h,log_h matrix of size \code{c(k, r)} with \code{k} vectors of
 #' (log)bandwidths.
 #' @param n sample size. Either a scalar or a vector of size \code{k}.
-#' @param mu a matrix of size \code{c(m, sum(d + 1))} with the means of
-#' each mixture components in the rows.
-#' @param kappa a matrix of size \code{c(m, r)} with the concentrations of
-#' each mixture components in the rows.
-#' @param prop a vector of size \code{m} with the proportions of the mixture
-#' components.
+#' @inheritParams r_mvmf_polysph
 #' @inheritParams kde_polysph
 #' @param M_psi number of importance-sampling Monte Carlo samples. Defaults to
 #' \code{1e4}.
@@ -74,6 +69,7 @@ exact_mise_vmf_polysph <- function(h, n, mu, kappa, prop, d, M_psi = 1e4,
   stopifnot(ncol(kappa) == r)
   stopifnot(ncol(mu) == sum(d + 1))
   stopifnot(ncol(h) == r)
+  stopifnot(abs(sum(prop) - 1) < 1e-15)
   if (length(n) == 1) {
 
     n <- rep(n, nrow(h))
@@ -177,7 +173,7 @@ exact_mise_vmf <- function(h, n, mu, kappa, prop, d, M_psi = 1e4,
 
   }
 
-  # Psi_1 and Psi_2 using weighted MC
+  # Psi_1 and Psi_2 using importance-sampling Monte Carlo
   Psi_1 <- Psi_2 <- array(NA, dim  = c(length(h), m, m))
   log_C_h <- fast_log_c_vMF(p = d + 1, kappa = 1 / h^2, spline = spline)
   for (j in seq_len(m)) {
@@ -349,5 +345,88 @@ bw_mise_polysph <- function(n, d, bw0 = NULL, upscale = FALSE, deriv = 0,
 
   }
   return(list("bw" = unname(bw), "opt" = opt))
+
+}
+
+#' @noRd
+ise_vmf <- function(h, X, mu, kappa, prop, d, M_psi = 1e4, p = 2,
+                    seed_psi = NULL, spline = FALSE, exact = FALSE) {
+
+  # Check mixture inputs
+  m <- length(prop)
+  mu <- rbind(mu)
+  stopifnot(abs(sum(prop) - 1) < 1e-15)
+  stopifnot(ncol(mu) == d + 1)
+  stopifnot(nrow(mu) == m)
+  stopifnot(length(kappa) == m)
+  stopifnot(length(d) == 1)
+
+  # Exact computation for mixture of vMFs or importance-sampling Monte Carlo?
+  if (exact) {
+
+    # Common terms: mu_i * kappa_i and 1 / h^2
+    mu_kappa <- mu * kappa
+    h2_inv <- 1 / h^2
+
+    # Second Psi_0 term -- \sum_{i,j=1}^r \Psi_0(mu_i, mu_j)
+
+    # ||kappa_i mu_i + kappa_j mu_j||^2 = kappa_i^2 + kappa_j^2
+    #                                    + 2 * kappa_i * kappa_j * mu_i'mu_j
+    log_C_kappa <- fast_log_c_vMF(p = d + 1, kappa = kappa, spline = spline)
+    kappa_mu_i_kappa_mu_j <-
+      sqrt(outer(kappa^2, kappa^2, "+") + 2 * tcrossprod(mu_kappa))
+    log_C_kappa_mu_i_kappa_mu_j <-
+      fast_log_c_vMF(p = d + 1, kappa = kappa_mu_i_kappa_mu_j, spline = spline)
+    Psi_0_2 <- sum(exp(outer(log_C_kappa, log_C_kappa, "+") -
+                         log_C_kappa_mu_i_kappa_mu_j))
+
+    # First Psi_0 term -- \sum_{i,j=1}^n \Psi_0(X_i, X_j)
+
+    # TODO loop on h
+
+    # ||h^{-2} X_i + h^{-2} X_j||^2 = 2 * h^{-4} (1 - X_i'X_j)
+    log_C_h2_inv <- fast_log_c_vMF(p = d + 1, kappa = 1 / h^2, spline = spline)
+    kappa_mu_i_kappa_mu_j <-
+      sqrt(outer(kappa^2, kappa^2, "+") + 2 * tcrossprod(mu_kappa))
+    log_C_kappa_mu_i_kappa_mu_j <-
+      fast_log_c_vMF(p = d + 1, kappa = kappa_mu_i_kappa_mu_j, spline = spline)
+    Psi_0_1 <- sum(exp(outer(log_C_kappa, log_C_kappa, "+") -
+                         log_C_kappa_mu_i_kappa_mu_j))
+
+    # Third Psi_0 term -- \sum_{i=1}^n\sum_{j=1}^r \Psi_0(mu_i, X_j)
+
+    # ||h^{-2} X_i + h^{-2} X_j||^2 = 2 * h^{-4} (1 - X_i'X_j)
+    log_C_h2_inv <- fast_log_c_vMF(p = d + 1, kappa = 1 / h^2, spline = spline)
+    kappa_mu_i_kappa_mu_j <-
+      sqrt(outer(kappa^2, kappa^2, "+") + 2 * tcrossprod(mu_kappa))
+    log_C_kappa_mu_i_kappa_mu_j <-
+      fast_log_c_vMF(p = d + 1, kappa = kappa_mu_i_kappa_mu_j, spline = spline)
+    Psi_0_3 <- sum(exp(outer(log_C_kappa, log_C_kappa, "+") -
+                         log_C_kappa_mu_i_kappa_mu_j))
+
+
+    ise <- Psi_0_1 + Psi_0_2 - 2 * Psi_0_3
+
+  } else {
+
+    # Set seeds for the Monte Carlo
+    if (!is.null(seed_psi)) {
+
+      # old_seed <- .Random.seed
+      # on.exit({.Random.seed <<- old_seed})
+      set.seed(seed_psi, kind = "Mersenne-Twister")
+
+    }
+
+
+
+
+    Psi_0_1 <- Psi_0_2 <- Psi_0_3 <- NULL
+
+  }
+
+
+  return(list("ise" = ise, Psi_0_1 = Psi_0_1, Psi_0_2 = Psi_0_2, Psi_0_3 = Psi_0_3))
+
 
 }
