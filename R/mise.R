@@ -279,7 +279,7 @@ log1p_mise_exact <- function(log_h, n, d, mu, kappa, prop, M_psi = 1e4,
 #' f_{\mathrm{vMF}}(\boldsymbol{x}; \boldsymbol{\mu}_j, \kappa_j)}.
 #'
 #' @inheritParams kde_polysph
-#' @inheritParams exact_mise
+#' @inheritParams exact_mise_vmf_polysph
 #' @param bw0 initial bandwidth vector for minimizing the MISE loss. Can be
 #' also a matrix of initial bandwidth vectors.
 #' @inheritParams bw_rot_polysph
@@ -295,20 +295,16 @@ log1p_mise_exact <- function(log_h, n, d, mu, kappa, prop, M_psi = 1e4,
 #'                           mu = rbind(c(1, 0, 0)), kappa = rbind(1),
 #'                           prop = 1, seed_psi = 1)
 #' @noRd
-bw_mise_polysph <- function(n, d, bw0 = NULL, upscale = FALSE, deriv = 0,
-                            mu = NULL, kappa = NULL, prop = NULL,
-                            M_psi = 1e4, seed_psi = NULL, spline = FALSE, ...) {
+bw_mise_polysph <- function(n, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
+                            seed_psi = NULL, spline = FALSE, ...) {
 
   # Get r
   r <- length(d)
 
-  # Initial search?
+  # Initial search
   if (is.null(bw0)) {
 
     stop("bw0 must be provided.")
-    # bw0 <- bw_mrot_polysph(X = X, d = d, kernel = 1, upscale = FALSE
-    #                       deriv = 0, mu = mu, kappa = kappa, prop = prop)
-    # bw0 <- bw0$bw
 
   } else {
 
@@ -336,33 +332,63 @@ bw_mise_polysph <- function(n, d, bw0 = NULL, upscale = FALSE, deriv = 0,
              mu = mu, kappa = kappa, prop = prop, M_psi = M_psi,
              seed_psi = seed_psi, spline = spline, ...)
   bw <- exp(opt$estimate)
-
-  # Upscale?
-  if (upscale > 0) {
-
-    n_up <- n^(1 / (d * r + 4)) * n^(-1 / (d * r + 2 * deriv + 4))
-    bw <- bw * n_up
-
-  }
   return(list("bw" = unname(bw), "opt" = opt))
 
 }
 
+
+#' @title TODO
+#' @description TODO
+#' @inheritParams exact_mise
+#' @inheritParams r_mvmf_polysph
+#' @param M_psi TODO
+#' @param x_mvmf TODO
+#' @param f_mvmf TODO
+#' @param seed_psi TODO
+#' @param exact TODO
+#' @param p TODO
+#' @return TODO
+#' @examples
+#' M <- 1e4
+#' n <- 200
+#' mu <-  rbind(c(1, 0, 0), c(-1, 0, 0))
+#' kappa <- cbind(c(1, 1))
+#' prop <- c(0.5, 0.5)
+#' x_mvmf <- r_mvmf_polysph(n = M, d = 2, mu = mu, kappa = kappa, prop = prop)
+#' f_mvmf <- d_mvmf_polysph(x = x_mvmf, d = 2, mu = mu, kappa = kappa,
+#'                          prop = prop)
+#' X <- r_mvmf_polysph(n = n, d = 2, mu = mu, kappa = kappa, prop = prop)
+#' h <- 10^seq(-2, 1, l = 100)
+#' plot(h, log1p(ise_vmf(X = X, d = 2, h = h,
+#'                       x_mvmf = x_mvmf, f_mvmf = f_mvmf)$ise))
+#' abline(v = polykde:::bw_ise_polysph(
+#'   X = X, d = 2, bw0 = 1, x_mvmf = x_mvmf, f_mvmf = f_mvmf)$bw, col = 2)
 #' @noRd
-ise_vmf <- function(h, X, mu, kappa, prop, d, M_psi = 1e4, p = 2,
-                    seed_psi = NULL, spline = FALSE, exact = FALSE) {
+ise_vmf <- function(X, d, h, mu, kappa, prop, M_psi = 1e4, x_mvmf = NULL,
+                    f_mvmf = NULL, seed_psi = NULL, spline = FALSE,
+                    exact = FALSE, p = 2) {
 
   # Check mixture inputs
-  m <- length(prop)
-  mu <- rbind(mu)
-  stopifnot(abs(sum(prop) - 1) < 1e-15)
-  stopifnot(ncol(mu) == d + 1)
-  stopifnot(nrow(mu) == m)
-  stopifnot(length(kappa) == m)
-  stopifnot(length(d) == 1)
+  h <- cbind(h)
+  r <- length(d)
+  stopifnot(ncol(h) == r)
+  stopifnot(ncol(X) == sum(d + 1))
+  if (exact || is.null(x_mvmf) || is.null(f_mvmf)) {
+
+    m <- length(prop)
+    mu <- rbind(mu)
+    stopifnot(abs(sum(prop) - 1) < 1e-15)
+    stopifnot(nrow(mu) == m)
+    stopifnot(ncol(mu) == sum(d + 1))
+    stopifnot(nrow(kappa) == m)
+    stopifnot(ncol(kappa) == r)
+
+  }
 
   # Exact computation for mixture of vMFs or importance-sampling Monte Carlo?
   if (exact) {
+
+    stop("Not implemented yet")
 
     # Common terms: mu_i * kappa_i and 1 / h^2
     mu_kappa <- mu * kappa
@@ -404,8 +430,8 @@ ise_vmf <- function(h, X, mu, kappa, prop, d, M_psi = 1e4, p = 2,
     Psi_0_3 <- sum(exp(outer(log_C_kappa, log_C_kappa, "+") -
                          log_C_kappa_mu_i_kappa_mu_j))
 
-
-    ise <- Psi_0_1 + Psi_0_2 - 2 * Psi_0_3
+    # ISE
+    ise <- sqrt(Psi_0_1 + Psi_0_2 - 2 * Psi_0_3)
 
   } else {
 
@@ -418,15 +444,110 @@ ise_vmf <- function(h, X, mu, kappa, prop, d, M_psi = 1e4, p = 2,
 
     }
 
+    # Importance-sampling Monte Carlo of L^p norm
+    if (is.null(x_mvmf) || is.null(f_mvmf)) {
 
+      x_mvmf <- r_mvmf_polysph(n = M_psi, d = d, mu = mu, kappa = kappa,
+                               prop = prop)
+      f_mvmf <- d_mvmf_polysph(x = x_mvmf, d = d, mu = mu, kappa = kappa,
+                               prop = prop)
 
+    }
+    ise <- rep(NA, nrow(h))
+    for (j in seq_len(nrow(h))) {
 
+      f_hat <- kde_polysph(x = x_mvmf, X = X, d = d, h = h[j, ])
+      ise[j] <- mean(abs(f_hat - f_mvmf)^p / f_mvmf)^(1 / p)
+
+    }
     Psi_0_1 <- Psi_0_2 <- Psi_0_3 <- NULL
 
   }
+  return(list("ise" = ise,
+              "Psi_0_1" = Psi_0_1, "Psi_0_2" = Psi_0_2, "Psi_0_3" = Psi_0_3))
+
+}
 
 
-  return(list("ise" = ise, Psi_0_1 = Psi_0_1, Psi_0_2 = Psi_0_2, Psi_0_3 = Psi_0_3))
+#' @title TODO
+#' @description TODO
+#' @inheritParams ise_vmf
+#' @inheritParams exact_mise
+#' @inheritParams r_mvmf_polysph
+#' @param bw0 initial bandwidth vector for minimizing the ISE loss. Can be
+#' also a matrix of initial bandwidth vectors.
+#' @return TODO
+#' @examples
+#' n <- 200
+#' mu <-  rbind(c(1, 0, 0), c(-1, 0, 0))
+#' kappa <- cbind(c(1, 1))
+#' prop <- c(0.5, 0.5)
+#' samp <- r_mvmf_polysph(n = n, d = 2, mu = mu, kappa = kappa, prop = prop)
+#' polykde:::bw_mise_polysph(n = n, d = 2, bw0 = 5, mu = mu, kappa = kappa,
+#'                           prop = prop, seed_psi = 1)
+#' polykde:::bw_ise_polysph(X = samp, d = 2, bw0 = 5, mu = mu, kappa = kappa,
+#'                          prop = prop, seed_psi = 1)
+#' @noRd
+bw_ise_polysph <- function(X, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
+                           x_mvmf = NULL, f_mvmf = NULL, seed_psi = NULL,
+                           exact = FALSE, p = 2, ...) {
 
+  # Set seeds for the Monte Carlo
+  if (!is.null(seed_psi)) {
+
+    # old_seed <- .Random.seed
+    # on.exit({.Random.seed <<- old_seed})
+    set.seed(seed_psi, kind = "Mersenne-Twister")
+
+  }
+
+  # Loss function
+  if (is.null(x_mvmf) || is.null(f_mvmf)) {
+
+    x_mvmf <- r_mvmf_polysph(n = M_psi, d = d, mu = mu, kappa = kappa,
+                             prop = prop)
+    f_mvmf <- d_mvmf_polysph(x = x_mvmf, d = d, mu = mu, kappa = kappa,
+                             prop = prop)
+
+  }
+  log1p_ise <- function(log_h) {
+
+    log1p(ise_vmf(X = X, h = exp(log_h), d = d, mu = mu, kappa = kappa,
+                  prop = prop, x_mvmf = x_mvmf, f_mvmf = f_mvmf,
+                  spline = spline, exact = exact, p = p)$ise)
+
+  }
+
+  # Get r
+  r <- length(d)
+
+  # Initial search
+  if (is.null(bw0)) {
+
+    stop("bw0 must be provided.")
+
+  } else {
+
+    bw0 <- rbind(bw0)
+    if (r != ncol(bw0)) {
+
+      stop("bw0 and d are incompatible.")
+
+    }
+    if (nrow(bw0) > 1) {
+
+      # Name arguments in apply() to avoid mismatches between MARGIN and M_psi
+      ise_bw0 <- apply(X = log(bw0), MARGIN = 1, FUN = log1p_ise)
+      ind_best <- which.min(ise_bw0)
+      bw0 <- bw0[ind_best, ]
+
+    }
+
+  }
+
+  # Search h_ISE
+  opt <- nlm(f = log1p_ise, p = log(bw0), ...)
+  bw <- exp(opt$estimate)
+  return(list("bw" = unname(bw), "opt" = opt))
 
 }
