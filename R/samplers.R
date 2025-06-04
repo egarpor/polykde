@@ -125,9 +125,19 @@ r_mvmf_polysph <- function(n, d, mu, kappa, prop, norm_mu = FALSE) {
   # Sample from the mixture
   n_j <- sample(m, size = n, replace = TRUE, prob = prop)
   n_j <- as.numeric(table(factor(n_j, levels = seq_len(m))))
-  vmf_samp <- lapply(seq_along(prop), function(k)
-    r_vmf_polysph(n = n_j[k], d = d, mu = mu[k, ], kappa = kappa[k, ],
-                  norm_mu = norm_mu))
+  vmf_samp <- lapply(seq_along(prop), function(k) {
+    if (n_j[k] > 0) {
+
+      samp_j <- r_vmf_polysph(n = n_j[k], d = d, mu = mu[k, ],
+                              kappa = kappa[k, ], norm_mu = norm_mu)
+
+    } else {
+
+      samp_j <- NULL
+
+    }
+    samp_j
+  })
   vmf_samp <- do.call(rbind, vmf_samp)
   return(vmf_samp[sample(n), ])
 
