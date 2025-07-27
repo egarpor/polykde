@@ -409,7 +409,7 @@ hom_test_polysph <- function(X, d, labels,
   Tn_orig <- Tn(perm_index = 1:N)
   if (!is.finite(Tn_orig) || Tn_orig == 0) {
 
-    stop("The test statistic is not finite or is zero. Bandwidth too small?")
+    stop("The test statistic is not finite or is zero.")
 
   }
 

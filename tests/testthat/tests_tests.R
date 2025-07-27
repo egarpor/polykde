@@ -215,8 +215,8 @@ test_that("Jensen--Shannon distance with cv_jsd = 2 and k = 3", {
 
 test_that("Tests do not reject H_0 when it is true", {
 
-  d <- 1
-  n <- 100
+  d <- 2
+  n <- 50
   h <- 0.5
   B <- 50
   mu <- c(rep(0, d), 1)
@@ -246,7 +246,7 @@ test_that("Tests do not reject H_0 when it is true", {
 test_that("Tests reject H_0 when it is false", {
 
   d <- 1
-  n <- 100
+  n <- 50
   h <- 0.5
   B <- 50
   mu1 <- c(rep(0, d), 1)
@@ -286,5 +286,8 @@ test_that("Edge cases hom_test_polysph()", {
                                 type = "wrong", B = 1, M = M))
   expect_error(hom_test_polysph(X = X, d = d, labels = labels,
                                 type = "jsd", h = 0 * d, B = 1, M = M))
+  expect_error(hom_test_polysph(X = rbind(c(1, 0), c(-1, 0), c(1, 0), c(-1, 0)),
+                                d = 1, labels = rep(1:2, each = 2),
+                                type = "mean", B = 1, M = M))
 
 })

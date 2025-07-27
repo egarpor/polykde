@@ -170,6 +170,60 @@ test_that("polylog_minus_exp_mu() edge cases", {
 
 ## log_besselI_scaled()
 
+test_that("Correct vectorizations on nu and x for spline = FALSE", {
+  xs <- 1:10
+  nus <- c(1:9, 101)
+  nus_a <- c(101:102)
+  expect_equal(polykde:::log_besselI_scaled(nu = nus, x = xs, spline = FALSE),
+               sapply(seq_along(nus), function(i)
+                 polykde:::log_besselI_scaled(nu = nus[i], x = xs[i],
+                                              spline = FALSE)))
+  expect_equal(polykde:::log_besselI_scaled(nu = nus, x = xs[4],
+                                            spline = FALSE),
+               sapply(seq_along(nus), function(i)
+                 polykde:::log_besselI_scaled(nu = nus[i], x = xs,
+                                              spline = FALSE)[4]))
+  expect_equal(polykde:::log_besselI_scaled(nu = nus[4], x = xs,
+                                            spline = FALSE),
+               sapply(seq_along(nus), function(i)
+                 polykde:::log_besselI_scaled(nu = nus, x = xs[i],
+                                              spline = FALSE)[4]))
+  expect_equal(polykde:::log_besselI_scaled(nu = nus_a, x = xs[4],
+                                            spline = FALSE),
+               sapply(seq_along(nus_a), function(i)
+                 polykde:::log_besselI_scaled(nu = nus_a[i], x = xs,
+                                              spline = FALSE)[4]))
+})
+
+test_that("Correct vectorizations on nu and x for spline = FALSE and NA's", {
+  xs <- c(1, NA, 3:4, NA)
+  nus <- 1:5
+  for (j in 1:2) {
+    expect_equal(polykde:::log_besselI_scaled(nu = nus, x = xs, spline = FALSE),
+                 sapply(seq_along(nus), function(i)
+                   polykde:::log_besselI_scaled(nu = nus[i], x = xs[i],
+                                                spline = FALSE)))
+    expect_equal(polykde:::log_besselI_scaled(nu = nus, x = xs[j],
+                                              spline = FALSE),
+                 sapply(seq_along(nus), function(i)
+                   polykde:::log_besselI_scaled(nu = nus[i], x = xs,
+                                                spline = FALSE)[j]))
+    expect_equal(polykde:::log_besselI_scaled(nu = nus[j], x = xs,
+                                              spline = FALSE),
+                 sapply(seq_along(nus), function(i)
+                   polykde:::log_besselI_scaled(nu = nus, x = xs[i],
+                                                spline = FALSE)[j]))
+  }
+})
+
+test_that("log_besselI_scaled() with NAs", {
+  x <- c(1, 2, NA, 1e5)
+  expect_equal(log_besselI_scaled(nu = 1, x = x, spline = TRUE),
+               log_besselI_scaled(nu = 1, x = x, spline = FALSE))
+  expect_equal(log_besselI_scaled(nu = 5.5, x = x, spline = TRUE),
+               log_besselI_scaled(nu = 5.5, x = x, spline = FALSE))
+})
+
 test_that("Accuracy of log_besselI_scaled(nu = seq(0, 6, by = 0.5)) with
           spline approximations", {
   x <- seq(1e-8, 1e4, l = 1e3)
@@ -194,12 +248,7 @@ test_that("Accuracy of log_besselI_scaled(nu = seq(0, 6, by = 0.5)) with
   }
 })
 
-test_that("Edge cases of log_besselI_scaled()", {
-  expect_error(log_besselI_scaled(nu = 10, x = 0, spline = TRUE))
-  expect_error(log_besselI_scaled(nu = 1:3, x = 0, spline = TRUE))
-})
-
-test_that("Asymptotic Bessel approximation", {
+test_that("Asymptotic-kappa Bessel approximation", {
   paper_asymp <- function(x, d) {
     log1p(-d * (d - 2) / (8 * x)) - log(2 * pi * x) / 2
   }
@@ -213,13 +262,29 @@ test_that("Asymptotic Bessel approximation", {
   }
 })
 
+test_that("Asymptotic-d Bessel approximation", {
+  for (x in c(0.1, 1, 10, 100)) {
+    expect_lt(
+      max(abs(diff(log_besselI_scaled(nu = 95:105, x = x, spline = FALSE),
+                   differences = 2))),
+      max(abs(diff(log_besselI_scaled(nu = 85:95, x = x, spline = FALSE),
+                   differences = 2)))
+    )
+  }
+})
 
-test_that("log_besselI_scaled() with NAs", {
-  x <- c(1, 2, NA, 1e5)
-  expect_equal(log_besselI_scaled(nu = 1, x = x, spline = TRUE),
-               log_besselI_scaled(nu = 1, x = x, spline = FALSE))
-  expect_equal(log_besselI_scaled(nu = 5.5, x = x, spline = TRUE),
-               log_besselI_scaled(nu = 5.5, x = x, spline = FALSE))
+test_that("Mix of asymptotic-d and regular Bessel computations", {
+  nu <- seq(1, 200, by = 1)
+  expect_no_error(log_besselI_scaled(nu = nu, x = nu))
+})
+
+test_that("Edge cases of log_besselI_scaled()", {
+  expect_error(log_besselI_scaled(nu = NA, x = 1, spline = FALSE))
+  expect_no_error(log_besselI_scaled(nu = 1:3, x = NA, spline = FALSE))
+  expect_error(log_besselI_scaled(nu = 1:3, x = 1:2, spline = FALSE))
+  expect_error(log_besselI_scaled(nu = c(1, NA), x = 1:2, spline = FALSE))
+  expect_error(log_besselI_scaled(nu = 10, x = 0, spline = TRUE))
+  expect_error(log_besselI_scaled(nu = 1:3, x = 0, spline = TRUE))
 })
 
 ## log_sum_exp()

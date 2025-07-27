@@ -26,6 +26,69 @@ d_vmf_polysph <- function(x, d, mu, kappa, log = FALSE) {
 }
 
 
+#' @title Density of the product of von Mises--Fisher distributions on the
+#' polysphere
+#'
+#' @description Computes the density of an \eqn{m}-mixture of product of von
+#' Mises--Fisher densities on the polysphere.
+#'
+#' @inheritParams kde_polysph
+#' @inheritParams r_mvmf_polysph
+#' @return A vector of size \code{nx} with the evaluated density.
+#' @examples
+#' # Simple check of integration on S^1 x S^2
+#' d <- c(1, 2)
+#' mu <- rbind(c(0, 1, 0, 1, 0), c(1, 0, 1, 0, 0))
+#' kappa <- rbind(c(5, 2), c(1, 2))
+#' prop <- c(0.7, 0.3)
+#' x <- r_mvmf_polysph(n = 1e4, d = d, mu = mu, kappa = kappa, prop = prop)
+#' mean(1 / d_mvmf_polysph(x = x, d = d, mu = mu, kappa = kappa, prop = prop)) /
+#'   prod(rotasym::w_p(p = d + 1))
+#' @export
+d_mvmf_polysph <- function(x, d, mu, kappa, prop, log = FALSE) {
+
+  # Check mixture inputs
+  r <- length(d)
+  m <- length(prop)
+  mu <- rbind(mu)
+  kappa <- cbind(kappa)
+  if (nrow(kappa) != m || ncol(kappa) != r) {
+
+    stop("kappa size is not c(m, r).")
+
+  }
+  if (nrow(mu) != m || ncol(mu) != sum(d + 1)) {
+
+    stop("mu size is not c(m, sum(d + 1)).")
+
+  }
+  if (abs(sum(prop) - 1) > 1e-15) {
+
+    stop("prop does not add to one.")
+
+  }
+
+  # Density computation
+  dens <- matrix(0, nrow = nrow(x), ncol = 1)
+  for (k in seq_len(m)) {
+
+    dens <- dens +
+      prop[k] * kde_polysph(x = x, X = mu[k, , drop = FALSE], d = d,
+                            h = 1 / sqrt(kappa[k, ]), kernel = 1,
+                            wrt_unif = FALSE, norm_x = TRUE, norm_X = TRUE,
+                            log = FALSE)
+
+  }
+  if (log) {
+
+    dens <- log(dens)
+
+  }
+  return(dens)
+
+}
+
+
 #' @title Density of the uniform distribution on the polysphere
 #'
 #' @description Computes the density of the uniform distribution on the

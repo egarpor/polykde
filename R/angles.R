@@ -112,14 +112,14 @@ angles_to_sph <- function(theta) {
   sin_theta <- sin(theta)
   if (d == 1) {
 
-    x <- cbind(cos_theta, sin_theta)
+    x <- cbind(cos_theta, sin_theta, deparse.level = 0)
 
   } else {
 
     prod_sin <- t(apply(sin_theta, 1, cumprod))
     x <- cbind(cos_theta[, 1, drop = FALSE],
                prod_sin[, -d, drop = FALSE] * cos_theta[, -1, drop = FALSE],
-               prod_sin[, d, drop = FALSE])[, , drop = FALSE]
+               prod_sin[, d, drop = FALSE], deparse.level = 0)[, , drop = FALSE]
 
   }
   return(x)
@@ -146,7 +146,7 @@ sph_to_angles <- function(x) {
   theta <- acos(theta)
   xd <- (x[, d + 1] < 0)
   theta[, d] <- (2 * pi) * xd + (1 - 2 * xd) * theta[, d]
-  return(theta[, , drop = FALSE])
+  return(unname(theta[, , drop = FALSE]))
 
 }
 
@@ -233,5 +233,107 @@ polysph_to_angles <- function(x, d) {
 
   }
   return(theta)
+
+}
+
+
+#' @title Fibonacci lattice on the sphere
+#'
+#' @description Computes the Fibonacci lattice on the sphere \eqn{\mathcal{S}^2}
+#' to produce pseudo-equispaced points.
+#' @param n number of points to be produced.
+#' @return A matrix of size \code{c(n, 3)} with the spherical coordinates.
+#' @examples
+#' scatterplot3d::scatterplot3d(
+#'   fib_latt(n = 200), pch = 19, color = viridis::viridis(200),
+#'   xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
+#'   xlab = "", ylab = "", zlab = "")
+#' @export
+fib_latt <- function(n) {
+
+  # Check https://extremelearning.com.au/how-to-evenly-distribute-points-on-a-
+  # sphere-more-effectively-than-the-canonical-fibonacci-lattice/
+  phi <- (1 + sqrt(5)) / 2
+  i <- 0:(n - 1)
+  theta <- 2 * pi * i / phi
+  phi <- acos(1 - 2 * (i + 0.5) / n)
+  return(angles_to_sph(cbind(phi, theta, deparse.level = 0)))
+
+}
+
+
+#' @title Map Cartesian coordinates into Hammer projection
+#'
+#' @description Computes the Hammer projection of points on the sphere.
+#' @param x matrix of size \code{c(n, 3)} with the Cartesian coordinates on
+#' \eqn{\mathcal{S}^2}. Assumed to be of unit norm in the rows.
+#' @param y matrix of size \code{c(n, 2)} with the Hammer coordinates.
+#' @return
+#' \itemize{
+#' \item{\code{sph_to_hammer}: the matrix \code{y}.}
+#' \item{\code{hammer_to_sph}: the matrix \code{x}.}
+#' }
+#' @examples
+#' # Plot Fibonacci lattice
+#' plot(sph_to_hammer(fib_latt(n = 1000)))
+#' points(sph_to_hammer(rbind(c(0, 0, 1), c(0, 0, -1))), col = 2, pch = 19)
+#' points(sph_to_hammer(rbind(c(1, 0, 0), c(-1, 0, 0))), col = 3, pch = 19)
+#' points(sph_to_hammer(rbind(c(0, 1, 0), c(0, -1, 0))), col = 4, pch = 19)
+#'
+#' # Check changes of coordinates
+#' hammer_to_sph(sph_to_hammer(rbind(c(1, 0, 0), c(0, 1, 0))))
+#' sph_to_hammer(hammer_to_sph(rbind(c(0, 0), c(0.5, 0.5))))
+#' @name hammer_to_sph
+
+
+#' @rdname hammer_to_sph
+#' @export
+sph_to_hammer <- function(x) {
+
+  # Convert to matrix
+  if (!is.matrix(x)) {
+
+    x <- matrix(x, nrow = 1)
+
+  }
+  stopifnot(ncol(x) == 3)
+
+  # Reverse with 3:1 and shift (lambda, phi) because sph_to_angles() has the
+  # spherical coordinates in reverse order and the transformation is for
+  # standard spherical coordinates with \lambda \in [-pi, pi] and
+  # \phi \in [-pi / 2, pi / 2].
+  phi_theta <- sph_to_angles(x[, 3:1])
+  lambda <- phi_theta[, 2] - pi # Longitude, in [-pi, pi]
+  phi <- pi / 2 - phi_theta[, 1] # Latitude, in [-pi / 2, pi / 2]
+  x <- 2 * sqrt(2) * cos(phi) * sin(lambda / 2)
+  y <- sqrt(2) * sin(phi)
+  cbind(x, y, deparse.level = 0) / sqrt(1 + cos(phi) * cos(lambda / 2))
+
+}
+
+
+#' @rdname hammer_to_sph
+#' @export
+hammer_to_sph <- function(y) {
+
+  # Convert to matrix
+  if (!is.matrix(y)) {
+
+    y <- matrix(y, nrow = 1)
+
+  }
+  stopifnot(ncol(y) == 2)
+
+  # Reverse with 3:1 and shift (lambda, phi) because sph_to_angles() has the
+  # spherical coordinates in reverse order and the inverse transformation is for
+  # standard spherical coordinates with \lambda \in [-pi, pi] and
+  # \phi \in [-pi / 2, pi / 2].
+  x <- y[, 1]
+  y <- y[, 2]
+  z <- sqrt(1 - (0.25 * x)^2 - (0.5 * y)^2)
+  lambda <- 2 * atan(z * x / (2 * (2 * z^2 - 1)))
+  phi <- asin(z * y)
+  angles_to_sph(cbind(pi / 2 - phi, lambda + pi,
+                      deparse.level = 0))[, 3:1, drop = FALSE]
 
 }

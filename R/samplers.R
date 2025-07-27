@@ -77,6 +77,73 @@ r_vmf_polysph <- function(n, d, mu, kappa, norm_mu = FALSE) {
 }
 
 
+#' @title Sample mixtures of von Mises--Fisher distributed polyspherical data
+#'
+#' @description Simulates from an \eqn{m}-mixture of product of
+#' von Mises--Fisher distributions on the polysphere \eqn{\mathcal{S}^{d_1}
+#' \times \cdots \times \mathcal{S}^{d_r}}.
+#'
+#' @param mu a matrix of size \code{c(m, sum(d + 1))} with the means of
+#' each mixture components in the rows.
+#' @param kappa a matrix of size \code{c(m, r)} with the concentrations of
+#' each mixture components in the rows.
+#' @param prop a vector of size \code{m} with the proportions of the mixture
+#' components.
+#' @inheritParams r_kern_polysph
+#' @inheritParams r_unif_polysph
+#' @inheritParams kde_polysph
+#' @return A matrix of size \code{c(n, sum(d) + r)} with the sample.
+#' @examples
+#' # Simulate mixture of vMF data on (S^1)^2
+#' r_mvmf_polysph(n = 10, d = c(1, 1),
+#'                mu = rbind(c(0, 1, 0, 1), c(1, 0, 1, 0)),
+#'                kappa = rbind(c(5, 2), c(1, 2)), prop = c(0.7, 0.3))
+#' @export
+r_mvmf_polysph <- function(n, d, mu, kappa, prop, norm_mu = FALSE) {
+
+  # Check mixture inputs
+  r <- length(d)
+  m <- length(prop)
+  mu <- rbind(mu)
+  kappa <- cbind(kappa)
+  if (nrow(kappa) != m || ncol(kappa) != r) {
+
+    stop("kappa size is not c(m, r).")
+
+  }
+  if (nrow(mu) != m || ncol(mu) != sum(d + 1)) {
+
+    stop("mu size is not c(m, sum(d + 1)).")
+
+  }
+  if (abs(sum(prop) - 1) > 1e-15) {
+
+    stop("prop does not add to one.")
+
+  }
+
+  # Sample from the mixture
+  n_j <- sample(m, size = n, replace = TRUE, prob = prop)
+  n_j <- as.numeric(table(factor(n_j, levels = seq_len(m))))
+  vmf_samp <- lapply(seq_along(prop), function(k) {
+    if (n_j[k] > 0) {
+
+      samp_j <- r_vmf_polysph(n = n_j[k], d = d, mu = mu[k, ],
+                              kappa = kappa[k, ], norm_mu = norm_mu)
+
+    } else {
+
+      samp_j <- NULL
+
+    }
+    samp_j
+  })
+  vmf_samp <- do.call(rbind, vmf_samp)
+  return(vmf_samp[sample(n), ])
+
+}
+
+
 #' @title Sample kernel-distributed polyspherical data
 #'
 #' @description Simulates from the distribution defined by a kernel on the
