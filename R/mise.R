@@ -3,7 +3,7 @@
 #' estimator with von Mises--Fisher kernel for mixtures of von Mises--Fisher
 #' distributions
 #'
-#' @description The function \code{exact_mise_vmf_polysph} computes the
+#' @description The function \code{mise_vmf_polysph} computes the
 #' exact Mean Integrated Squared Error (MISE) of the kernel density estimator
 #' on the polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times
 #' \mathcal{S}^{d_r}} with respect to a density \eqn{f_m(\boldsymbol{x}) =
@@ -28,36 +28,36 @@
 #' @param seed_psi seed for approximating the matrices \eqn{\boldsymbol{\Psi_1}}
 #' and \eqn{\boldsymbol{\Psi_2}}. Defaults to \code{NULL} (no seed is fixed).
 #' @inheritParams log_besselI_scaled
-#' @return For \code{exact_mise_vmf*}, a list with the following components:
+#' @return For \code{mise_vmf*}, a list with the following components:
 #' \item{mise}{vector of size \code{k} with the evaluated MISEs.}
 #' \item{Psi_0}{matrix \eqn{\boldsymbol{\Psi_0}}.}
 #' \item{Psi_1}{matrix \eqn{\boldsymbol{\Psi_1}}.}
 #' \item{Psi_2}{matrix \eqn{\boldsymbol{\Psi_2}}.}
 #' \item{log_Dq_h}{vector of size \code{k} with normalizing constant.}
-#' For \code{log1p_mise_exact}, the \code{log(mise)} is returned.
+#' For \code{log1p_mise}, the \code{log(mise)} is returned.
 #' @references
 #' García-Portugués, E., Crujeiras, R. M., and González-Manteiga, W. (2013).
 #' Kernel density estimation for directional-linear data. \emph{Journal of
 #' Multivariate Analysis}, 121:152--175. \doi{10.1016/j.jmva.2013.06.009}.
 #' @examples
 #' h <- seq(0.01, 1, l = 100)
-#' log_mise_h <- log(polykde:::exact_mise_vmf(
+#' log_mise_h <- log(polykde:::mise_vmf(
 #'   h = h, n = 100, mu = rbind(c(0, 1), c(1, 0)), kappa = c(5, 2),
 #'   prop = c(0.7, 0.3), d = 1, spline = TRUE, seed_psi = 1)$mise)
 #' plot(h, log_mise_h)
-#' log_mise_h <- log(polykde:::exact_mise_vmf_polysph(
+#' log_mise_h <- log(polykde:::mise_vmf_polysph(
 #'   h = cbind(h, h, h), n = 100,
 #'   mu = rbind(c(0, 0, 1, 0, 1, 0, 1), c(0, 0, -1, 0, -1, 0, 1)),
 #'   kappa = rbind(1:3, 3:1), prop = c(0.7, 0.3), d = c(2, 1, 1),
 #'   spline = TRUE, seed_psi = 1)$mise)
 #' plot(h, log_mise_h)
-#' @name exact_mise
+#' @name mise
 
 
 #' @noRd
-#' @rdname exact_mise
-exact_mise_vmf_polysph <- function(h, n, mu, kappa, prop, d, M_psi = 1e4,
-                                   seed_psi = NULL, spline = FALSE) {
+#' @rdname mise
+mise_vmf_polysph <- function(h, n, mu, kappa, prop, d, M_psi = 1e4,
+                             seed_psi = NULL, spline = FALSE) {
 
   # Check mixture inputs
   r <- length(d)
@@ -91,13 +91,13 @@ exact_mise_vmf_polysph <- function(h, n, mu, kappa, prop, d, M_psi = 1e4,
   Psi_1 <- Psi_2 <- array(1, dim = c(nrow(h), m, m))
   for (j in seq_len(r)) {
 
-    mise_j <- exact_mise_vmf(h = h[, j], n = n,
-                             mu = mu[, (ind_dj[j] + 1):ind_dj[j + 1]],
-                             kappa = kappa[, j], prop = prop, d = d[j],
-                             M_psi = M_psi, seed_psi = ifelse(is.null(seed_psi),
-                                                              NULL,
-                                                              seed_psi + j - 1),
-                             spline = spline)
+    mise_j <- mise_vmf(h = h[, j], n = n,
+                       mu = mu[, (ind_dj[j] + 1):ind_dj[j + 1]],
+                       kappa = kappa[, j], prop = prop, d = d[j],
+                       M_psi = M_psi, seed_psi = ifelse(is.null(seed_psi),
+                                                        NULL,
+                                                        seed_psi + j - 1),
+                       spline = spline)
 
     # Exploiting structure in Proposition 5 of "Kernel density estimation for
     # directional-linear data" (https://doi.org/10.1016/j.jmva.2013.06.009)
@@ -124,9 +124,9 @@ exact_mise_vmf_polysph <- function(h, n, mu, kappa, prop, d, M_psi = 1e4,
 
 
 #' @noRd
-#' @rdname exact_mise
-exact_mise_vmf <- function(h, n, mu, kappa, prop, d, M_psi = 1e4,
-                           seed_psi = NULL, spline = FALSE) {
+#' @rdname mise
+mise_vmf <- function(h, n, mu, kappa, prop, d, M_psi = 1e4, seed_psi = NULL,
+                     spline = FALSE) {
 
   # Check mixture inputs
   m <- length(prop)
@@ -255,13 +255,13 @@ exact_mise_vmf <- function(h, n, mu, kappa, prop, d, M_psi = 1e4,
 
 
 #' @noRd
-#' @rdname exact_mise
-log1p_mise_exact <- function(log_h, n, d, mu, kappa, prop, M_psi = 1e4,
-                             seed_psi = NULL, spline = FALSE) {
+#' @rdname mise
+log1p_mise <- function(log_h, n, d, mu, kappa, prop, M_psi = 1e4,
+                       seed_psi = NULL, spline = FALSE) {
 
-  log1p(exact_mise_vmf_polysph(h = exp(log_h), n = n, mu = mu, kappa = kappa,
-                               prop = prop, d = d, M_psi = M_psi,
-                               seed_psi = seed_psi, spline = spline)$mise)
+  log1p(mise_vmf_polysph(h = exp(log_h), n = n, mu = mu, kappa = kappa,
+                         prop = prop, d = d, M_psi = M_psi,
+                         seed_psi = seed_psi, spline = spline)$mise)
 
 }
 
@@ -279,7 +279,7 @@ log1p_mise_exact <- function(log_h, n, d, mu, kappa, prop, M_psi = 1e4,
 #' f_{\mathrm{vMF}}(\boldsymbol{x}; \boldsymbol{\mu}_j, \kappa_j)}.
 #'
 #' @inheritParams kde_polysph
-#' @inheritParams exact_mise_vmf_polysph
+#' @inheritParams mise_vmf_polysph
 #' @param bw0 initial bandwidth vector for minimizing the MISE loss. Can be
 #' also a matrix of initial bandwidth vectors.
 #' @inheritParams bw_rot_polysph
@@ -317,8 +317,8 @@ bw_mise_polysph <- function(n, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
     if (nrow(bw0) > 1) {
 
       # Name arguments in apply() to avoid mismatches between MARGIN and M_psi
-      mise_bw0 <- apply(X = log(bw0), MARGIN = 1, FUN = log1p_mise_exact,
-                        n = n, d = d, mu = mu, kappa = kappa, prop = prop,
+      mise_bw0 <- apply(X = log(bw0), MARGIN = 1, FUN = log1p_mise, n = n,
+                        d = d, mu = mu, kappa = kappa, prop = prop,
                         M_psi = M_psi, seed_psi = seed_psi, spline = spline)
       ind_best <- which.min(mise_bw0)
       bw0 <- bw0[ind_best, ]
@@ -328,9 +328,9 @@ bw_mise_polysph <- function(n, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
   }
 
   # Search h_MISE
-  opt <- nlm(f = log1p_mise_exact, p = log(bw0), n = n, d = d,
-             mu = mu, kappa = kappa, prop = prop, M_psi = M_psi,
-             seed_psi = seed_psi, spline = spline, ...)
+  opt <- nlm(f = log1p_mise, p = log(bw0), n = n, d = d, mu = mu, kappa = kappa,
+             prop = prop, M_psi = M_psi, seed_psi = seed_psi, spline = spline,
+             ...)
   bw <- exp(opt$estimate)
   return(list("bw" = unname(bw), "opt" = opt))
 
@@ -353,7 +353,9 @@ bw_mise_polysph <- function(n, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
 #' \left(\hat{f}(\boldsymbol{x};\boldsymbol{h})-f_m(\boldsymbol{x})\right)^2
 #' \,\mathrm{d}\boldsymbol{x}.}
 #'
-#' @inheritParams exact_mise
+#' @param h,log_h matrix of size \code{c(k, r)} with \code{k} vectors of
+#' (log)bandwidths.
+#' @inheritParams mise
 #' @inheritParams r_mvmf_polysph
 #' @param x_mvmf Monte Carlo sample of the mixture to conduct importance
 #' sampling. Computed internally if \code{NULL} (default).
@@ -369,10 +371,11 @@ bw_mise_polysph <- function(n, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
 #' \item{ise}{vector of size \code{k} with the evaluated ISEs.}
 #' \item{Psi_01}{vector of size \code{k} with the first term of the ISE. If
 #' \code{exact = FALSE}, it is \code{NULL}.}
-#' \item{Psi_02}{vector of size \code{k} with the second term of the ISE. If
+#' \item{Psi_02}{scalar with the second term of the ISE. If
 #' \code{exact = FALSE}, it is \code{NULL}.}
 #' \item{Psi_03}{vector of size \code{k} with the third term of the ISE. If
 #' \code{exact = FALSE}, it is \code{NULL}.}
+#' For \code{log1p_ise}, the \code{log(ise)} is returned.
 #' @examples
 #' M <- 1e4
 #' n <- 200
@@ -384,14 +387,14 @@ bw_mise_polysph <- function(n, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
 #'                          prop = prop)
 #' X <- r_mvmf_polysph(n = n, d = 2, mu = mu, kappa = kappa, prop = prop)
 #' h <- 10^seq(-2, 1, l = 100)
-#' plot(h, log1p(polykde:::exact_ise_vmf(X = X, d = 2, h = h,
-#'                                       x_mvmf = x_mvmf, f_mvmf = f_mvmf)$ise))
+#' plot(h, polykde:::ise_vmf_polysph(X = X, d = 2, h = h, x_mvmf = x_mvmf,
+#'                                         f_mvmf = f_mvmf)$ise))
 #' abline(v = polykde:::bw_ise_polysph(
 #'   X = X, d = 2, bw0 = 1, x_mvmf = x_mvmf, f_mvmf = f_mvmf)$bw, col = 2)
 #' @noRd
-exact_ise_vmf <- function(X, d, h, mu, kappa, prop, M_psi = 1e4, x_mvmf = NULL,
-                          f_mvmf = NULL, seed_psi = NULL, spline = FALSE,
-                          exact = FALSE, p = 2) {
+ise_vmf_polysph <- function(X, d, h, mu, kappa, prop, M_psi = 1e4,
+                            x_mvmf = NULL, f_mvmf = NULL, seed_psi = NULL,
+                            spline = FALSE, exact = FALSE, p = 2) {
 
   # Check mixture inputs
   h <- cbind(h)
@@ -413,49 +416,65 @@ exact_ise_vmf <- function(X, d, h, mu, kappa, prop, M_psi = 1e4, x_mvmf = NULL,
   # Exact computation for mixture of vMFs or importance-sampling Monte Carlo?
   if (exact) {
 
-    stop("Not implemented yet!")
+    # Only sphere
+    if (r > 1) {
+
+      stop("exact = TRUE not implemented yet for  r > 1.")
+
+    }
 
     # Common terms: mu_i * kappa_i and 1 / h^2
+    n <- nrow(X)
+    kappa <- drop(kappa)
     mu_kappa <- mu * kappa
-    h2_inv <- 1 / h^2
+    sqrt_cross_X <- sqrt(2 * pmax(1 + tcrossprod(X), 0))
+    cross_mu_X <- 2 * tcrossprod(mu_kappa, X)
 
-    # Second Psi_0 term -- \sum_{i,j=1}^r \Psi_0(mu_i, mu_j)
+    # Second Psi_0 term -- \sum_{i,j=1}^r p_i p_j \Psi_0(mu_i, mu_j)
 
     # ||kappa_i mu_i + kappa_j mu_j||^2 = kappa_i^2 + kappa_j^2
     #                                    + 2 * kappa_i * kappa_j * mu_i'mu_j
-    log_C_kappa <- fast_log_c_vMF(p = d + 1, kappa = kappa, spline = spline)
-    kappa_mu_i_kappa_mu_j <-
-      sqrt(outer(kappa^2, kappa^2, "+") + 2 * tcrossprod(mu_kappa))
+    log_C_kappa_prop <- log(prop) +
+      fast_log_c_vMF(p = d + 1, kappa = kappa, spline = spline)
+    kappa_mu_i_kappa_mu_j <- sqrt(outer(kappa^2, kappa^2, "+") +
+                                    2 * tcrossprod(mu_kappa))
     log_C_kappa_mu_i_kappa_mu_j <-
       fast_log_c_vMF(p = d + 1, kappa = kappa_mu_i_kappa_mu_j, spline = spline)
-    Psi_02 <- sum(exp(outer(log_C_kappa, log_C_kappa, "+") -
-                         log_C_kappa_mu_i_kappa_mu_j))
-
-    # First Psi_0 term -- \sum_{i,j=1}^n \Psi_0(X_i, X_j)
-
-    # TODO loop on h
-
-    # ||h^{-2} X_i + h^{-2} X_j||^2 = 2 * h^{-4} (1 - X_i'X_j)
-    log_C_h2_inv <- fast_log_c_vMF(p = d + 1, kappa = 1 / h^2, spline = spline)
-    kappa_mu_i_kappa_mu_j <-
-      sqrt(outer(kappa^2, kappa^2, "+") + 2 * tcrossprod(mu_kappa))
-    log_C_kappa_mu_i_kappa_mu_j <-
-      fast_log_c_vMF(p = d + 1, kappa = kappa_mu_i_kappa_mu_j, spline = spline)
-    Psi_01 <- sum(exp(outer(log_C_kappa, log_C_kappa, "+") -
+    Psi_02 <- sum(exp(outer(log_C_kappa_prop, log_C_kappa_prop, "+") -
                         log_C_kappa_mu_i_kappa_mu_j))
 
-    # Third Psi_0 term -- \sum_{i=1}^n\sum_{j=1}^r \Psi_0(mu_i, X_j)
+    # First Psi_0 term -- n^{-2} \sum_{i,j=1}^n \Psi_0(X_i, X_j)
 
-    # TODO
+    # Loop on h
+    psi_0_h <- function(h_k) {
 
-    # ||h^{-2} X_i + h^{-2} X_j||^2 = 2 * h^{-4} (1 - X_i'X_j)
-    log_C_h2_inv <- fast_log_c_vMF(p = d + 1, kappa = 1 / h^2, spline = spline)
-    kappa_mu_i_kappa_mu_j <-
-      sqrt(outer(kappa^2, kappa^2, "+") + 2 * tcrossprod(mu_kappa))
-    log_C_kappa_mu_i_kappa_mu_j <-
-      fast_log_c_vMF(p = d + 1, kappa = kappa_mu_i_kappa_mu_j, spline = spline)
-    Psi_03 <- sum(exp(outer(log_C_kappa, log_C_kappa, "+") -
-                        log_C_kappa_mu_i_kappa_mu_j))
+      # ||h^{-2} X_i + h^{-2} X_j||^2 = 2 * h^{-4} * (1 - X_i'X_j)
+      h2_X_i_X_j <- sqrt_cross_X / h_k^2
+      log_C_h_X_i_h_X_j <- fast_log_c_vMF(p = d + 1, kappa = h2_X_i_X_j,
+                                          spline = spline)
+      log_C_h2 <- fast_log_c_vMF(p = d + 1, kappa = 1 / h_k^2, spline = spline)
+      return(sum(exp(2 * log_C_h2 - log_C_h_X_i_h_X_j)))
+
+    }
+    Psi_01 <- sapply(h, psi_0_h) / n^2
+
+    # Third Psi_0 term -- n^{-1} \sum_{i=1}^n \sum_{j=1}^r p_j \Psi_0(X_i, mu_j)
+
+    # Loop on h
+    psi_0_h_kappa <- function(h_k) {
+
+      # ||h^{-2} X_i + kappa_j mu_j||^2 = h^{-4} + kappa_j^2
+      #                                  + 2 * h^{-2} * kappa_j * X_i'mu_j
+      h2_X_i_kappa_j_mu_j <- sqrt(1 / h_k^4 + kappa^2 + cross_mu_X / h_k^2)
+      log_C_h_X_i_kappa_mu_j <-
+        fast_log_c_vMF(p = d + 1, kappa = h2_X_i_kappa_j_mu_j, spline = spline)
+      log_C_h2_kappa_prop <- fast_log_c_vMF(p = d + 1, kappa = 1 / h_k^2,
+                                            spline = spline) +
+        log(prop) + fast_log_c_vMF(p = d + 1, kappa = kappa, spline = spline)
+      return(sum(exp(log_C_h2_kappa_prop - log_C_h_X_i_kappa_mu_j)))
+
+    }
+    Psi_03 <- sapply(h, psi_0_h_kappa) / n
 
     # ISE
     ise <- sqrt(Psi_01 + Psi_02 - 2 * Psi_03)
@@ -496,6 +515,20 @@ exact_ise_vmf <- function(X, d, h, mu, kappa, prop, M_psi = 1e4, x_mvmf = NULL,
 }
 
 
+#' @noRd
+#' @rdname ise
+log1p_ise <- function(log_h, X, d, mu, kappa, prop, M_psi = 1e4,
+                      x_mvmf = NULL, f_mvmf = NULL, seed_psi = NULL,
+                      spline = FALSE, exact = FALSE, p = 2) {
+
+  log1p(ise_vmf_polysph(X = X, d = d, h = exp(log_h), mu = mu, kappa = kappa,
+                        prop = prop, M_psi = M_psi, x_mvmf = x_mvmf,
+                        f_mvmf = f_mvmf, seed_psi = seed_psi,
+                        spline = spline, exact = exact, p = p)$ise)
+
+}
+
+
 #' @title Exact ISE bandwidth selection for polyspherical kernel density
 #' estimator for a mixture of von Mises--Fisher distributions
 #'
@@ -509,7 +542,7 @@ exact_ise_vmf <- function(X, d, h, mu, kappa, prop, M_psi = 1e4, x_mvmf = NULL,
 #' f_{\mathrm{vMF}}(\boldsymbol{x}; \boldsymbol{\mu}_j, \kappa_j)}.
 #'
 #' @inheritParams ise_vmf
-#' @inheritParams exact_mise
+#' @inheritParams mise
 #' @inheritParams r_mvmf_polysph
 #' @param bw0 initial bandwidth vector for minimizing the ISE loss. Can be
 #' also a matrix of initial bandwidth vectors.
@@ -528,7 +561,7 @@ exact_ise_vmf <- function(X, d, h, mu, kappa, prop, M_psi = 1e4, x_mvmf = NULL,
 #' @noRd
 bw_ise_polysph <- function(X, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
                            x_mvmf = NULL, f_mvmf = NULL, seed_psi = NULL,
-                           exact = FALSE, p = 2, ...) {
+                           spline = FALSE, exact = FALSE, p = 2, ...) {
 
   # Set seeds for the Monte Carlo
   if (!is.null(seed_psi)) {
@@ -546,13 +579,6 @@ bw_ise_polysph <- function(X, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
                              prop = prop)
     f_mvmf <- d_mvmf_polysph(x = x_mvmf, d = d, mu = mu, kappa = kappa,
                              prop = prop)
-
-  }
-  log1p_ise <- function(log_h) {
-
-    log1p(exact_ise_vmf(X = X, h = exp(log_h), d = d, mu = mu, kappa = kappa,
-                        prop = prop, x_mvmf = x_mvmf, f_mvmf = f_mvmf,
-                        spline = spline, exact = exact, p = p)$ise)
 
   }
 
@@ -575,7 +601,10 @@ bw_ise_polysph <- function(X, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
     if (nrow(bw0) > 1) {
 
       # Name arguments in apply() to avoid mismatches between MARGIN and M_psi
-      ise_bw0 <- apply(X = log(bw0), MARGIN = 1, FUN = log1p_ise)
+      ise_bw0 <- apply(X = log(bw0), MARGIN = 1, FUN = log1p_ise,
+                       X = X, d = d, mu = mu, kappa = kappa, prop = prop,
+                       x_mvmf = x_mvmf, f_mvmf = f_mvmf, spline = spline,
+                       exact = exact, p = p)
       ind_best <- which.min(ise_bw0)
       bw0 <- bw0[ind_best, ]
 
@@ -584,7 +613,9 @@ bw_ise_polysph <- function(X, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
   }
 
   # Search h_ISE
-  opt <- nlm(f = log1p_ise, p = log(bw0), ...)
+  opt <- nlm(f = log1p_ise, p = log(bw0), X = X, d = d, mu = mu, kappa = kappa,
+             prop = prop, x_mvmf = x_mvmf, f_mvmf = f_mvmf, spline = spline,
+             exact = exact, p = p, ...)
   bw <- exp(opt$estimate)
   return(list("bw" = unname(bw), "opt" = opt))
 
