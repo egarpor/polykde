@@ -1,10 +1,11 @@
 
+# This script reproduces Figures 1a-1c in the paper and Table 1 in the SM.
+
 # Required libraries
 library(polykde)
 library(kableExtra)
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
-## Visualize kernels
+## Visualize kernels (Figure 1a in the paper)
 
 # Plot kernels
 pdf("kerns.pdf", width = 6, height = 6)
@@ -74,6 +75,8 @@ for (d in 1:2) {
   dev.off()
 }
 
+## Efficiencies (Figures 1b and 1c in the paper)
+
 # Varying d, fixed r = 1
 for (r in 1:2) {
   pdf(paste0("effic_d_r_", r, ".pdf"), width = 6, height = 6)
@@ -105,7 +108,7 @@ for (r in 1:2) {
   dev.off()
 }
 
-## Efficiency tables
+## Efficiency tables (Table 1 in the SM)
 
 dd <- c(1, 2, 3, 5, 10)
 rr <- c(1, 2, 3, 5, 10)
