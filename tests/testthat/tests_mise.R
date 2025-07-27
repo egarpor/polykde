@@ -31,6 +31,7 @@ test_that("mise_vmf() does the job on computing exactly the MISE", {
   })
   kde_f_2 <- rowMeans(kde_f_2, na.rm = TRUE)
 
+  # Exact vs. Monte Carlo
   expect_equal(drop(mise_vmf(h = h, n = n, mu = mu, kappa = kappa,
                              prop = prop, d = d, seed_psi = 42,
                              spline = TRUE)$mise),
@@ -82,6 +83,7 @@ test_that("mise_vmf_polysph() and mise_vmf() equal on the sphere", {
 
 test_that("bw_mise_polysph() minimizes the MISE on the sphere", {
 
+  # Parameters
   r <- 1
   m <- rpois(1, 3) + 1
   d <- rpois(r, 3) + 1
@@ -89,9 +91,10 @@ test_that("bw_mise_polysph() minimizes the MISE on the sphere", {
   kappa <- matrix(abs(rnorm(m * r, sd = 2)), nrow = m, ncol = r)
   prop <- runif(m)
   prop <- prop / sum(prop)
+  n <- 5
 
-  n <- 10
-  bw0 <- cbind(10^seq(log10(0.1), log10(5), l = 10))
+  # Minimization of ISE
+  bw0 <- cbind(10^seq(log10(0.2), log10(5), l = 10))
   log1p_mise_bw0 <- sapply(bw0, function(h) {
     log1p_mise(log_h = log(h), n = n, mu = mu, kappa = kappa, prop = prop,
                d = d, seed_psi = 1, spline = TRUE)
@@ -116,6 +119,8 @@ test_that("ise_vmf_polysph() does the job on computing exactly the ISE", {
   prop <- rep(0.5, m)
   h <- seq(0.1, 1, l = 10)
   X <- r_mvmf_polysph(n = n, d = d, mu = mu, kappa = kappa, prop = prop)
+
+  # Exact vs. Monte Carlo
   expect_equal(
     ise_vmf_polysph(X = X, d = d, h = h, mu = mu, kappa = kappa,
                     prop = prop, spline = TRUE, exact = TRUE)$ise,
@@ -129,29 +134,29 @@ test_that("ise_vmf_polysph() does the job on computing exactly the ISE", {
 
 test_that("bw_ise_polysph() minimizes the ISE on the sphere", {
 
-  # TODO
+  # Parameters and sample
+  r <- 1
+  m <- rpois(1, 3) + 1
+  d <- rpois(r, 3) + 1
+  mu <- r_unif_polysph(n = m, d = d)
+  kappa <- matrix(abs(rnorm(m * r, sd = 2)), nrow = m, ncol = r)
+  prop <- runif(m)
+  prop <- prop / sum(prop)
+  n <- 5
+  X <- r_mvmf_polysph(n = n, d = d, mu = mu, kappa = kappa, prop = prop)
 
-  # r <- 1
-  # m <- rpois(1, 3) + 1
-  # d <- rpois(r, 3) + 1
-  # mu <- r_unif_polysph(n = m, d = d)
-  # kappa <- matrix(abs(rnorm(m * r, sd = 2)), nrow = m, ncol = r)
-  # prop <- runif(m)
-  # prop <- prop / sum(prop)
-  #
-  # n <- 10
-  # bw0 <- cbind(10^seq(log10(0.1), log10(5), l = 10))
-  # log1p_ise_bw0 <- sapply(bw0, function(h) {
-  #
-  #   log1p_ise_exact(log_h = log(h), n = n, mu = mu, kappa = kappa, prop = prop,
-  #                    d = d, seed_psi = 1, spline = TRUE)
-  # })
-  # bw_mise <- bw_ise_polysph(X = X, d = d, bw0 = bw0, mu = mu, kappa = kappa,
-  #                           prop = prop, seed_psi = 1, spline = TRUE)
-  # plot(bw0, log1p_ise_bw0, type = "o", xlab = "h", ylab = "log1p_mise",
-  #      xlim = range(c(bw0, bw_mise$bw)))
-  # points(bw_mise$bw, bw_mise$opt$minimum, col = "red", pch = 19)
-  # expect_lte(bw_mise$opt$minimum, min(log1p_mise_bw0))
-  #
+  # Minimization of ISE
+  bw0 <- cbind(10^seq(log10(0.2), log10(5), l = 20))
+  log1p_ise_bw0 <- sapply(bw0, function(h) {
+    log1p_ise(log_h = log(h), X = X, mu = mu, kappa = kappa, prop = prop,
+              d = d, spline = TRUE, exact = TRUE)
+  })
+  bw_ise <- bw_ise_polysph(X = X, d = d, bw0 = bw0, mu = mu, kappa = kappa,
+                           prop = prop, seed_psi = 1, spline = TRUE,
+                           exact = TRUE)
+  plot(bw0, log1p_ise_bw0, type = "o", xlab = "h", ylab = "log1p_mise",
+       xlim = range(c(bw0, bw_ise$bw)))
+  points(bw_ise$bw, bw_ise$opt$minimum, col = "red", pch = 19)
+  expect_lte(bw_ise$opt$minimum, min(log1p_ise_bw0))
 
 })
