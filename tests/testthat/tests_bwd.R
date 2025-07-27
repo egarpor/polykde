@@ -304,7 +304,7 @@ t_vmf <- function(x) {
 # Integral estimation
 N <- 1e4
 X_vmf <- r_vmf_polysph(n = N, d = d, mu = mu, kappa = kappa)
-f_X_vmf <- drop(kde_polysph(x = X_vmf, X = mu, d = d, h = 1 / sqrt(kappa)))
+f_X_vmf <- drop(d_vmf_polysph(x = X_vmf, mu = mu, d = d, kappa = kappa))
 tt_X_vmf <- t(rbind(apply(X_vmf, 1, function(xi) tcrossprod(t_vmf(x = xi)))))
 R_X_vmf <- matrix(colMeans(tt_X_vmf * f_X_vmf), nrow = r, ncol = r)
 

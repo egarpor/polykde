@@ -50,3 +50,14 @@ test_that("polysph_to_angles() and angles_to_polysph() are inverses", {
   expect_equal(theta[1, , drop = FALSE],
                polysph_to_angles(angles_to_polysph(theta[1, ], d = d), d = d))
 })
+
+test_that("sph_to_hammer() and hammer_to_sph() are inverses", {
+  x <- fib_latt(n = 10)
+  ham <- sph_to_hammer(x)
+  expect_equal(x, hammer_to_sph(sph_to_hammer(x)))
+  expect_equal(ham, sph_to_hammer(hammer_to_sph(ham)))
+  expect_equal(x[1, , drop = FALSE],
+               hammer_to_sph(sph_to_hammer(x[1, ])))
+  expect_equal(ham[1, , drop = FALSE],
+               sph_to_hammer(hammer_to_sph(ham[1, ])))
+})

@@ -103,7 +103,7 @@ euler_ridge <- function(x, X, d, h, h_euler = as.numeric( c()), weights = as.num
 #' @param proj_alt alternative projection. Defaults to \code{TRUE}.
 #' @param norm_grad_hess normalize the gradient and Hessian dividing by the
 #' kernel density estimator? Defaults to \code{FALSE}.
-#' @return A list with the following components:
+#' @return A list with the following fields:
 #' \item{dens}{a column vector of size \code{c(nx, 1)} with the kernel
 #' density estimator evaluated at \code{x}.}
 #' \item{grad}{a matrix of size \code{c(nx, sum(d) + r)} with the gradient of

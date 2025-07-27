@@ -7,7 +7,7 @@ mu <- r_unif_polysph(n = 1, d = d)
 X <- r_kern_polysph(n = 10, d = d, mu = mu, h = rep(0.2, r), kernel = 1)
 n <- 300
 
-test_that("r_unif_polysph", {
+test_that("Check r_unif_polysph", {
 
   ind <- cumsum(c(1, d + 1))
   for (j in seq_len(r)) {
@@ -90,5 +90,12 @@ test_that("Check coherency between kde_polysph(), c_kern(), and L()", {
     expect_equal(dens1, dens2, tolerance = 1e-2)
 
   }
+
+})
+
+test_that("Check r_mvmf_polysph with small proportions and sample size", {
+
+  expect_no_error(r_mvmf_polysph(n = 10, d = 1, mu = diag(c(1, 1)),
+                                 kappa = c(2, 2), prop = c(0, 1)))
 
 })
