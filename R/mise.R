@@ -301,6 +301,14 @@ bw_mise_polysph <- function(n, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
   # Get r
   r <- length(d)
 
+  # log1p_mise with fixed arguments
+  log1p_mise_args <- function(log_h) {
+
+    log1p_mise(log_h = log_h, n = n, d = d, mu = mu, kappa = kappa, prop = prop,
+               M_psi = M_psi, seed_psi = seed_psi, spline = spline)
+
+  }
+
   # Initial search
   if (is.null(bw0)) {
 
@@ -317,9 +325,7 @@ bw_mise_polysph <- function(n, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
     if (nrow(bw0) > 1) {
 
       # Name arguments in apply() to avoid mismatches between MARGIN and M_psi
-      mise_bw0 <- apply(X = log(bw0), MARGIN = 1, FUN = log1p_mise, n = n,
-                        d = d, mu = mu, kappa = kappa, prop = prop,
-                        M_psi = M_psi, seed_psi = seed_psi, spline = spline)
+      mise_bw0 <- apply(X = log(bw0), MARGIN = 1, FUN = log1p_mise_args)
       ind_best <- which.min(mise_bw0)
       bw0 <- bw0[ind_best, ]
 
@@ -328,9 +334,7 @@ bw_mise_polysph <- function(n, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
   }
 
   # Search h_MISE
-  opt <- nlm(f = log1p_mise, p = log(bw0), n = n, d = d, mu = mu, kappa = kappa,
-             prop = prop, M_psi = M_psi, seed_psi = seed_psi, spline = spline,
-             ...)
+  opt <- nlm(f = log1p_mise_args, p = log(bw0), ...)
   bw <- exp(opt$estimate)
   return(list("bw" = unname(bw), "opt" = opt))
 
@@ -585,6 +589,15 @@ bw_ise_polysph <- function(X, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
   # Get r
   r <- length(d)
 
+  # log1p_ise with fixed arguments
+  log1p_ise_args <- function(log_h) {
+
+    log1p_ise(log_h = log_h, X = X, d = d, mu = mu, kappa = kappa,
+              prop = prop, x_mvmf = x_mvmf, f_mvmf = f_mvmf, spline = spline,
+              exact = exact, p = p)
+
+  }
+
   # Initial search
   if (is.null(bw0)) {
 
@@ -601,10 +614,7 @@ bw_ise_polysph <- function(X, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
     if (nrow(bw0) > 1) {
 
       # Name arguments in apply() to avoid mismatches between MARGIN and M_psi
-      ise_bw0 <- apply(X = log(bw0), MARGIN = 1, FUN = log1p_ise,
-                       X = X, d = d, mu = mu, kappa = kappa, prop = prop,
-                       x_mvmf = x_mvmf, f_mvmf = f_mvmf, spline = spline,
-                       exact = exact, p = p)
+      ise_bw0 <- apply(X = log(bw0), MARGIN = 1, FUN = log1p_ise_args)
       ind_best <- which.min(ise_bw0)
       bw0 <- bw0[ind_best, ]
 
@@ -613,9 +623,7 @@ bw_ise_polysph <- function(X, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
   }
 
   # Search h_ISE
-  opt <- nlm(f = log1p_ise, p = log(bw0), X = X, d = d, mu = mu, kappa = kappa,
-             prop = prop, x_mvmf = x_mvmf, f_mvmf = f_mvmf, spline = spline,
-             exact = exact, p = p, ...)
+  opt <- nlm(f = log1p_ise_args, p = log(bw0), ...)
   bw <- exp(opt$estimate)
   return(list("bw" = unname(bw), "opt" = opt))
 
