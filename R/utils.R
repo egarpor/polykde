@@ -337,7 +337,7 @@ log_besselI_scaled <- function(nu, x, spline = FALSE) {
       if (single_nu) {
 
         res <- Bessel::besselI.nuAsym(x = x, nu = nu, k.max = 5,
-                                      expon.scaled = TRUE)
+                                      expon.scaled = TRUE, log = TRUE)
 
       # Vectorized nu
       } else {
