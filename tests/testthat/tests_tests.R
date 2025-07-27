@@ -215,8 +215,8 @@ test_that("Jensen--Shannon distance with cv_jsd = 2 and k = 3", {
 
 test_that("Tests do not reject H_0 when it is true", {
 
-  d <- 1
-  n <- 100
+  d <- 2
+  n <- 50
   h <- 0.5
   B <- 50
   mu <- c(rep(0, d), 1)
@@ -246,7 +246,7 @@ test_that("Tests do not reject H_0 when it is true", {
 test_that("Tests reject H_0 when it is false", {
 
   d <- 1
-  n <- 100
+  n <- 50
   h <- 0.5
   B <- 50
   mu1 <- c(rep(0, d), 1)
