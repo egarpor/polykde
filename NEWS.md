@@ -18,6 +18,6 @@
 * Add `d_mvmf_polysph()` and `r_mvmf_polysph()` to handle mixtures of vMF distributions on polyspheres.
 * Add exact ISE for vMF distributions.
 * Expand support of `fast_log_c_vMF()` to large orders.
-* Add Hammer projection convenience `sph_to_hammer()`.
+* Add Hammer projection convenience `hammer_to_sph()` and `fib_latt()`.
 * Update reference García-Portugués and Meilán-Vila (2025) to the published version.
   
