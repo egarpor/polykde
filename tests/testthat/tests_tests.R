@@ -286,5 +286,8 @@ test_that("Edge cases hom_test_polysph()", {
                                 type = "wrong", B = 1, M = M))
   expect_error(hom_test_polysph(X = X, d = d, labels = labels,
                                 type = "jsd", h = 0 * d, B = 1, M = M))
+  expect_error(hom_test_polysph(X = rbind(c(1, 0), c(-1, 0), c(1, 0), c(-1, 0)),
+                                d = 1, labels = rep(1:2, each = 2),
+                                type = "mean", B = 1, M = M))
 
 })

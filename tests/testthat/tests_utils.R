@@ -172,7 +172,8 @@ test_that("polylog_minus_exp_mu() edge cases", {
 
 test_that("Correct vectorizations on nu and x for spline = FALSE", {
   xs <- 1:10
-  nus <- 1:10
+  nus <- c(1:9, 101)
+  nus_a <- c(101:102)
   expect_equal(polykde:::log_besselI_scaled(nu = nus, x = xs, spline = FALSE),
                sapply(seq_along(nus), function(i)
                  polykde:::log_besselI_scaled(nu = nus[i], x = xs[i],
@@ -186,6 +187,11 @@ test_that("Correct vectorizations on nu and x for spline = FALSE", {
                                             spline = FALSE),
                sapply(seq_along(nus), function(i)
                  polykde:::log_besselI_scaled(nu = nus, x = xs[i],
+                                              spline = FALSE)[4]))
+  expect_equal(polykde:::log_besselI_scaled(nu = nus_a, x = xs[4],
+                                            spline = FALSE),
+               sapply(seq_along(nus_a), function(i)
+                 polykde:::log_besselI_scaled(nu = nus_a[i], x = xs,
                                               spline = FALSE)[4]))
 })
 
