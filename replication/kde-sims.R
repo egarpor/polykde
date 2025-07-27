@@ -1,15 +1,19 @@
 
+# This script reproduces Figures 5-8 in the SM. The "Simulation" block runs the
+# simulations (parallelized and time-consuming), and the "Analysis" block
+# generates the figures. Faster outputs can be obtained by reducing M = 1e5 to
+# a smaller value, e.g., M = 1e3.
+
 # Required libraries
 library(polykde)
 library(foreach)
 library(latex2exp)
 library(doParallel)
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 ## Simulation
 
 # Setting
-r <- 1
+r <- 2
 d <- 2
 dd <- rep(d, r)
 stopifnot(all(dd == d))
@@ -99,7 +103,7 @@ save(list = ls(), file = paste0("kde-norm-kernel", kernel,
 ## Analysis
 
 # Load data
-r <- 1
+r <- 2
 d <- 2
 kernel <- 1
 k <- 5
@@ -107,7 +111,7 @@ M <- 1e5
 load(dir(pattern = paste0("kde-norm-kernel", kernel,
                           "-r", r, "-d", d, "-k", k, "-M", log10(M), "-*"))[1])
 
-# Plots of expectation, log(bias), and variance
+# Plots of expectation, log(bias), and variance -- Figure 8
 col <- viridis::plasma(length(delta))
 pdf("kde_exp.pdf", width = 6, height = 6)
 matplot(log2(n), exact_exp, type = "l", lty = 1, xlab = "\u2113",
@@ -141,7 +145,7 @@ stat_2 <- apply(zn_2, c(2, 3), function(x) ks.test(x, "pnorm")$statistic)
 colnames(mean_1) <- colnames(mean_2) <- colnames(sd_1) <- colnames(sd_2) <-
   colnames(stat_1) <- colnames(stat_2) <- delta
 
-# Plots of the evolution of summary statistics
+# Plots of the evolution of summary statistics -- Figure 7
 col <- viridis::plasma(length(delta))
 pdf("zn2_logexp.pdf", width = 6, height = 6)
 matplot(log2(n), log10(mean_2), type = "l", lty = 1, xlab = "\u2113",
@@ -168,7 +172,7 @@ legend("right", legend = TeX(c("$Z_{n,\\delta}^{(1)}$",
 axis(1, at = 7:17); axis(2); box()
 dev.off()
 
-# Density plots
+# Density plots -- Figures 5-6
 col <- viridis::viridis(length(n))
 for (k in seq_along(delta)) {
 

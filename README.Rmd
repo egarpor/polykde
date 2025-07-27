@@ -33,11 +33,12 @@ Companion package for the article *Kernel density estimation with polyspherical 
 
 ## Replicability
 
-The folder `/replication` contains the scripts to replicate the numerical experiments of the Supplementary Material (SM):
+The folder `/replication` contains the scripts to replicate the numerical experiments and real data application of the paper and its Supplementary Material (SM):
 
-* The script `kde-sims.R` reproduces the asymptotic normality experiment in Section B.1 of the SM.
-* The script `kde-efic.R` computes the kernel efficiency table in Section B.2 of the SM and plots in Section 4 of the paper.
-* The two scripts `jsd-sims-k2-S2.R` and `jsd-sims-k3-S10^2.R` reproduce two simulation experiments for the $k$-sample test in Section B.3 of the SM.
+* The script `kde-sims.R` reproduces the asymptotic normality experiment (Figures 5--8 in the SM).
+* The script `kde-effic.R` computes the kernel efficiency table (Table 1 in the SM) and the kernel and kernel efficiency graphs (Figure 1 in the paper).
+* The scripts `jsd-sims-k2-S2.R`, `jsd-sims-hippo.R`, and `jsd-sims-k3-S10^2.R` reproduce two simulation experiments for the $k$-sample test in (Figures 9--12 in the SM).
+* The scripts `kde-spoke-dirs.R` and `test-spoke-dirs.R` reproduce the real data application on the hippocampus shape analysis (Figure 3 in the paper and Figure 13 in the SM, and Figure 4 in the paper, respectively).
 
 ## References
 
