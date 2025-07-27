@@ -34,8 +34,8 @@ numerical experiments of the Supplementary Material (SM):
 
 García-Portugués, E. and Meilán-Vila, A. (2024). Kernel density
 estimation with polyspherical data and its applications.
-*arXiv:2411.04166*.
-[doi:10.48550/arXiv.2411.04166](https://doi.org/10.48550/arXiv.2411.04166).
+*Journal of the American Statistical Association*, to appear.
+[doi:10.1080/01621459.2025.2521898](https://doi.org/10.1080/01621459.2025.2521898).
 
 García-Portugués, E. and Meilán-Vila, A. (2023). Hippocampus shape
 analysis via skeletal models and kernel smoothing. In Larriba, Y. (Ed.),

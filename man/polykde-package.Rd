@@ -9,14 +9,14 @@
 Kernel density estimation on the polysphere, (hyper)sphere, and
 circle. Includes functions for density estimation, regression estimation,
 ridge estimation, bandwidth selection, kernels, samplers, and homogeneity
-tests. Companion package to García-Portugués and Meilán-Vila (2024)
-<\doi{10.48550/arXiv.2411.04166}> and García-Portugués and Meilán-Vila
+tests. Companion package to García-Portugués and Meilán-Vila (2025)
+<\doi{10.1080/01621459.2025.2521898}> and García-Portugués and Meilán-Vila
 (2023) <\doi{10.1007/978-3-031-32729-2_4}>.
 }
 \references{
-García-Portugués, E. and Meilán-Vila, A. (2024). Kernel density estimation
-with polyspherical data and its applications. \emph{arXiv:2411.04166}.
-\doi{10.48550/arXiv.2411.04166}.
+García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+with polyspherical data and its applications. \emph{Journal of the American
+Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
 
 García-Portugués, E. and Meilán-Vila, A. (2023). Hippocampus shape analysis
 via skeletal models and kernel smoothing. In Larriba, Y. (Ed.),
