@@ -20,4 +20,3 @@
 * Expand support of `fast_log_c_vMF()` to large orders.
 * Add Hammer projection convenience `hammer_to_sph()` and `fib_latt()`.
 * Update reference García-Portugués and Meilán-Vila (2025) to the published version.
-  

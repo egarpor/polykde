@@ -15,7 +15,7 @@ status](https://github.com/egarpor/polykde/workflows/test-coverage/badge.svg)](h
 
 Companion package for the article *Kernel density estimation with
 polyspherical data and its applications* (García-Portugués and
-Meilán-Vila, 2024).
+Meilán-Vila, 2025).
 
 ## Replicability
 
@@ -38,9 +38,9 @@ Supplementary Material (SM):
 
 ## References
 
-García-Portugués, E. and Meilán-Vila, A. (2024). Kernel density
-estimation with polyspherical data and its applications.
-*Journal of the American Statistical Association*, to appear.
+García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density
+estimation with polyspherical data and its applications. *Journal of the
+American Statistical Association*, to appear.
 [doi:10.1080/01621459.2025.2521898](https://doi.org/10.1080/01621459.2025.2521898).
 
 García-Portugués, E. and Meilán-Vila, A. (2023). Hippocampus shape
