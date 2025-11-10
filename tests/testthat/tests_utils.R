@@ -304,18 +304,18 @@ test_that("log1m_exp() is correct", {
   expect_equal(log1m_exp(x[2]), log(1 - exp(-x[2])))
 })
 
-## log_signed_diff()
+## log_diff_exp()
 
-test_that("log_signed_diff() is correct", {
-  log_x <- c(-5, 1, 5)
-  log_y <- rev(log_x)
-  log_diff <- polykde:::log_signed_diff(log_x = log_x, log_y = log_y)
+test_that("log_diff_exp() is correct", {
+  log_p <- c(-5, 1, 5)
+  log_n <- rev(log_p)
+  log_diff <- polykde:::log_diff_exp(log_p = log_p, log_n = log_n)
     expect_equal(log_diff$sgn * exp(log_diff$log_abs),
-                 exp(log_x) - exp(log_y))
+                 exp(log_p) - exp(log_n))
   for (i in 1:3) {
-    log_diff <- polykde:::log_signed_diff(log_x = log_x[i], log_y = log_y[i])
+    log_diff <- polykde:::log_diff_exp(log_p = log_p[i], log_n = log_n[i])
     expect_equal(log_diff$sgn * exp(log_diff$log_abs),
-                 exp(log_x[i]) - exp(log_y[i]))
+                 exp(log_p[i]) - exp(log_n[i]))
   }
 })
 
