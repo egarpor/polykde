@@ -205,8 +205,9 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
             log_B <- log_cv_2a
 
             # arcsinh-loss
-            log_diff <- log_signed_diff(log_x = log_A, log_y = log_B)
-            asinh_cv <- asinh_log(log_diff$log_abs, sgn = log_diff$sgn)
+            log_diff <- log_diff_exp(log_p = log_A, log_n = log_B)
+            asinh_cv <- asinh_log(log_abs = log_diff$log_abs,
+                                  sgn = log_diff$sgn)
             loss <- asinh_cv + penalty
 
           } else {
@@ -321,9 +322,23 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
                                      log(sum(exp(log_cv_kde - max_log_cv_kde))),
                                    -Inf)
 
-          # CV loss -- TODO: asinh() this!
-          cv <- exp(log_int_kde2) - exp(log_sum_cv_kde)
-          loss <- cv + penalty
+          # Compute arcsinh(CV) or CV loss?
+          if (arcsinh) {
+
+            # arcsinh-loss
+            log_diff <- log_diff_exp(log_p = log_int_kde2,
+                                     log_n = log_sum_cv_kde)
+            asinh_cv <- asinh_log(log_abs = log_diff$log_abs,
+                                  sgn = log_diff$sgn)
+            loss <- asinh_cv + penalty
+
+          } else {
+
+            # CV loss
+            cv <- exp(log_int_kde2) - exp(log_sum_cv_kde)
+            loss <- cv + penalty
+
+          }
           ifelse(!is.finite(loss), 1e6, loss)
 
         }, error = function(e) 1e6)

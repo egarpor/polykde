@@ -175,6 +175,16 @@ test_that("bw_cv_polysph(type = \"LSCV\", arcsinh = TRUE) loss", {
                           bw0 = f * h, M = M, control = list(maxit = 0),
                           method = "BFGS", exact_vmf = TRUE,
                           arcsinh = FALSE)$opt$value))
+    expect_equal(
+      bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
+                    bw0 = f * h, M = M, control = list(maxit = 0),
+                    method = "BFGS", exact_vmf = FALSE,
+                    arcsinh = TRUE)$opt$value,
+      asinh(bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
+                          bw0 = f * h, M = M, control = list(maxit = 0),
+                          method = "BFGS", exact_vmf = FALSE,
+                          arcsinh = FALSE)$opt$value),
+      tolerance = 1e-3)
 
   }
 

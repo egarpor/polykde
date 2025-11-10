@@ -321,7 +321,8 @@ log_besselI_scaled <- function(nu, x, spline = FALSE) {
     if (any_x_asymp) {
 
       res[ind_x_asymp] <- Bessel::besselIasym(x = x[ind_x_asymp],
-                                              nu = nu, expon.scaled = TRUE,
+                                              nu = nu, k.max = 10,
+                                              expon.scaled = TRUE,
                                               log = TRUE)
 
     }
@@ -339,6 +340,10 @@ log_besselI_scaled <- function(nu, x, spline = FALSE) {
       # Single nu?
       if (single_nu) {
 
+        # # https://dlmf.nist.gov/10.41#E1
+        # res <- -0.5 * log(2 * pi * nu) + nu * (1 + log(x) - log(2 * nu)) - x
+
+        # https://dlmf.nist.gov/10.41#E3
         res <- Bessel::besselI.nuAsym(x = x, nu = nu, k.max = 5,
                                       expon.scaled = TRUE, log = TRUE)
 
@@ -352,11 +357,13 @@ log_besselI_scaled <- function(nu, x, spline = FALSE) {
         }
         if (all_nu_asymp) {
 
+          # https://dlmf.nist.gov/10.41#E3
           res <- Bessel::besselI.nuAsym(x = x, nu = nu, k.max = 5,
                                         expon.scaled = TRUE, log = TRUE)
 
         } else {
 
+          # Regular Bessel + https://dlmf.nist.gov/10.41#E3
           res[!ind_nu_asymp] <- log(besselI(x = x[!ind_nu_asymp],
                                             nu = nu[!ind_nu_asymp],
                                             expon.scaled = TRUE))
@@ -444,29 +451,29 @@ log1m_exp <- function(x) {
 #' @description Computes \eqn{\exp(\log(x)) - \exp(\log(y))} through log-scale
 #' and keeping track of the sign.
 #'
-#' @param log_x vector with \eqn{\log(x)} values.
-#' @param log_y vector with \eqn{\log(y)} values.
+#' @param log_p vector with \eqn{\log(x)} values.
+#' @param log_n vector with \eqn{\log(y)} values.
 #' @param tol tolerance for considering the log-values equal.
 #' @return A list with entries \code{log_abs} (vector with \eqn{\log(|x - y|)}
 #' and \code{sgn} (vector with the signs of \eqn{x - y}).
 #' @examples
-#' log_x <- c(10, 5, 1)
-#' log_y <- rev(log_x)
-#' log_diff <- polykde:::log_signed_diff(log_x = log_x, log_y = log_y)
+#' log_p <- c(10, 5, 1)
+#' log_n <- rev(log_p)
+#' log_diff <- polykde:::log_diff_exp(log_p = log_p, log_n = log_n)
 #' log_diff$sgn * exp(log_diff$log_abs)
-#' exp(log_x) - exp(log_y)
+#' exp(log_p) - exp(log_n)
 #' @noRd
-log_signed_diff <- function(log_x, log_y, tol = 1e-15) {
+log_diff_exp <- function(log_p, log_n, tol = 1e-15) {
 
-  stopifnot(length(log_x) == length(log_y))
-  log_diff <- log_x - log_y
+  stopifnot(length(log_p) == length(log_n))
+  log_diff <- log_p - log_n
   sgn <- ifelse(abs(log_diff) <= tol, 0,
                 ifelse(log_diff > 0, 1, -1))
-  log_abs <- numeric(length(log_x))
+  log_abs <- numeric(length(log_p))
   ind_sgn_pos <- sgn >= 0
-  log_abs[ind_sgn_pos] <- log_x[ind_sgn_pos] +
+  log_abs[ind_sgn_pos] <- log_p[ind_sgn_pos] +
     log1m_exp(log_diff[ind_sgn_pos])
-  log_abs[!ind_sgn_pos] <- log_y[!ind_sgn_pos] +
+  log_abs[!ind_sgn_pos] <- log_n[!ind_sgn_pos] +
     log1m_exp(-log_diff[!ind_sgn_pos])
   return(list(log_abs = log_abs, sgn = sgn))
 
