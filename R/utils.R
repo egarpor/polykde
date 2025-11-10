@@ -232,14 +232,17 @@ J_d_k <- function(d, k = 10, upper = Inf, ...) {
 #'
 #' @param nu a scalar with the order of the Bessel function.
 #' @param x vector with evaluation points for the Bessel function.
-#' @param spline if \code{TRUE}, uses spline interpolation for the values of
-#' the Bessel function. Otherwise, calls the \code{\link{besselI}} function.
-#' For \code{x} larger than \code{1e4}, an asymptotic approximation with
-#' \code{\link[Bessel]{besselIasym}} is used. For \code{nu} larger than
-#' \code{100}, an asymptotic approximation with \code{\link[Bessel]{
-#' besselI.nuAsym}} is used. Defaults to \code{FALSE}.
+#' @param spline if \code{TRUE}, uses a fast spline interpolation for the values
+#' of the Bessel function, for \code{nu = seq(0, 6, by = 0.5)}. If \code{FALSE},
+#' uses the standard \code{\link[base]{besselI}} function. Defaults to
+#' \code{FALSE}.
 #' @details The approximation is based on interpolating the values of the Bessel
 #' function with a spline.
+#'
+#' For \code{x} larger than \code{1e4}, an asymptotic approximation with
+#' \code{\link[Bessel]{besselIasym}} is used when \code{spline = TRUE}. For
+#' \code{nu} larger than \code{100}, an asymptotic approximation with
+#' \code{\link[Bessel]{besselI.nuAsym}} is used when \code{spline = FALSE}.
 #' @return A vector of size \code{length(x)} with the evaluated function.
 #' @examples
 #' curve(polykde:::log_besselI_scaled(nu = 0.5, x = x, spline = TRUE),
@@ -410,5 +413,101 @@ log_sum_exp <- function(logs, avg = FALSE) {
 
   logs_M <- max(logs)
   return(logs_M + log(sum(exp(logs - logs_M))) - avg * log(length(logs)))
+
+}
+
+
+#' @title Stable evaluation of \eqn{\log(1 - \exp(-x))}
+#'
+#' @description Computes \eqn{\log(1 - \exp(-x))} accurately for \eqn{x\geq 0}.
+#'
+#' @param x vector with \eqn{x} values.
+#' @return A vector of size \code{length(x)} with the evaluated function.
+#' @examples
+#' x <- c(1e-30, 1e-15, 1e-10, 10, 100)
+#' polykde:::log1m_exp(x)
+#' log(1 - exp(-x))
+#' @noRd
+log1m_exp <- function(x) {
+
+  res <- numeric(length(x))
+  ind_log2 <- x <= log(2)
+  res[ind_log2] <- log(-expm1(-x[ind_log2]))
+  res[!ind_log2] <- log1p(-exp(-x[!ind_log2]))
+  return(res)
+
+}
+
+
+#' @title Stable evaluation of \eqn{\exp(\log(x)) - \exp(\log(y))}
+#'
+#' @description Computes \eqn{\exp(\log(x)) - \exp(\log(y))} through log-scale
+#' and keeping track of the sign.
+#'
+#' @param log_x vector with \eqn{\log(x)} values.
+#' @param log_y vector with \eqn{\log(y)} values.
+#' @param tol tolerance for considering the log-values equal.
+#' @return A list with entries \code{log_abs} (vector with \eqn{\log(|x - y|)}
+#' and \code{sgn} (vector with the signs of \eqn{x - y}).
+#' @examples
+#' log_x <- c(10, 5, 1)
+#' log_y <- rev(log_x)
+#' log_diff <- polykde:::log_signed_diff(log_x = log_x, log_y = log_y)
+#' log_diff$sgn * exp(log_diff$log_abs)
+#' exp(log_x) - exp(log_y)
+#' @noRd
+log_signed_diff <- function(log_x, log_y, tol = 1e-15) {
+
+  stopifnot(length(log_x) == length(log_y))
+  log_diff <- log_x - log_y
+  sgn <- ifelse(abs(log_diff) <= tol, 0,
+                ifelse(log_diff > 0, 1, -1))
+  log_abs <- numeric(length(log_x))
+  ind_sgn_pos <- sgn >= 0
+  log_abs[ind_sgn_pos] <- log_x[ind_sgn_pos] +
+    log1m_exp(log_diff[ind_sgn_pos])
+  log_abs[!ind_sgn_pos] <- log_y[!ind_sgn_pos] +
+    log1m_exp(-log_diff[!ind_sgn_pos])
+  return(list(log_abs = log_abs, sgn = sgn))
+
+}
+
+
+#' @title Stable evaluation of \eqn{\arcsinh(sign(x) * \exp(\log(|x|)))}
+#'
+#' @description Computes \eqn{\arcsinh(sign(x) * \exp(\log(|x|)))}. Useful
+#' to logarithmically scale while preserving the sign of \eqn{x}.
+#'
+#' @param log_abs vector with \eqref{log(|x|)} values.
+#' @param sgn vector with signs of \eqn{x}.
+#' @return A vector of size \code{length(x)} with the evaluated function.
+#' @examples
+#' polykde:::asinh_log(log_abs = 10, sgn = 1)
+#' asinh(exp(10))
+#' polykde:::asinh_log(log_abs = 10, sgn = -1)
+#' asinh(-exp(10))
+#' @noRd
+asinh_log <- function(log_abs, sgn) {
+
+  # We use that for s in {-1, 1},
+  # asinh(s * |x|) = s * log(|x| + sqrt(x^2 + 1))
+  # and hence
+  # asinh(s * exp(log(|x|))) = s * log(exp(log(|x|)) +
+  #                             sqrt(exp(2 * log(|x|)) + 1))
+  #                          = s * log(exp(log(|x|)) *
+  #                             (1 + sqrt(1 + exp(-2 * log(|x|)))))
+  #                          = s * (log(|x|) +
+  #                             log1p(sqrt(1 + exp(-2 * log(|x|)))))
+  # If s = 1:
+  # asinh(s * |x|) = log(s * |x| + sqrt(x^2 + 1))
+  #                = log(|x| + sqrt(x^2 + 1))
+  # If s = -1:
+  # asinh(s * |x|) = log(s * |x| + sqrt(x^2 + 1))
+  #                = log(-|x| + sqrt(x^2 + 1))
+  #                = log(1 / (|x| + sqrt(x^2 + 1)))
+  #                = -log(|x| + sqrt(x^2 + 1)),
+  # since 1 / (y + sqrt(y^2 + 1)) = -y + sqrt(y^2 + 1)
+  stopifnot(length(log_abs) == length(sgn))
+  return(sgn * (log_abs + log1p(sqrt(1 + exp(-2 * log_abs)))))
 
 }

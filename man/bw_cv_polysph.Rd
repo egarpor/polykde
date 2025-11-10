@@ -9,7 +9,8 @@ bw_cv_polysph(X, d, kernel = 1, kernel_type = 1, k = 10,
   intrinsic = FALSE, type = c("LCV", "LSCV")[1], M = 10000, bw0 = NULL,
   na.rm = FALSE, h_min = 0, upscale = FALSE, deriv = 0,
   imp_mc = TRUE, seed_mc = NULL, exact_vmf = FALSE, common_h = FALSE,
-  spline = FALSE, opt = c("optim", "nlm")[1], ncores = 1, ...)
+  spline = FALSE, arcsinh = FALSE, opt = c("optim", "nlm")[1],
+  ncores = 1, ...)
 }
 \arguments{
 \item{X}{a matrix of size \code{c(n, sum(d) + r)} with the sample.}
@@ -63,7 +64,10 @@ von Mises--Fisher kernel? Defaults to \code{FALSE}.}
 \code{FALSE}.}
 
 \item{spline}{use a faster spline approximation to compute Bessel functions?
-Defaults to \code{FALSE}.}
+Only available for \code{d} up to 10. Defaults to \code{FALSE}.}
+
+\item{arcsinh}{do an \eqn{\arcsinh} transformation of the LSCV loss to
+improve numerical stability? Defaults to \code{FALSE}.}
 
 \item{opt}{optimizer to use; either \code{"\link{optim}"} (default) or
 \code{"\link{nlm}"}.}

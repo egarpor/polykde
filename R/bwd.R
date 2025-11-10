@@ -32,7 +32,9 @@
 #' @param common_h use the same bandwidth for all dimensions? Defaults to
 #' \code{FALSE}.
 #' @param spline use a faster spline approximation to compute Bessel functions?
-#' Defaults to \code{FALSE}.
+#' Only available for \code{d} up to 10. Defaults to \code{FALSE}.
+#' @param arcsinh do an \eqn{\arcsinh} transformation of the LSCV loss to
+#' improve numerical stability? Defaults to \code{FALSE}.
 #' @param opt optimizer to use; either \code{"\link{optim}"} (default) or
 #' \code{"\link{nlm}"}.
 #' @param ncores number of cores used during the optimization. Defaults to
@@ -60,8 +62,8 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
                           M = 1e4, bw0 = NULL, na.rm = FALSE, h_min = 0,
                           upscale = FALSE, deriv = 0, imp_mc = TRUE,
                           seed_mc = NULL, exact_vmf = FALSE, common_h = FALSE,
-                          spline = FALSE, opt = c("optim", "nlm")[1],
-                          ncores = 1, ...) {
+                          spline = FALSE, arcsinh = FALSE,
+                          opt = c("optim", "nlm")[1], ncores = 1, ...) {
 
   # Check dimensions
   if (ncol(X) != sum(d + 1)) {
@@ -167,9 +169,9 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
           # Log-constants
           h_pos2 <- 1 / h_pos^2
           log_c_h2 <- sum(fast_log_c_vMF(p = d + 1, kappa = h_pos2,
-                                         spline = FALSE))
+                                         spline = spline))
           log_c_2h2 <- sum(fast_log_c_vMF(p = d + 1, kappa = 2 * h_pos2,
-                                          spline = FALSE))
+                                          spline = spline))
 
           # Compute X_{il}'X_{jl} / h_l^2 and
           # \sum_l \log(c_vMF(||X_{il}'X_{jl}|| / h_l^2))
@@ -183,12 +185,36 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
           }
 
-          # CV loss
-          cv_1 <- exp(2 * log_c_h2 - log_c_2h2 - log_n)
-          cv_2 <- 2 * sum(exp(Xi_Xj_l_h + log_c_h2 + (log_2_n1 - log_n)) -
-                            exp(2 * (log_c_h2 - log_n) - log_c_norm_Xi_Xj_l_h))
-          cv <- cv_1 - cv_2
-          loss <- cv + penalty
+          # Compute arcsinh(CV) or CV loss?
+          if (arcsinh) {
+
+            # CV terms with LogSumExp trick
+            log_cv_1 <- 2 * log_c_h2 - log_c_2h2 - log_n
+            log_cv_2a <- log(2) +
+              log_sum_exp(Xi_Xj_l_h + log_c_h2 + (log_2_n1 - log_n))
+            log_cv_2b <- log(2) +
+              log_sum_exp(2 * (log_c_h2 - log_n) - log_c_norm_Xi_Xj_l_h)
+
+            # Positive and negative terms
+            log_A <- log_sum_exp(c(log_cv_1, log_cv_2b))
+            log_B <- log_cv_2a
+
+            # arcsinh-loss
+            log_diff <- log_signed_diff(log_x = log_A, log_y = log_B)
+            asinh_cv <- asinh_log(log_diff$log_abs, sgn = log_diff$sgn)
+            loss <- asinh_cv + penalty
+
+          } else {
+
+            # CV loss
+            cv_1 <- exp(2 * log_c_h2 - log_c_2h2 - log_n)
+            cv_2 <- 2 * sum(exp(Xi_Xj_l_h + log_c_h2 + (log_2_n1 - log_n)) -
+                              exp(2 * (log_c_h2 - log_n) -
+                                    log_c_norm_Xi_Xj_l_h))
+            cv <- cv_1 - cv_2
+            loss <- cv + penalty
+
+          }
           ifelse(!is.finite(loss), 1e6, loss)
 
         }, error = function(e) 1e6)
@@ -290,7 +316,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
                                      log(sum(exp(log_cv_kde - max_log_cv_kde))),
                                    -Inf)
 
-          # CV loss
+          # CV loss -- TODO: asinh() this!
           cv <- exp(log_int_kde2) - exp(log_sum_cv_kde)
           loss <- cv + penalty
           ifelse(!is.finite(loss), 1e6, loss)

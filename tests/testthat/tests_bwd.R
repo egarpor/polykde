@@ -77,14 +77,22 @@ cv_naive <- function(h, X, d, mc_samp, kde_samp = FALSE) {
 #                 bw0 = rep(hh1, r), control = list(maxit = 0),
 #                 method = "BFGS", exact_vmf = TRUE)$opt$value
 # })
+# cv_bw_cv_vmf_curve_asinh <- function(h1) sapply(h1, function(hh1) {
+#   bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
+#                 bw0 = rep(hh1, r), control = list(maxit = 0),
+#                 method = "BFGS", exact_vmf = TRUE, arcsinh = TRUE)$opt$value
+# })
 #
 # # Visualization of LSCV functions
 # curve(cv_naive_curve(x, kde_samp = FALSE), from = 0.2, to = 1, n = 100,
 #       ylab = "CV loss")
-# curve(cv_naive_curve(x, kde_samp = TRUE), from = 0.2, to = 1, n = 100,
-#       add = TRUE, lty = 2)
-# curve(cv_bw_cv_curve, from = 0.2, to = 1, n = 100, add = TRUE, col = 2)
-# curve(cv_bw_cv_vmf_curve, from = 0.2, to = 1, n = 100, add = TRUE, col = 3)
+# curve(cv_naive_curve(x, kde_samp = TRUE), add = TRUE, lty = 2)
+# curve(cv_bw_cv_curve, add = TRUE, col = 2)
+# curve(cv_bw_cv_vmf_curve, add = TRUE, col = 3)
+#
+# # Visualization of LSCV functions in asinh scale
+# curve(cv_bw_cv_vmf_curve_asinh, from = 0.1, to = 1, n = 200, col = 1)
+# curve(asinh(cv_bw_cv_vmf_curve(x)), add = TRUE, col = 4)
 
 test_that("bw_cv_polysph(type = \"LCV\") in sequential and parallel mode", {
   expect_equal(
@@ -149,6 +157,24 @@ test_that("bw_cv_polysph(type = \"LSCV\", exact_vmf = TRUE) loss", {
                     bw0 = f * h, M = M, control = list(maxit = 0),
                     method = "BFGS", exact_vmf = TRUE)$opt$value,
       tolerance = 5e-2)
+
+  }
+
+})
+
+test_that("bw_cv_polysph(type = \"LSCV\", arcsinh = TRUE) loss", {
+
+  for (f in c(0.25, 0.5, 1, 2)) {
+
+    expect_equal(
+      bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
+                    bw0 = f * h, M = M, control = list(maxit = 0),
+                    method = "BFGS", exact_vmf = TRUE,
+                    arcsinh = TRUE)$opt$value,
+      asinh(bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
+                          bw0 = f * h, M = M, control = list(maxit = 0),
+                          method = "BFGS", exact_vmf = TRUE,
+                          arcsinh = FALSE)$opt$value))
 
   }
 
