@@ -127,11 +127,16 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
       # Precompute matrix with the lower triangular parts of the matrices
       # (X_{il}'X_{jl})_{ij}, l = 1, ..., r.
+      # ||X_i - X_j|| = sqrt(2 * (1 - X_i'X_j))
+      #  => ||X_i - X_j||^2 = 2 * (1 - X_i'X_j)
+      #  => ||X_i - X_j||^2 / 2 = 1 - X_i'X_j
+      #  => X_i'X_j = 1 - ||X_i - X_j||^2 / 2
       ind_dj <- comp_ind_dj(d = d)
-      Xi_Xj_l <- diamond_rcrossprod(X = X, ind_dj = ind_dj)
       Xi_Xj_l <- sapply(seq_len(r), function(j) {
 
-        Xi_Xj_l[, , j][lower.tri(Xi_Xj_l[, , j], diag = FALSE)]
+        d_ij <- dist(X[, (ind_dj[j] + 1):ind_dj[j + 1]], method = "euclidean",
+                     diag = FALSE, upper = FALSE)
+        1 - 0.5 * d_ij^2
 
       })
       Xi_Xj_l <- t(Xi_Xj_l) # For better column recycling later
