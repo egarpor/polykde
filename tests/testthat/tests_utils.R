@@ -174,45 +174,33 @@ test_that("Correct vectorizations on nu and x for spline = FALSE", {
   xs <- 1:10
   nus <- c(1:9, 101)
   nus_a <- c(101:102)
-  expect_equal(polykde:::log_besselI_scaled(nu = nus, x = xs, spline = FALSE),
+  expect_equal(log_besselI_scaled(nu = nus, x = xs, spline = FALSE),
                sapply(seq_along(nus), function(i)
-                 polykde:::log_besselI_scaled(nu = nus[i], x = xs[i],
-                                              spline = FALSE)))
-  expect_equal(polykde:::log_besselI_scaled(nu = nus, x = xs[4],
-                                            spline = FALSE),
+                 log_besselI_scaled(nu = nus[i], x = xs[i], spline = FALSE)))
+  expect_equal(log_besselI_scaled(nu = nus, x = xs[4], spline = FALSE),
                sapply(seq_along(nus), function(i)
-                 polykde:::log_besselI_scaled(nu = nus[i], x = xs,
-                                              spline = FALSE)[4]))
-  expect_equal(polykde:::log_besselI_scaled(nu = nus[4], x = xs,
-                                            spline = FALSE),
+                 log_besselI_scaled(nu = nus[i], x = xs, spline = FALSE)[4]))
+  expect_equal(log_besselI_scaled(nu = nus[4], x = xs, spline = FALSE),
                sapply(seq_along(nus), function(i)
-                 polykde:::log_besselI_scaled(nu = nus, x = xs[i],
-                                              spline = FALSE)[4]))
-  expect_equal(polykde:::log_besselI_scaled(nu = nus_a, x = xs[4],
-                                            spline = FALSE),
+                 log_besselI_scaled(nu = nus, x = xs[i], spline = FALSE)[4]))
+  expect_equal(log_besselI_scaled(nu = nus_a, x = xs[4], spline = FALSE),
                sapply(seq_along(nus_a), function(i)
-                 polykde:::log_besselI_scaled(nu = nus_a[i], x = xs,
-                                              spline = FALSE)[4]))
+                 log_besselI_scaled(nu = nus_a[i], x = xs, spline = FALSE)[4]))
 })
 
 test_that("Correct vectorizations on nu and x for spline = FALSE and NA's", {
   xs <- c(1, NA, 3:4, NA)
   nus <- 1:5
   for (j in 1:2) {
-    expect_equal(polykde:::log_besselI_scaled(nu = nus, x = xs, spline = FALSE),
+    expect_equal(log_besselI_scaled(nu = nus, x = xs, spline = FALSE),
                  sapply(seq_along(nus), function(i)
-                   polykde:::log_besselI_scaled(nu = nus[i], x = xs[i],
-                                                spline = FALSE)))
-    expect_equal(polykde:::log_besselI_scaled(nu = nus, x = xs[j],
-                                              spline = FALSE),
+                   log_besselI_scaled(nu = nus[i], x = xs[i], spline = FALSE)))
+    expect_equal(log_besselI_scaled(nu = nus, x = xs[j], spline = FALSE),
                  sapply(seq_along(nus), function(i)
-                   polykde:::log_besselI_scaled(nu = nus[i], x = xs,
-                                                spline = FALSE)[j]))
-    expect_equal(polykde:::log_besselI_scaled(nu = nus[j], x = xs,
-                                              spline = FALSE),
+                   log_besselI_scaled(nu = nus[i], x = xs, spline = FALSE)[j]))
+    expect_equal(log_besselI_scaled(nu = nus[j], x = xs, spline = FALSE),
                  sapply(seq_along(nus), function(i)
-                   polykde:::log_besselI_scaled(nu = nus, x = xs[i],
-                                                spline = FALSE)[j]))
+                   log_besselI_scaled(nu = nus, x = xs[i], spline = FALSE)[j]))
   }
 })
 
@@ -230,8 +218,8 @@ test_that("Accuracy of log_besselI_scaled(nu = seq(0, 6, by = 0.5)) with
   nus <- seq(0, 6, by = 0.5)
   for (nu in nus) {
     expect_equal(
-      polykde:::log_besselI_scaled(nu = nu, x = x, spline = TRUE),
-      polykde:::log_besselI_scaled(nu = nu, x = x, spline = FALSE),
+      log_besselI_scaled(nu = nu, x = x, spline = TRUE),
+      log_besselI_scaled(nu = nu, x = x, spline = FALSE),
       tolerance = 1e-9)
   }
 })
@@ -242,8 +230,8 @@ test_that("Accuracy of log_besselI_scaled(nu = seq(0, 6, by = 0.5)) with
   nus <- seq(0, 10, by = 1)
   for (nu in nus) {
     expect_equal(
-      polykde:::log_besselI_scaled(nu = nu, x = x, spline = TRUE),
-      polykde:::log_besselI_scaled(nu = nu, x = x, spline = FALSE),
+      log_besselI_scaled(nu = nu, x = x, spline = TRUE),
+      log_besselI_scaled(nu = nu, x = x, spline = FALSE),
       tolerance = 1e-9)
   }
 })
@@ -309,11 +297,11 @@ test_that("log1m_exp() is correct", {
 test_that("log_diff_exp() is correct", {
   log_p <- c(-5, 1, 5)
   log_n <- rev(log_p)
-  log_diff <- polykde:::log_diff_exp(log_p = log_p, log_n = log_n)
+  log_diff <- log_diff_exp(log_p = log_p, log_n = log_n)
     expect_equal(log_diff$sgn * exp(log_diff$log_abs),
                  exp(log_p) - exp(log_n))
   for (i in 1:3) {
-    log_diff <- polykde:::log_diff_exp(log_p = log_p[i], log_n = log_n[i])
+    log_diff <- log_diff_exp(log_p = log_p[i], log_n = log_n[i])
     expect_equal(log_diff$sgn * exp(log_diff$log_abs),
                  exp(log_p[i]) - exp(log_n[i]))
   }
@@ -324,8 +312,11 @@ test_that("log_diff_exp() is correct", {
 test_that("asinh_log() is correct", {
   log_abs <- c(-5, 0, 5)
   sgn <- c(-1, 1, 1)
+  x <- -3:3
   expect_equal(asinh(sgn * exp(log_abs)),
                asinh_log(log_abs = log_abs, sgn = sgn))
+  expect_equal(x,
+               sinh(asinh_log(log_abs = log(abs(x)), sgn = sign(x))))
   for (i in 1:3) {
     expect_equal(asinh(sgn[i] * exp(log_abs[i])),
                  asinh_log(log_abs = log_abs[i], sgn = sgn[i]))
