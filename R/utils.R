@@ -446,16 +446,17 @@ log1m_exp <- function(x) {
 }
 
 
-#' @title Stable evaluation of \eqn{\exp(\log(x)) - \exp(\log(y))}
+#' @title Stable evaluation of \eqn{\exp(x) - \exp(y)}
 #'
-#' @description Computes \eqn{\exp(\log(x)) - \exp(\log(y))} through log-scale
+#' @description Computes \eqn{\exp(x) - \exp(y)} through log-scale
 #' and keeping track of the sign.
 #'
-#' @param log_p vector with \eqn{\log(x)} values.
-#' @param log_n vector with \eqn{\log(y)} values.
+#' @param log_p vector with \eqn{x} values.
+#' @param log_n vector with \eqn{y} values.
 #' @param tol tolerance for considering the log-values equal.
-#' @return A list with entries \code{log_abs} (vector with \eqn{\log(|x - y|)}
-#' and \code{sgn} (vector with the signs of \eqn{x - y}).
+#' @return A list with entries \code{log_abs} (vector with
+#' \eqn{\log(|\exp(x) - \exp(y)|)} and \code{sgn} (vector with the signs of
+#' \eqn{\exp(x) - \exp(y)}).
 #' @examples
 #' log_p <- c(10, 5, 1)
 #' log_n <- rev(log_p)
