@@ -294,3 +294,40 @@ test_that("log_sum_exp() is correct", {
   expect_equal(log_sum_exp(logs = x), log(sum(exp(x))))
   expect_equal(log_sum_exp(logs = x, avg = TRUE), log(mean(exp(x))))
 })
+
+## log1m_exp()
+
+test_that("log1m_exp() is correct", {
+  x <- c(1e-5, 10)
+  expect_equal(log1m_exp(x), log(1 - exp(-x)))
+  expect_equal(log1m_exp(x[1]), log(1 - exp(-x[1])))
+  expect_equal(log1m_exp(x[2]), log(1 - exp(-x[2])))
+})
+
+## log_signed_diff()
+
+test_that("log_signed_diff() is correct", {
+  log_x <- c(-5, 1, 5)
+  log_y <- rev(log_x)
+  log_diff <- polykde:::log_signed_diff(log_x = log_x, log_y = log_y)
+    expect_equal(log_diff$sgn * exp(log_diff$log_abs),
+                 exp(log_x) - exp(log_y))
+  for (i in 1:3) {
+    log_diff <- polykde:::log_signed_diff(log_x = log_x[i], log_y = log_y[i])
+    expect_equal(log_diff$sgn * exp(log_diff$log_abs),
+                 exp(log_x[i]) - exp(log_y[i]))
+  }
+})
+
+## asinh_log()
+
+test_that("asinh_log() is correct", {
+  log_abs <- c(-5, 0, 5)
+  sgn <- c(-1, 1, 1)
+  expect_equal(asinh(sgn * exp(log_abs)),
+               asinh_log(log_abs = log_abs, sgn = sgn))
+  for (i in 1:3) {
+    expect_equal(asinh(sgn[i] * exp(log_abs[i])),
+                 asinh_log(log_abs = log_abs[i], sgn = sgn[i]))
+  }
+})
