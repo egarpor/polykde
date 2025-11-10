@@ -516,6 +516,8 @@ asinh_log <- function(log_abs, sgn) {
   #                = -log(|x| + sqrt(x^2 + 1)),
   # since 1 / (y + sqrt(y^2 + 1)) = -y + sqrt(y^2 + 1)
   stopifnot(length(log_abs) == length(sgn))
-  return(sgn * (log_abs + log1p(sqrt(1 + exp(-2 * log_abs)))))
+  ash <- sgn * (log_abs + log1p(sqrt(1 + exp(-2 * log_abs))))
+  ash[sgn == 0] <- 0
+  return(ash)
 
 }

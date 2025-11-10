@@ -316,7 +316,7 @@ test_that("asinh_log() is correct", {
   expect_equal(asinh(sgn * exp(log_abs)),
                asinh_log(log_abs = log_abs, sgn = sgn))
   expect_equal(x,
-               sinh(asinh_log(log_abs = log(abs(x)), sgn = sign(x))))
+               sinh(polykde:::asinh_log(log_abs = log(abs(x)), sgn = sign(x))))
   for (i in 1:3) {
     expect_equal(asinh(sgn[i] * exp(log_abs[i])),
                  asinh_log(log_abs = log_abs[i], sgn = sgn[i]))
