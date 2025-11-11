@@ -437,10 +437,14 @@ log_sum_exp <- function(logs, avg = FALSE) {
 #' @noRd
 log1m_exp <- function(x) {
 
-  res <- numeric(length(x))
-  ind_log2 <- x <= log(2)
-  res[ind_log2] <- log(-expm1(-x[ind_log2]))
-  res[!ind_log2] <- log1p(-exp(-x[!ind_log2]))
+  # Smaller than log(2)
+  res <- rep(NA, length(x))
+  ind_lt <- !is.na(x) & x <= log(2)
+  res[ind_lt] <- log(-expm1(-x[ind_lt]))
+
+  # Greater than log(2)
+  ind_gt <- !is.na(x) & x > log(2)
+  res[ind_gt] <- log1p(-exp(-x[ind_gt]))
   return(res)
 
 }
@@ -466,16 +470,25 @@ log1m_exp <- function(x) {
 #' @noRd
 log_diff_exp <- function(log_p, log_n, tol = 1e-15) {
 
+  # Check lengths
   stopifnot(length(log_p) == length(log_n))
+
+  # Signs
   log_diff <- log_p - log_n
-  sgn <- ifelse(abs(log_diff) <= tol, 0,
-                ifelse(log_diff > 0, 1, -1))
-  log_abs <- numeric(length(log_p))
-  ind_sgn_pos <- sgn >= 0
+  sgn <- log_abs <- rep(NA, length(log_p))
+  sgn[abs(log_diff) <= tol] <- 0
+  sgn[log_diff > 0] <- 1
+  sgn[log_diff < 0] <- -1
+
+  # Positive case
+  ind_sgn_pos <- !is.na(sgn) & sgn >= 0
   log_abs[ind_sgn_pos] <- log_p[ind_sgn_pos] +
     log1m_exp(log_diff[ind_sgn_pos])
-  log_abs[!ind_sgn_pos] <- log_n[!ind_sgn_pos] +
-    log1m_exp(-log_diff[!ind_sgn_pos])
+
+  # Negative case
+  ind_sgn_neg <- !is.na(sgn) & sgn < 0
+  log_abs[ind_sgn_neg] <- log_n[ind_sgn_neg] +
+    log1m_exp(-log_diff[ind_sgn_neg])
   return(list(log_abs = log_abs, sgn = sgn))
 
 }
@@ -506,7 +519,8 @@ asinh_log <- function(log_abs, sgn) {
   #                             (1 + sqrt(1 + exp(-2 * log(|x|)))))
   #                          = s * (log(|x|) +
   #                             log1p(sqrt(1 + exp(-2 * log(|x|)))))
-  # If s = 1:
+  # for log(|x|) >= 0.
+  # Indeed, if s = 1:
   # asinh(s * |x|) = log(s * |x| + sqrt(x^2 + 1))
   #                = log(|x| + sqrt(x^2 + 1))
   # If s = -1:
@@ -515,8 +529,28 @@ asinh_log <- function(log_abs, sgn) {
   #                = log(1 / (|x| + sqrt(x^2 + 1)))
   #                = -log(|x| + sqrt(x^2 + 1)),
   # since 1 / (y + sqrt(y^2 + 1)) = -y + sqrt(y^2 + 1)
+  # For log(|x|) < 0, use
+  # asinh(s * exp(log(|x|))) = s * (log(|x|) +
+  #                             log(1 + sqrt(1 + exp(-2 * log(|x|)))))
+  #                          = s * log(exp(log(|x|)) +
+  #                              sqrt(exp(2 * log(|x|)) + 1))
+  # ash <- sgn * (log_abs + log1p(sqrt(1 + exp(-2 * log_abs))))
+
+  # Check lengths
   stopifnot(length(log_abs) == length(sgn))
-  ash <- sgn * (log_abs + log1p(sqrt(1 + exp(-2 * log_abs))))
+
+  # Positive case
+  ash <- rep(NA, length(log_abs))
+  log_abs_pos <- !is.na(log_abs) & log_abs >= 0
+  ash[log_abs_pos] <-
+    sgn[log_abs_pos] * (log_abs[log_abs_pos] +
+                          log1p(sqrt(1 + exp(-2 * log_abs[log_abs_pos]))))
+
+  # Negative case
+  log_abs_neg <- !is.na(log_abs) & log_abs < 0
+  ash[log_abs_neg] <-
+    sgn[log_abs_neg] * log(exp(log_abs[log_abs_neg]) +
+                              sqrt(1 + exp(2 * log_abs[log_abs_neg])))
   ash[sgn == 0] <- 0
   return(ash)
 
