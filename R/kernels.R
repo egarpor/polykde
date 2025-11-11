@@ -218,7 +218,7 @@ c_kern <- function(h, d, kernel = "1", kernel_type = "1", k = 10, log = FALSE,
 
           }
 
-          # Asymptotic form
+        # Asymptotic form
         } else {
 
           d_tilde <- sum(d)
