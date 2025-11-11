@@ -304,11 +304,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
               log(M) + sum(rotasym::w_p(p = d + 1, log = TRUE))
 
           }
-          max_log_kde2_mc <- max(log_kde2_mc)
-          log_int_kde2 <- ifelse(is.finite(max_log_kde2_mc),
-                                 max_log_kde2_mc +
-                                   log(sum(exp(log_kde2_mc - max_log_kde2_mc))),
-                                 -Inf)
+          log_int_kde2 <- log_sum_exp(log_kde2_mc)
 
           # Sum part with LogSumExp trick
           log_cv_kde <- log_cv_kde_polysph(X = X, d = d, h = h_pos,
@@ -316,11 +312,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
                                            kernel_type = kernel_type, k = k,
                                            intrinsic = intrinsic) -
             log(n) + log(2)
-          max_log_cv_kde <- max(log_cv_kde)
-          log_sum_cv_kde <- ifelse(is.finite(max_log_cv_kde),
-                                   max_log_cv_kde +
-                                     log(sum(exp(log_cv_kde - max_log_cv_kde))),
-                                   -Inf)
+          log_sum_cv_kde <- log_sum_exp(log_cv_kde)
 
           # Compute arcsinh(CV) or CV loss?
           if (arcsinh) {
