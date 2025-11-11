@@ -93,7 +93,7 @@ test_that("bw_mise_polysph() minimizes the MISE on the sphere", {
   prop <- prop / sum(prop)
   n <- 5
 
-  # Minimization of ISE
+  # Minimization of MISE
   bw0 <- cbind(10^seq(log10(0.2), log10(5), l = 10))
   log1p_mise_bw0 <- sapply(bw0, function(h) {
     log1p_mise(log_h = log(h), n = n, mu = mu, kappa = kappa, prop = prop,
