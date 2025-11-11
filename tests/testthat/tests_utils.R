@@ -286,7 +286,7 @@ test_that("log_sum_exp() is correct", {
 ## log1m_exp()
 
 test_that("log1m_exp() is correct", {
-  x <- c(1e-5, 10)
+  x <- c(1e-5, 10, NA)
   expect_equal(log1m_exp(x), log(1 - exp(-x)))
   expect_equal(log1m_exp(x[1]), log(1 - exp(-x[1])))
   expect_equal(log1m_exp(x[2]), log(1 - exp(-x[2])))
@@ -295,7 +295,7 @@ test_that("log1m_exp() is correct", {
 ## log_diff_exp()
 
 test_that("log_diff_exp() is correct", {
-  log_p <- c(-5, 1, 5)
+  log_p <- c(-5, 1, 5, NA)
   log_n <- rev(log_p)
   log_diff <- log_diff_exp(log_p = log_p, log_n = log_n)
     expect_equal(log_diff$sgn * exp(log_diff$log_abs),
@@ -309,9 +309,9 @@ test_that("log_diff_exp() is correct", {
 
 ## asinh_log()
 
-test_that("asinh_log() is correct", {
-  log_abs <- c(-5, 0, 5)
-  sgn <- c(-1, 1, 1)
+test_that("asinh_log() works fine for large positive log_abs arguments", {
+  log_abs <- c(-20, -10, 0, 50, 500, NA)
+  sgn <- c(1, -1, 1, -1, 1, 1)
   x <- -3:3
   expect_equal(asinh(sgn * exp(log_abs)),
                asinh_log(log_abs = log_abs, sgn = sgn))
@@ -321,4 +321,12 @@ test_that("asinh_log() is correct", {
     expect_equal(asinh(sgn[i] * exp(log_abs[i])),
                  asinh_log(log_abs = log_abs[i], sgn = sgn[i]))
   }
+})
+
+test_that("asinh_log() works fine for large negative log_abs arguments", {
+  log_abs <- c(-50, -500, -1000, NA)
+  sgn <- c(1, -1, 1, NA)
+  x <- c(1e-22, -1e-22, 1e-43)
+  expect_equal(asinh(sgn * exp(log_abs)),
+               asinh_log(log_abs = log_abs, sgn = sgn))
 })
