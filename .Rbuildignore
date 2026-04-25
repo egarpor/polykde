@@ -10,3 +10,6 @@
 ^\.github$
 ^CRAN-SUBMISSION$
 .DS_Store
+^\.positai$
+^\.claude$
+^audit-reports$

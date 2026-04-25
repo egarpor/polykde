@@ -214,7 +214,6 @@ mise_vmf <- function(h, n, mu, kappa, prop, d, M_psi = 1e4, seed_psi = NULL,
       pre_Psi_12 <- log_C_h + log_C_kappa[i] + log_C_kappa[j] -
         log_C_h_x_kappa_mu_i
       pre_Psi_12 <- t(t(pre_Psi_12) - log_dens_ij)
-      kappa[j] * drop(vmf_samp_ij %*% mu[j, ])
 
       # Psi_1
       Psi_1[, i, j] <-
@@ -392,7 +391,7 @@ bw_mise_polysph <- function(n, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
 #' X <- r_mvmf_polysph(n = n, d = 2, mu = mu, kappa = kappa, prop = prop)
 #' h <- 10^seq(-2, 1, l = 100)
 #' plot(h, polykde:::ise_vmf_polysph(X = X, d = 2, h = h, x_mvmf = x_mvmf,
-#'                                         f_mvmf = f_mvmf)$ise))
+#'                                         f_mvmf = f_mvmf)$ise)
 #' abline(v = polykde:::bw_ise_polysph(
 #'   X = X, d = 2, bw0 = 1, x_mvmf = x_mvmf, f_mvmf = f_mvmf)$bw, col = 2)
 #' @noRd
