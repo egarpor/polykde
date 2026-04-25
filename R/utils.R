@@ -255,7 +255,7 @@ log_besselI_scaled <- function(nu, x, spline = FALSE) {
   # Check length of nu and see if vectorized
   if (!(length(x) == 1 || length(nu) == 1 || length(nu) == length(x))) {
 
-    stop("nu and must have equal lengths or one being a single number.")
+    stop("nu and x must have equal lengths or one being a single number.")
 
   } else {
 
@@ -339,9 +339,6 @@ log_besselI_scaled <- function(nu, x, spline = FALSE) {
 
       # Single nu?
       if (single_nu) {
-
-        # # https://dlmf.nist.gov/10.41#E1
-        # res <- -0.5 * log(2 * pi * nu) + nu * (1 + log(x) - log(2 * nu)) - x
 
         # https://dlmf.nist.gov/10.41#E3
         res <- Bessel::besselI.nuAsym(x = x, nu = nu, k.max = 5,

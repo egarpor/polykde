@@ -16,3 +16,8 @@ tests/testthat/Rplots.pdf
 *.gcda
 Rplots.pdf
 sphunif.pdf
+.positai
+.claude
+CLAUDE.md
+audit-reports/
+.coverage.rds

@@ -93,7 +93,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
       if (any(h_pos < h_min)) {
 
         message("h left-truncated to h_min")
-        penalty <- 1e6 * sum((h_pos - h_min)^2)
+        penalty <- 1e7 * sum((h_pos - h_min)^2)
         h_pos <- pmax(h_pos, h_min)
 
       }
@@ -108,9 +108,9 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
         # -LCV
         loss <- -sum(log_cv, na.rm = na.rm) + penalty
-        ifelse(!is.finite(loss), 1e6, loss)
+        ifelse(!is.finite(loss), 1e7, loss)
 
-      }, error = function(e) 1e6)
+      }, error = function(e) 1e7)
       return(loss)
 
     }
@@ -163,7 +163,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
         if (any(h_pos < h_min)) {
 
           message("h left-truncated to h_min")
-          penalty <- 1e6 * sum((h_pos - h_min)^2)
+          penalty <- 1e7 * sum((h_pos - h_min)^2)
           h_pos <- pmax(h_pos, h_min)
 
         }
@@ -221,9 +221,9 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
             loss <- cv + penalty
 
           }
-          ifelse(!is.finite(loss), 1e6, loss)
+          ifelse(!is.finite(loss), 1e7, loss)
 
-        }, error = function(e) 1e6)
+        }, error = function(e) 1e7)
         return(exact_loss)
 
       }
@@ -262,7 +262,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
         if (any(h_pos < h_min)) {
 
           message("h left-truncated to h_min")
-          penalty <- 1e6 * sum((h_pos - h_min)^2)
+          penalty <- 1e7 * sum((h_pos - h_min)^2)
           h_pos <- pmax(h_pos, h_min)
 
         }
@@ -288,27 +288,28 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
                                          kernel_type = kernel_type, k = k,
                                          intrinsic = intrinsic)
             log_kde2_mc <- kde_polysph(x = mc_kde_samp, X = X, d = d,
-                                       h = h_pos, wrt_unif = FALSE,
+                                       h = h_pos, wrt_unif = TRUE,
                                        kernel = kernel, kernel_type =
                                          kernel_type, k = k, log = TRUE,
-                                       intrinsic = intrinsic) - log(M)
+                                       intrinsic = intrinsic) - log(M) +
+              sum(rotasym::w_p(p = d + 1, log = TRUE))
 
           } else {
 
             # Uniform Monte Carlo
             log_kde2_mc <- 2 * kde_polysph(x = mc_samp, X = X, d = d,
-                                           h = h_pos, wrt_unif = FALSE,
+                                           h = h_pos, wrt_unif = TRUE,
                                            kernel = kernel, kernel_type =
                                              kernel_type, k = k,
                                            log = TRUE, intrinsic = intrinsic) -
-              log(M) + sum(rotasym::w_p(p = d + 1, log = TRUE))
+              log(M)
 
           }
           log_int_kde2 <- log_sum_exp(log_kde2_mc)
 
           # Sum part with LogSumExp trick
           log_cv_kde <- log_cv_kde_polysph(X = X, d = d, h = h_pos,
-                                           wrt_unif = FALSE, kernel = kernel,
+                                           wrt_unif = TRUE, kernel = kernel,
                                            kernel_type = kernel_type, k = k,
                                            intrinsic = intrinsic) -
             log(n) + log(2)
@@ -331,9 +332,9 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
             loss <- cv + penalty
 
           }
-          ifelse(!is.finite(loss), 1e6, loss)
+          ifelse(!is.finite(loss), 1e7, loss)
 
-        }, error = function(e) 1e6)
+        }, error = function(e) 1e7)
         return(loss)
 
       }
