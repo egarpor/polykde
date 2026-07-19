@@ -45,6 +45,12 @@
 #' \item{alternative}{a character string describing the alternative hypothesis.}
 #' \item{method}{the kind of test performed.}
 #' \item{data.name}{a character string giving the name of the data.}
+#' @references
+#' García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+#' with polyspherical data and its applications. \emph{Journal of the American
+#' Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+#' @seealso \code{\link{kde_polysph}}, \code{\link{bw_rot_polysph}},
+#' \code{\link{bw_cv_polysph}}.
 #' @examples
 #' ## Two-sample case
 #' \donttest{
@@ -465,9 +471,9 @@ hom_test_polysph <- function(X, d, labels,
 #' @title Hellinger distance between two densities via Monte Carlo
 #'
 #' @description Computes the Hellinger distance
-#' \deqn{H(f, g) = \sqrt(1 - \int_{\mathcal{S}^{d_1} \times \ldots \times
-#' \mathcal{S}^{d_r}} \sqrt(f(\boldsymbol{x}) g(\boldsymbol{x}))
-#' \,\mathrm{d}\boldsymbol{x})} between two densities \eqn{f} and \eqn{g} on
+#' \deqn{H(f, g) = \sqrt{1 - \int_{\mathcal{S}^{d_1} \times \ldots \times
+#' \mathcal{S}^{d_r}} \sqrt{f(\boldsymbol{x}) g(\boldsymbol{x})}
+#' \,\mathrm{d}\boldsymbol{x}}} between two densities \eqn{f} and \eqn{g} on
 #' \eqn{\mathcal{S}^{d_1} \times \ldots \times \mathcal{S}^{d_r}} via
 #' Monte Carlo.
 #'

@@ -26,8 +26,8 @@ d_vmf_polysph <- function(x, d, mu, kappa, log = FALSE) {
 }
 
 
-#' @title Density of the product of von Mises--Fisher distributions on the
-#' polysphere
+#' @title Density of a mixture of products of von Mises--Fisher distributions
+#' on the polysphere
 #'
 #' @description Computes the density of an \eqn{m}-mixture of product of von
 #' Mises--Fisher densities on the polysphere.

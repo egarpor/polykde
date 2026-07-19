@@ -51,8 +51,16 @@ const double log_M_PI = std::log(M_PI);
 //' @param kernel_type type of kernel employed: \code{1} for product kernel
 //' (default); \code{2} for spherically symmetric kernel.
 //' @param k softplus kernel parameter. Defaults to \code{10.0}.
-//' @return A column vector of size \code{c(nx, 1)} with the evaluation of
+//' @return A column matrix of size \code{c(nx, 1)} with the evaluation of the
 //' kernel density estimator.
+//' @references
+//' García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+//' with polyspherical data and its applications. \emph{Journal of the American
+//' Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+//' @seealso
+//' \code{\link{log_cv_kde_polysph}}, \code{\link{grad_hess_kde_polysph}},
+//' \code{\link{r_kde_polysph}}, \code{\link{bw_rot_polysph}},
+//' \code{\link{bw_cv_polysph}}, \code{\link{bw_mrot_polysph}}.
 //' @examples
 //' # Simple check on S^1 x S^2
 //' n <- 1e3
@@ -390,7 +398,7 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
 //'
 //' @inheritParams kde_polysph
 //' @param norm_X ensure a normalization of the data? Defaults to \code{FALSE}.
-//' @return A column vector of size \code{c(n, 1)} with the evaluation of the
+//' @return A column matrix of size \code{c(n, 1)} with the evaluation of the
 //' logarithm of the cross-validated kernel density estimator.
 //' @examples
 //' # Simple check on S^1 x S^2
