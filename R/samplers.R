@@ -159,51 +159,57 @@ r_mvmf_polysph <- function(n, d, mu, kappa, prop, norm_mu = FALSE) {
 #' distribution.
 #' @return A matrix of size \code{c(n, sum(d) + r)} with the sample.
 #' @examples
-#' # Simulate kernels in (S^1)^2
-#' n <- 1e3
-#' h <- c(1, 1)
-#' d <- c(1, 1)
-#' mu <- rep(DirStats::to_cir(pi), 2)
-#' samp_ker <- function(kernel, kernel_type, col, main) {
-#'   data <- r_kern_polysph(n = n, d = d, mu = mu, h = h, kernel = kernel,
-#'                          kernel_type = kernel_type)
-#'   ang <- cbind(DirStats::to_rad(data[, 1:2]),
-#'                DirStats::to_rad(data[, 3:4]))
-#'   plot(ang, xlim = c(0, 2 * pi), ylim = c(0, 2 * pi), pch = 16, cex = 0.25,
-#'        col = col, xlab = expression(Theta[1]), ylab = expression(Theta[2]),
-#'        main = main)
+#' if (requireNamespace("DirStats", quietly = TRUE)) {
+#'   # Simulate kernels in (S^1)^2
+#'   n <- 1e3
+#'   h <- c(1, 1)
+#'   d <- c(1, 1)
+#'   mu <- rep(DirStats::to_cir(pi), 2)
+#'   samp_ker <- function(kernel, kernel_type, col, main) {
+#'     data <- r_kern_polysph(n = n, d = d, mu = mu, h = h, kernel = kernel,
+#'                            kernel_type = kernel_type)
+#'     ang <- cbind(DirStats::to_rad(data[, 1:2]),
+#'                  DirStats::to_rad(data[, 3:4]))
+#'     plot(ang, xlim = c(0, 2 * pi), ylim = c(0, 2 * pi), pch = 16, cex = 0.25,
+#'          col = col, xlab = expression(Theta[1]),
+#'          ylab = expression(Theta[2]), main = main)
+#'   }
+#'   old_par <- par(mfcol = c(2, 3))
+#'   samp_ker(kernel = 2, kernel_type = 2, col = 1, main = "Epa sph. symmetric")
+#'   samp_ker(kernel = 2, kernel_type = 1, col = 2, main = "Epa product")
+#'   samp_ker(kernel = 3, kernel_type = 2, col = 1, main = "Sfp sph. symmetric")
+#'   samp_ker(kernel = 3, kernel_type = 1, col = 2, main = "Sfp product")
+#'   samp_ker(kernel = 1, kernel_type = 2, col = 1, main = "vMF sph. symmetric")
+#'   samp_ker(kernel = 1, kernel_type = 1, col = 2, main = "vMF product")
+#'   par(old_par)
 #' }
-#' old_par <- par(mfcol = c(2, 3))
-#' samp_ker(kernel = 2, kernel_type = 2, col = 1, main = "Epa sph. symmetric")
-#' samp_ker(kernel = 2, kernel_type = 1, col = 2, main = "Epa product")
-#' samp_ker(kernel = 3, kernel_type = 2, col = 1, main = "Sfp sph. symmetric")
-#' samp_ker(kernel = 3, kernel_type = 1, col = 2, main = "Sfp product")
-#' samp_ker(kernel = 1, kernel_type = 2, col = 1, main = "vMF sph. symmetric")
-#' samp_ker(kernel = 1, kernel_type = 1, col = 2, main = "vMF product")
-#' par(old_par)
 #' \donttest{
-#' # Simulate kernels in (S^2)^2
-#' n <- 1e3
-#' h <- c(0.2, 0.6)
-#' d <- c(2, 2)
-#' mu <- c(c(0, 0, 1), c(0, -1, 0))
-#' samp_ker <- function(kernel, kernel_type, main) {
-#'   data <- r_kern_polysph(n = n, d = d, mu = mu, h = h, kernel = kernel,
-#'                          kernel_type = kernel_type)
-#'   scatterplot3d::scatterplot3d(rbind(data[, 1:3], data[, 4:6]),
-#'                                xlim = c(-1, 1), ylim = c(-1, 1),
-#'                                zlim = c(-1, 1), pch = 16, xlab = "",
-#'                                ylab = "", zlab = "", cex.symbols = 0.5,
-#'        color = rep(viridis::viridis(n)[rank(data[, 3])], 2), main = main)
+#' if (requireNamespace("scatterplot3d", quietly = TRUE) &&
+#'     requireNamespace("viridis", quietly = TRUE)) {
+#'
+#'   # Simulate kernels in (S^2)^2
+#'   n <- 1e3
+#'   h <- c(0.2, 0.6)
+#'   d <- c(2, 2)
+#'   mu <- c(c(0, 0, 1), c(0, -1, 0))
+#'   samp_ker <- function(kernel, kernel_type, main) {
+#'     data <- r_kern_polysph(n = n, d = d, mu = mu, h = h, kernel = kernel,
+#'                            kernel_type = kernel_type)
+#'     scatterplot3d::scatterplot3d(rbind(data[, 1:3], data[, 4:6]),
+#'                                  xlim = c(-1, 1), ylim = c(-1, 1),
+#'                                  zlim = c(-1, 1), pch = 16, xlab = "",
+#'                                  ylab = "", zlab = "", cex.symbols = 0.5,
+#'          color = rep(viridis::viridis(n)[rank(data[, 3])], 2), main = main)
+#'   }
+#'   old_par <- par(mfcol = c(2, 3))
+#'   samp_ker(kernel = 2, kernel_type = 2, main = "Epa sph. symmetric")
+#'   samp_ker(kernel = 2, kernel_type = 1, main = "Epa product")
+#'   samp_ker(kernel = 3, kernel_type = 2, main = "Sfp sph. symmetric")
+#'   samp_ker(kernel = 3, kernel_type = 1, main = "Sfp product")
+#'   samp_ker(kernel = 1, kernel_type = 2, main = "vMF sph. symmetric")
+#'   samp_ker(kernel = 1, kernel_type = 1, main = "vMF product")
+#'   par(old_par)
 #' }
-#' old_par <- par(mfcol = c(2, 3))
-#' samp_ker(kernel = 2, kernel_type = 2, main = "Epa sph. symmetric")
-#' samp_ker(kernel = 2, kernel_type = 1, main = "Epa product")
-#' samp_ker(kernel = 3, kernel_type = 2, main = "Sfp sph. symmetric")
-#' samp_ker(kernel = 3, kernel_type = 1, main = "Sfp product")
-#' samp_ker(kernel = 1, kernel_type = 2, main = "vMF sph. symmetric")
-#' samp_ker(kernel = 1, kernel_type = 1, main = "vMF product")
-#' par(old_par)
 #'
 #' # Plot simulated data
 #' n <- 1e3
@@ -373,27 +379,31 @@ r_kern_polysph <- function(n, d, mu, h, kernel = 1, kernel_type = 1, k = 10,
 #' considered kernel.
 #' @return A matrix of size \code{c(n, sum(d) + r)} with the sample.
 #' @examples
-#' # Simulated data on (S^1)^2
-#' n <- 50
-#' samp <- r_path_s1r(n = n, r = 2, k = c(1, 2), angles = TRUE)
-#' plot(samp, xlim = c(-pi, pi), ylim = c(-pi, pi), col = rainbow(n),
-#'      axes = FALSE, xlab = "", ylab = "", pch = 16, cex = 0.75)
-#' points(torus_to_angles(r_kde_polysph(n = 10 * n, X = angles_to_torus(samp),
-#'                                      d = c(1, 1), h = c(0.1, 0.1))),
-#'        col = "black", pch = 16, cex = 0.2)
-#' sdetorus::torusAxis()
+#' if (requireNamespace("sdetorus", quietly = TRUE)) {
+#'   # Simulated data on (S^1)^2
+#'   n <- 50
+#'   samp <- r_path_s1r(n = n, r = 2, k = c(1, 2), angles = TRUE)
+#'   plot(samp, xlim = c(-pi, pi), ylim = c(-pi, pi), col = rainbow(n),
+#'        axes = FALSE, xlab = "", ylab = "", pch = 16, cex = 0.75)
+#'   points(torus_to_angles(r_kde_polysph(n = 10 * n, X = angles_to_torus(samp),
+#'                                        d = c(1, 1), h = c(0.1, 0.1))),
+#'          col = "black", pch = 16, cex = 0.2)
+#'   sdetorus::torusAxis()
+#' }
 #'
-#' # Simulated data on S^2
-#' n <- 50
-#' samp <- r_path_s2r(n = n, r = 1, sigma = 0.1, kappa = 5,
-#'                    spiral = TRUE)[, , 1]
-#' sc3d <- scatterplot3d::scatterplot3d(
-#'   samp, xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
-#'   xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
-#' )
-#' xyz <- r_kde_polysph(n = 10 * n, X = samp, d = 2, h = 0.1)
-#' sc3d$points3d(xyz[, 1], xyz[, 2], xyz[, 3], col = "black", pch = 16,
-#'               cex = 0.2)
+#' if (requireNamespace("scatterplot3d", quietly = TRUE)) {
+#'   # Simulated data on S^2
+#'   n <- 50
+#'   samp <- r_path_s2r(n = n, r = 1, sigma = 0.1, kappa = 5,
+#'                      spiral = TRUE)[, , 1]
+#'   sc3d <- scatterplot3d::scatterplot3d(
+#'     samp, xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
+#'     xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
+#'   )
+#'   xyz <- r_kde_polysph(n = 10 * n, X = samp, d = 2, h = 0.1)
+#'   sc3d$points3d(xyz[, 1], xyz[, 2], xyz[, 3], col = "black", pch = 16,
+#'                 cex = 0.2)
+#' }
 #' @export
 r_kde_polysph <- function(n, X, d, h, kernel = 1, kernel_type = 1, k = 10,
                           intrinsic = FALSE, norm_X = FALSE) {
@@ -474,52 +484,65 @@ r_kde_polysph <- function(n, X, d, h, kernel = 1, kernel_type = 1, k = 10,
 #' An array of size \code{c(n, d, r)} with samples on \eqn{(\mathcal{S}^d)^r}.
 #' If \code{angles = TRUE} for \code{r_path_s1r}, then a matrix of size
 #' \code{c(n ,r)} with angles is returned.
+#' @seealso
+#' \code{\link{r_unif_polysph}}, \code{\link{r_vmf_polysph}},
+#' \code{\link{r_mvmf_polysph}}, \code{\link{r_kern_polysph}},
+#' \code{\link{r_kde_polysph}}.
 #' @examples
-#' # Straight trends on (S^1)^2
-#' n <- 100
-#' samp_1 <- r_path_s1r(n = n, r = 2, k = c(1, 2), angles = TRUE)
-#' plot(samp_1, xlim = c(-pi, pi), ylim = c(-pi, pi), col = rainbow(n),
-#'      axes = FALSE, xlab = "", ylab = "", pch = 16)
-#' sdetorus::torusAxis()
+#' if (requireNamespace("sdetorus", quietly = TRUE)) {
+#'   # Straight trends on (S^1)^2
+#'   n <- 100
+#'   samp_1 <- r_path_s1r(n = n, r = 2, k = c(1, 2), angles = TRUE)
+#'   plot(samp_1, xlim = c(-pi, pi), ylim = c(-pi, pi), col = rainbow(n),
+#'        axes = FALSE, xlab = "", ylab = "", pch = 16)
+#'   sdetorus::torusAxis()
+#' }
 #'
-#' # Straight trends on (S^1)^3
-#' n <- 100
-#' samp_2 <- r_path_s1r(n = n, r = 3, angles = TRUE)
-#' pairs(samp_2, xlim = c(-pi, pi), ylim = c(-pi, pi), col = rainbow(n),
-#'       pch = 16)
-#' sdetorus::torusAxis()
-#' scatterplot3d::scatterplot3d(
-#'   samp_2, xlim = c(-pi, pi), ylim = c(-pi, pi), zlim = c(-pi, pi),
-#'   xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
-#' )
+#' \donttest{
+#' if (requireNamespace("sdetorus", quietly = TRUE) &&
+#'     requireNamespace("scatterplot3d", quietly = TRUE)) {
 #'
-#' # Small-circle trends on (S^2)^2
-#' n <- 100
-#' samp_3 <- r_path_s2r(n = n, r = 2, sigma = 0.1, kappa = 5)
-#' old_par <- par(mfrow = c(1, 2))
-#' scatterplot3d::scatterplot3d(
-#'   samp_3[, , 1], xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
-#'   xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
-#' )
-#' scatterplot3d::scatterplot3d(
-#'   samp_3[, , 2], xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
-#'   xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
-#' )
-#' par(old_par)
+#'   # Straight trends on (S^1)^3
+#'   n <- 100
+#'   samp_2 <- r_path_s1r(n = n, r = 3, angles = TRUE)
+#'   pairs(samp_2, xlim = c(-pi, pi), ylim = c(-pi, pi), col = rainbow(n),
+#'         pch = 16)
+#'   sdetorus::torusAxis()
+#'   scatterplot3d::scatterplot3d(
+#'     samp_2, xlim = c(-pi, pi), ylim = c(-pi, pi), zlim = c(-pi, pi),
+#'     xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
+#'   )
 #'
-#' # Spiral trends on (S^2)^2
-#' n <- 100
-#' samp_4 <- r_path_s2r(n = n, r = 2, c = 3, spiral = TRUE, sigma = 0.01)
-#' old_par <- par(mfrow = c(1, 2))
-#' scatterplot3d::scatterplot3d(
-#'   samp_4[, , 1], xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
-#'   xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
-#' )
-#' scatterplot3d::scatterplot3d(
-#'   samp_4[, , 2], xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
-#'   xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
-#' )
-#' par(old_par)
+#'   # Small-circle trends on (S^2)^2
+#'   n <- 100
+#'   samp_3 <- r_path_s2r(n = n, r = 2, sigma = 0.1, kappa = 5)
+#'   old_par <- par(mfrow = c(1, 2))
+#'   scatterplot3d::scatterplot3d(
+#'     samp_3[, , 1], xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
+#'     xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
+#'   )
+#'   scatterplot3d::scatterplot3d(
+#'     samp_3[, , 2], xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
+#'     xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
+#'   )
+#'   par(old_par)
+#'
+#'   # Spiral trends on (S^2)^2
+#'   n <- 100
+#'   samp_4 <- r_path_s2r(n = n, r = 2, c = 3, spiral = TRUE, sigma = 0.01)
+#'   old_par <- par(mfrow = c(1, 2))
+#'   scatterplot3d::scatterplot3d(
+#'     samp_4[, , 1], xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
+#'     xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
+#'   )
+#'   scatterplot3d::scatterplot3d(
+#'     samp_4[, , 2], xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
+#'     xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
+#'   )
+#'   par(old_par)
+#'
+#' }
+#' }
 #' @export
 r_path_s1r <- function(n, r, alpha = runif(r, -pi, pi),
                        k = sample(-2:2, size = r, replace = TRUE),

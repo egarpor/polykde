@@ -41,7 +41,7 @@ arma::mat sfp(arma::mat t) {
 //' is computed with \code{\link{comp_ind_dj}}.
 //' @return A matrix of size \code{c(n, sum(d) + r)} with the projected points.
 //' @examples
-//' # Example on (S^1)^2
+//' # Project an arbitrary point in R^2 x R^2 onto (S^1)^2
 //' d <- c(1, 1)
 //' x <- rbind(c(2, 0, 1, 1))
 //' proj_polysph(x, ind_dj = comp_ind_dj(d))
