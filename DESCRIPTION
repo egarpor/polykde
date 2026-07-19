@@ -50,5 +50,5 @@ LinkingTo: Rcpp, RcppArmadillo, RcppProgress
 URL: https://github.com/egarpor/polykde
 BugReports: https://github.com/egarpor/polykde/issues
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Roxygen: list(old_usage = TRUE)
