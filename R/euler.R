@@ -228,45 +228,56 @@ block_euler_ridge <- function(x, X, d, h, h_euler, ind_blocks, N = 1e3,
 #' cleaning).
 #' @inheritParams euler_ridge
 #' @return A list with the same structure as that returned by
-#' \code{\link{euler_ridge}}, but with the spurious points. The removed points
-#' are informed in the \code{removed} field.
+#' \code{\link{euler_ridge}}, but with the spurious points removed. An extra
+#' logical vector \code{removed} of length \code{nx} indicates which input
+#' points were dropped.
+#' @references
+#' García-Portugués, E. and Meilán-Vila, A. (2023). Hippocampus shape analysis
+#' via skeletal models and kernel smoothing. In Larriba, Y. (Ed.),
+#' \emph{Statistical Methods at the Forefront of Biomedical Advances},
+#' pp. 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}.
 #' @examples
-#' ## Test on S^2 with some spurious end points
+#' \donttest{
+#' if (requireNamespace("scatterplot3d", quietly = TRUE)) {
 #'
-#' # Sample
-#' r <- 1
-#' d <- 2
-#' n <- 50
-#' ind_dj <- comp_ind_dj(d = d)
-#' set.seed(987202226)
-#' X <- r_path_s2r(n = n, r = r, spiral = FALSE, Theta = cbind(c(1, 0, 0)),
-#'                 sigma = 0.2)[, , 1]
-#' col_X <- rep(gray(0), n)
-#' col_X_alp <- rep(gray(0, alpha = 0.25), n)
+#'   ## Test on S^2 with some spurious end points
 #'
-#' # Euler
-#' h_rid <- 0.5
-#' h_eu <- h_rid^2
-#' N <- 30
-#' eps <- 1e-6
-#' X0 <- r_unif_polysph(n = n, d = d)
-#' Y <- euler_ridge(x = X0, X = X, d = d, h = h_rid, h_euler = h_eu,
-#'                  N = N, eps = eps, keep_paths = TRUE)
-#' Y_removed <- clean_euler_ridge(e = Y, X = X)$removed
-#' col_X[Y_removed] <- 2
-#' col_X_alp[Y_removed] <- 2
+#'   # Sample
+#'   r <- 1
+#'   d <- 2
+#'   n <- 50
+#'   ind_dj <- comp_ind_dj(d = d)
+#'   X <- r_path_s2r(n = n, r = r, spiral = FALSE, Theta = cbind(c(1, 0, 0)),
+#'                   sigma = 0.2)[, , 1]
+#'   col_X <- rep(gray(0), n)
+#'   col_X_alp <- rep(gray(0, alpha = 0.25), n)
 #'
-#' # Visualization
-#' i <- N # Between 1 and N
-#' sc3 <- scatterplot3d::scatterplot3d(Y$paths[, , 1], color = col_X_alp,
-#'                                     pch = 19, xlim = c(-1, 1),
-#'                                     ylim = c(-1, 1), zlim = c(-1, 1),
-#'                                     xlab = "x", ylab = "y", zlab = "z")
-#' sc3$points3d(rbind(Y$paths[, , i]), col = col_X, pch = 16, cex = 0.75)
-#' for (k in seq_len(nrow(Y$paths))) {
+#'   # Euler
+#'   h_rid <- 0.5
+#'   h_eu <- h_rid^2
+#'   N <- 30
+#'   eps <- 1e-6
+#'   X0 <- r_unif_polysph(n = n, d = d)
+#'   Y <- euler_ridge(x = X0, X = X, d = d, h = h_rid, h_euler = h_eu,
+#'                    N = N, eps = eps, keep_paths = TRUE)
+#'   Y_removed <- clean_euler_ridge(e = Y, X = X)$removed
+#'   col_X[Y_removed] <- 2
+#'   col_X_alp[Y_removed] <- 2
 #'
-#'   sc3$points3d(t(Y$paths[k, , ]), col = col_X_alp[k], type = "l")
+#'   # Visualization
+#'   i <- N # Between 1 and N
+#'   sc3 <- scatterplot3d::scatterplot3d(Y$paths[, , 1], color = col_X_alp,
+#'                                       pch = 19, xlim = c(-1, 1),
+#'                                       ylim = c(-1, 1), zlim = c(-1, 1),
+#'                                       xlab = "x", ylab = "y", zlab = "z")
+#'   sc3$points3d(rbind(Y$paths[, , i]), col = col_X, pch = 16, cex = 0.75)
+#'   for (k in seq_len(nrow(Y$paths))) {
 #'
+#'     sc3$points3d(t(Y$paths[k, , ]), col = col_X_alp[k], type = "l")
+#'
+#'   }
+#'
+#' }
 #' }
 #' @export
 clean_euler_ridge <- function(e, X, p_out = NULL) {
@@ -353,59 +364,70 @@ clean_euler_ridge <- function(e, X, p_out = NULL) {
 #' \item{ridge_fun}{a function that parametrizes the SIER.}
 #' \item{h}{bandwidth used for the local polynomial regression.}
 #' \item{probs_scores}{object \code{probs_scores}.}
+#' @references
+#' García-Portugués, E. and Meilán-Vila, A. (2023). Hippocampus shape analysis
+#' via skeletal models and kernel smoothing. In Larriba, Y. (Ed.),
+#' \emph{Statistical Methods at the Forefront of Biomedical Advances},
+#' pp. 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}.
 #' @examples
-#' ## Test on (S^1)^2
+#' \donttest{
+#' if (requireNamespace("sdetorus", quietly = TRUE) &&
+#'     requireNamespace("viridis", quietly = TRUE)) {
 #'
-#' # Sample
-#' set.seed(132121)
-#' r <- 2
-#' d <- rep(1, r)
-#' n <- 200
-#' ind_dj <- comp_ind_dj(d = d)
-#' Th <- matrix(runif(n = n * (r - 1), min = -pi / 2, max = pi / 2),
-#'              nrow = n, ncol = r - 1)
-#' Th[, r - 1] <- sort(Th[, r - 1])
-#' Th <- cbind(Th, sdetorus::toPiInt(
-#'   pi + Th[, r - 1] + runif(n = n, min = -pi / 4, max = pi / 4)))
-#' X <- angles_to_torus(Th)
-#' col_X_alp <- viridis::viridis(n, alpha = 0.25)
-#' col_X <- viridis::viridis(n)
+#'   ## Test on (S^1)^2
 #'
-#' # Euler
-#' h_rid <- rep(0.75, r)
-#' h_eu <- h_rid^2
-#' N <- 200
-#' eps <- 1e-6
-#' Y <- euler_ridge(x = X, X = X, d = d, h = h_rid, h_euler = h_eu,
-#'                  N = N, eps = eps, keep_paths = TRUE)
+#'   # Sample
+#'   r <- 2
+#'   d <- rep(1, r)
+#'   n <- 200
+#'   ind_dj <- comp_ind_dj(d = d)
+#'   Th <- matrix(runif(n = n * (r - 1), min = -pi / 2, max = pi / 2),
+#'                nrow = n, ncol = r - 1)
+#'   Th[, r - 1] <- sort(Th[, r - 1])
+#'   Th <- cbind(Th, sdetorus::toPiInt(
+#'     pi + Th[, r - 1] + runif(n = n, min = -pi / 4, max = pi / 4)))
+#'   X <- angles_to_torus(Th)
+#'   col_X_alp <- viridis::viridis(n, alpha = 0.25)
+#'   col_X <- viridis::viridis(n)
 #'
-#' # Visualization
-#' i <- N # Between 1 and N
-#' plot(rbind(torus_to_angles(Y$paths[, , 1])), col = col_X_alp, pch = 19,
-#'      axes = FALSE, xlim = c(-pi, pi), ylim = c(-pi, pi),
-#'      xlab = "", ylab = "")
-#' points(rbind(torus_to_angles(Y$paths[, , i])), col = col_X, pch = 16,
-#'        cex = 0.75)
-#' sdetorus::torusAxis(1:2)
-#' for (k in seq_len(nrow(Y$paths))) {
+#'   # Euler
+#'   h_rid <- rep(0.75, r)
+#'   h_eu <- h_rid^2
+#'   N <- 200
+#'   eps <- 1e-6
+#'   Y <- euler_ridge(x = X, X = X, d = d, h = h_rid, h_euler = h_eu,
+#'                    N = N, eps = eps, keep_paths = TRUE)
 #'
-#'   xy <- torus_to_angles(t(Y$paths[k, , ]))
-#'   sdetorus::linesTorus(x = xy[, 1], y = xy[, 2], col = col_X_alp[k])
+#'   # Visualization
+#'   i <- N # Between 1 and N
+#'   plot(rbind(torus_to_angles(Y$paths[, , 1])), col = col_X_alp, pch = 19,
+#'        axes = FALSE, xlim = c(-pi, pi), ylim = c(-pi, pi),
+#'        xlab = "", ylab = "")
+#'   points(rbind(torus_to_angles(Y$paths[, , i])), col = col_X, pch = 16,
+#'          cex = 0.75)
+#'   sdetorus::torusAxis(1:2)
+#'   for (k in seq_len(nrow(Y$paths))) {
+#'
+#'     xy <- torus_to_angles(t(Y$paths[k, , ]))
+#'     sdetorus::linesTorus(x = xy[, 1], y = xy[, 2], col = col_X_alp[k])
+#'
+#'   }
+#'
+#'   # SIER
+#'   ind_rid <- index_ridge(endpoints = Y$ridge_y, X = X, d = d,
+#'                          probs_scores = seq(0, 1, l = 50))
+#'   xy <- torus_to_angles(ind_rid$ridge_grid)
+#'   sdetorus::linesTorus(x = xy[, 1], y = xy[, 2], col = 2, lwd = 2)
+#'   points(torus_to_angles(ind_rid$ridge_fun(quantile(ind_rid$scores_grid))),
+#'          col = 4, pch = 19)
+#'
+#'   # Scores
+#'   plot(density(ind_rid$scores_X), type = "l", xlab = "Scores",
+#'        ylab = "Density", main = "Scores density")
+#'   for (i in 1:n) rug(ind_rid$scores_X[i], col = col_X[i])
 #'
 #' }
-#'
-#' # SIER
-#' ind_rid <- index_ridge(endpoints = Y$ridge_y, X = X, d = d,
-#'                        probs_scores = seq(0, 1, l = 50))
-#' xy <- torus_to_angles(ind_rid$ridge_grid)
-#' sdetorus::linesTorus(x = xy[, 1], y = xy[, 2], col = 2, lwd = 2)
-#' points(torus_to_angles(ind_rid$ridge_fun(quantile(ind_rid$scores_grid))),
-#'        col = 4, pch = 19)
-#'
-#' # Scores
-#' plot(density(ind_rid$scores_X), type = "l", xlab = "Scores",
-#'      ylab = "Density", main = "Scores density")
-#' for (i in 1:n) rug(ind_rid$scores_X[i], col = col_X[i])
+#' }
 #' @export
 index_ridge <- function(endpoints, X, d, l_index = 1e3, f_index = 2,
                         probs_scores = seq(0, 1, l = 101), verbose = FALSE,
