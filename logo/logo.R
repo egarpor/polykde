@@ -15,10 +15,9 @@
 # viridis and apply Lambert shading. An optional rgl path (render_rgl(), not
 # run by default) is kept at the bottom for interactive use.
 #
-# Run from the data-raw/ directory (paths are relative to it):
-#   setwd("data-raw"); source("logo.R")
-# Output (relative to data-raw/):
-#   ../man/figures/logo.png          the final hex sticker
+# Run from the package root:
+#   Rscript logo/logo.R
+# Output: logo/logo.png (master) and man/figures/logo.png (shipped mirror).
 # The transparent interior render (the hex subplot) is written to a tempfile so
 # only logo.png ships in the package.
 
@@ -26,9 +25,22 @@ library(polykde)
 library(viridis)
 library(hexSticker)
 
+## ---- Shared logo standard (identical across egarpor packages) -------------
+# Aller_Rg is bundled with (and auto-registered by) hexSticker, so no
+# showtext/font_add setup is needed for the sticker() idiom.
+FONT    <- "Aller_Rg"   # typeface for the package name and the GitHub URL
+P_SIZE  <- 31.2         # package-name size (shared across packages)
+U_SIZE  <- 9.0          # GitHub URL size (large enough to read)
+U_X     <- 1.00         # GitHub URL position: along the lower-right hex edge
+U_Y     <- 0.08
+U_ANGLE <- 30
+H_SIZE  <- 1.5          # hexagon border thickness
+DPI     <- 600
+
 set.seed(20251110)
 
-dir.create("../man/figures", showWarnings = FALSE, recursive = TRUE)
+dir.create("logo", showWarnings = FALSE)
+dir.create("man/figures", showWarnings = FALSE, recursive = TRUE)
 
 ## ---- 1. Sphere ray-caster ------------------------------------------------ ##
 
@@ -173,16 +185,17 @@ sticker(
   subplot  = subplot_png,
   s_x = 1.00, s_y = 0.98, s_width = 1.04, s_height = 1.04,
   package  = "polykde",
-  p_x = 1.00, p_y = 0.52, p_color = txt_col, p_size = 20,
-  h_fill   = hex_fill, h_color = hex_border, h_size = 1.35,
+  p_x = 1.00, p_y = 0.44, p_color = txt_col, p_size = P_SIZE, p_family = FONT,
+  h_fill   = hex_fill, h_color = hex_border, h_size = H_SIZE,
   spotlight = FALSE,
   url = "github.com/egarpor/polykde", u_color = url_col,
-  u_size = 4.2, u_y = 0.075,
-  dpi = 300,
-  filename = "../man/figures/logo.png"
+  u_x = U_X, u_y = U_Y, u_angle = U_ANGLE, u_size = U_SIZE, u_family = FONT,
+  dpi = DPI,
+  filename = "logo/logo.png"
 )
+file.copy("logo/logo.png", "man/figures/logo.png", overwrite = TRUE)
 
-message("Wrote ../man/figures/logo.png")
+message("Wrote logo/logo.png and man/figures/logo.png")
 
 ## ---- Optional: native rgl render (interactive only) ---------------------- ##
 # Run this in RStudio / an interactive session with a working OpenGL context to
