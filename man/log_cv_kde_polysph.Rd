@@ -4,9 +4,19 @@
 \alias{log_cv_kde_polysph}
 \title{Cross-validation for the polyspherical kernel density estimator}
 \usage{
-log_cv_kde_polysph(X, d, h, weights = as.numeric(c()), wrt_unif = FALSE,
-  normalized = TRUE, intrinsic = FALSE, norm_X = FALSE, kernel = 1L,
-  kernel_type = 1L, k = 10)
+log_cv_kde_polysph(
+  X,
+  d,
+  h,
+  weights = as.numeric(c()),
+  wrt_unif = FALSE,
+  normalized = TRUE,
+  intrinsic = FALSE,
+  norm_X = FALSE,
+  kernel = 1L,
+  kernel_type = 1L,
+  k = 10
+)
 }
 \arguments{
 \item{X}{a matrix of size \code{c(n, sum(d) + r)} with the sample.}
@@ -16,15 +26,15 @@ log_cv_kde_polysph(X, d, h, weights = as.numeric(c()), wrt_unif = FALSE,
 \item{h}{vector of size \code{r} with bandwidths.}
 
 \item{weights}{weights for each observation. If provided, a vector of size
-\code{n} with the weights for multiplying each kernel. If not provided,
-set internally to \code{rep(1 / n, n)}, which gives the standard estimator.}
+\code{n} with the weights for multiplying each kernel. If not provided, set
+internally to \code{rep(1 / n, n)}, which gives the standard estimator.}
 
 \item{wrt_unif}{flag to return a density with respect to the uniform
 measure. If \code{FALSE} (default), the density is with respect to the
 Lebesgue measure.}
 
-\item{normalized}{flag to compute the normalizing constant of the kernel
-and include it in the kernel density estimator. Defaults to \code{TRUE}.}
+\item{normalized}{flag to compute the normalizing constant of the kernel and
+include it in the kernel density estimator. Defaults to \code{TRUE}.}
 
 \item{intrinsic}{use the intrinsic distance, instead of the
 extrinsic-chordal distance, in the kernel? Defaults to \code{FALSE}.}
@@ -40,7 +50,7 @@ extrinsic-chordal distance, in the kernel? Defaults to \code{FALSE}.}
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 }
 \value{
-A column vector of size \code{c(n, 1)} with the evaluation of the
+A column matrix of size \code{c(n, 1)} with the evaluation of the
 logarithm of the cross-validated kernel density estimator.
 }
 \description{

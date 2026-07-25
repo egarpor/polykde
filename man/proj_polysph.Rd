@@ -9,19 +9,20 @@ proj_polysph(x, ind_dj)
 \arguments{
 \item{x}{a matrix of size \code{c(n, sum(d) + r)}.}
 
-\item{ind_dj}{\code{0}-based index separating the blocks of spheres that
-is computed with \code{\link{comp_ind_dj}}.}
+\item{ind_dj}{\code{0}-based index separating the blocks of spheres that is
+computed with \code{\link{comp_ind_dj}}.}
 }
 \value{
 A matrix of size \code{c(n, sum(d) + r)} with the projected points.
 }
 \description{
 Projects points on \eqn{\mathbb{R}^{d_1 + \cdots + d_r + r}}
-onto the polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times
-\mathcal{S}^{d_r}} by normalizing each block of \eqn{d_j} coordinates.
+onto the polysphere
+\eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}} by normalizing
+each block of \eqn{d_j} coordinates.
 }
 \examples{
-# Example on (S^1)^2
+# Project an arbitrary point in R^2 x R^2 onto (S^1)^2
 d <- c(1, 1)
 x <- rbind(c(2, 0, 1, 1))
 proj_polysph(x, ind_dj = comp_ind_dj(d))

@@ -33,19 +33,28 @@ hippocampus
 Contains skeletal representations (s-reps) for the hippocampus
 shapes of \eqn{177} 6-month-old infants. The s-reps models include \eqn{168}
 spokes, and hence the directions of the spokes form a sample on the
-polysphere \eqn{(\mathcal{S}^2)^{168}}. There are \eqn{34} infants that
-later developed autism.
+polysphere \eqn{(\mathbb{S}^2)^{168}}. There are \eqn{34} infants that later
+developed autism.
 }
 \examples{
-# Load data
-data("hippocampus")
-attach(hippocampus)
+\donttest{
+if (requireNamespace("scatterplot3d", quietly = TRUE)) {
+  # Load data
+  data("hippocampus")
+  attach(hippocampus)
 
-# View ith hippocampus s-rep
-i <- 50
-view_srep(base = base[i, , ], dirs = dirs[i, , ], bdry = bdry[i, , ])
+  # View ith hippocampus s-rep
+  i <- 50
+  view_srep(base = base[i, , ], dirs = dirs[i, , ], bdry = bdry[i, , ])
+}
+}
 }
 \references{
+García-Portugués, E. and Meilán-Vila, A. (2023). Hippocampus shape analysis
+via skeletal models and kernel smoothing. In Larriba, Y. (Ed.),
+\emph{Statistical Methods at the Forefront of Biomedical Advances},
+pp. 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}.
+
 Liu, Z., Hong, J., Vicory, J., Damon, J. N. and Pizer, S. M. (2021). Fitting
 unbranching skeletal structures to objects. \emph{Medical Image Analysis},
 70:102020. \doi{10.1016/j.media.2021.102020}

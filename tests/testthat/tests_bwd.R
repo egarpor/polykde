@@ -77,29 +77,37 @@ cv_naive <- function(h, X, d, mc_samp, kde_samp = FALSE) {
 #                 bw0 = rep(hh1, r), control = list(maxit = 0),
 #                 method = "BFGS", exact_vmf = TRUE)$opt$value
 # })
+# cv_bw_cv_vmf_curve_asinh <- function(h1) sapply(h1, function(hh1) {
+#   bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
+#                 bw0 = rep(hh1, r), control = list(maxit = 0),
+#                 method = "BFGS", exact_vmf = TRUE, arcsinh = TRUE)$opt$value
+# })
 #
 # # Visualization of LSCV functions
 # curve(cv_naive_curve(x, kde_samp = FALSE), from = 0.2, to = 1, n = 100,
 #       ylab = "CV loss")
-# curve(cv_naive_curve(x, kde_samp = TRUE), from = 0.2, to = 1, n = 100,
-#       add = TRUE, lty = 2)
-# curve(cv_bw_cv_curve, from = 0.2, to = 1, n = 100, add = TRUE, col = 2)
-# curve(cv_bw_cv_vmf_curve, from = 0.2, to = 1, n = 100, add = TRUE, col = 3)
+# curve(cv_naive_curve(x, kde_samp = TRUE), add = TRUE, lty = 2)
+# curve(cv_bw_cv_curve, add = TRUE, col = 2)
+# curve(cv_bw_cv_vmf_curve, add = TRUE, col = 3)
+#
+# # Visualization of LSCV functions in asinh scale
+# curve(cv_bw_cv_vmf_curve_asinh, from = 0.1, to = 1, n = 200, col = 1)
+# curve(asinh(cv_bw_cv_vmf_curve(x)), add = TRUE, col = 4)
 
 test_that("bw_cv_polysph(type = \"LCV\") in sequential and parallel mode", {
   expect_equal(
-    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV",
+    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV", method = "L-BFGS-B",
                   control = list(maxit = 1e3))$opt$value,
-    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV",
+    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV", method = "L-BFGS-B",
                   control = list(maxit = 1e3), ncores = 2)$opt$value,
                tolerance = 1e-2)
 })
 
 test_that("bw_cv_polysph(type = \"LSCV\") in sequential and parallel mode", {
   expect_equal(
-    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
+    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV", method = "L-BFGS-B",
                   control = list(maxit = 1e3), seed_mc = 1)$opt$value,
-    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
+    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV", method = "L-BFGS-B",
                   control = list(maxit = 1e3), seed_mc = 1,
                   ncores = 2)$opt$value,
     tolerance = 1e-2)
@@ -149,6 +157,34 @@ test_that("bw_cv_polysph(type = \"LSCV\", exact_vmf = TRUE) loss", {
                     bw0 = f * h, M = M, control = list(maxit = 0),
                     method = "BFGS", exact_vmf = TRUE)$opt$value,
       tolerance = 5e-2)
+
+  }
+
+})
+
+test_that("bw_cv_polysph(type = \"LSCV\", arcsinh = TRUE) loss", {
+
+  for (f in c(0.25, 0.5, 1, 2)) {
+
+    expect_equal(
+      bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
+                    bw0 = f * h, M = M, control = list(maxit = 0),
+                    method = "BFGS", exact_vmf = TRUE,
+                    arcsinh = TRUE)$opt$value,
+      asinh(bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
+                          bw0 = f * h, M = M, control = list(maxit = 0),
+                          method = "BFGS", exact_vmf = TRUE,
+                          arcsinh = FALSE)$opt$value))
+    expect_equal(
+      bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
+                    bw0 = f * h, M = M, control = list(maxit = 0),
+                    method = "BFGS", exact_vmf = FALSE,
+                    arcsinh = TRUE, seed_mc = 1)$opt$value,
+      asinh(bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
+                          bw0 = f * h, M = M, control = list(maxit = 0),
+                          method = "BFGS", exact_vmf = FALSE,
+                          arcsinh = FALSE, seed_mc = 1)$opt$value),
+      tolerance = 1e-3)
 
   }
 
@@ -247,6 +283,16 @@ test_that("bw_cv_polysph(type = \"LCV\") with optim/nlm", {
     tolerance = 1e-2)
   expect_error(bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV",
                              opt = "nlm", ncores = 2))
+
+})
+
+test_that("bw_cv_polysph(upscale = TRUE) works for deriv = 0", {
+
+  set.seed(1)
+  X_up <- r_unif_polysph(n = 40, d = c(2, 2))
+  bw_no <- bw_cv_polysph(X = X_up, d = c(2, 2), upscale = FALSE)$bw
+  bw_up <- bw_cv_polysph(X = X_up, d = c(2, 2), upscale = TRUE)$bw
+  expect_true(all(bw_up > bw_no))
 
 })
 
@@ -568,5 +614,27 @@ test_that("Same result with kappa precomputed", {
       bw_mrot_polysph(X = X + 1, d = d, kappa = kappa),
       bw_mrot_polysph(X = X, d = d, kappa = NULL)
     )
+
+})
+
+## RNG state restoration
+
+test_that("bw_cv_polysph() with seed_mc does not alter the RNG state", {
+
+  d_rng <- c(1, 1)
+  X_rng <- r_unif_polysph(n = 10, d = d_rng)
+
+  # An existing .Random.seed is restored
+  set.seed(123)
+  old_seed <- globalenv()$.Random.seed
+  bw_cv_polysph(X = X_rng, d = d_rng, type = "LSCV", M = 100, seed_mc = 1,
+                control = list(maxit = 1))
+  expect_identical(globalenv()$.Random.seed, old_seed)
+
+  # A nonexistent .Random.seed is not created
+  rm(".Random.seed", envir = globalenv())
+  bw_cv_polysph(X = X_rng, d = d_rng, type = "LSCV", M = 100, seed_mc = 1,
+                control = list(maxit = 1))
+  expect_null(globalenv()$.Random.seed)
 
 })

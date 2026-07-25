@@ -15,6 +15,11 @@ test_that("Error if p is odd in angles_to_torus()", {
   expect_error(torus_to_angles(matrix(0, nrow = 1, ncol = 3)))
 })
 
+test_that("angles_to_torus() handles d = 0", {
+  out <- angles_to_torus(matrix(0, nrow = 3, ncol = 0))
+  expect_equal(dim(out), c(3L, 0L))
+})
+
 test_that("angles_to_sph() and sph_to_angles() are inverses, d = 1", {
   d <- 1
   x <- r_unif_polysph(n = 10, d = d)

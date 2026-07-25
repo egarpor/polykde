@@ -13,8 +13,8 @@ sph_to_angles(x)
 \arguments{
 \item{theta}{matrix of size \code{c(n, d)} with the angles.}
 
-\item{x}{matrix of size \code{c(n, d + 1)} with the Cartesian coordinates
-on \eqn{\mathcal{S}^{d}}. Assumed to be of unit norm by rows.}
+\item{x}{matrix of size \code{c(n, d + 1)} with the Cartesian coordinates on
+\eqn{\mathbb{S}^{d}}. Assumed to be of unit norm by rows.}
 }
 \value{
 \itemize{
@@ -24,16 +24,16 @@ on \eqn{\mathcal{S}^{d}}. Assumed to be of unit norm by rows.}
 }
 \description{
 Transforms the angles \eqn{(\theta_1,\ldots,\theta_d)} in
-\eqn{[0,\pi)^{d-1}\times[-\pi,\pi)} into the Cartesian coordinates
+\eqn{[0,\pi)^{d-1}\times[0,2\pi)} into the Cartesian coordinates
 \deqn{(\cos(x_1),\sin(x_1)\cos(x_2),\ldots,
 \sin(x_1)\cdots\sin(x_{d-1})\cos(x_d),
 \sin(x_1)\cdots\sin(x_{d-1})\sin(x_d))}
-of the sphere \eqn{\mathcal{S}^{d}}, and vice versa.
+of the sphere \eqn{\mathbb{S}^{d}}, and vice versa.
 }
 \examples{
 # Check changes of coordinates
 sph_to_angles(angles_to_sph(c(pi / 2, 0, pi)))
-sph_to_angles(angles_to_sph(rbind(c(pi / 2, 0, pi), c(pi, pi / 2, 0))))
+sph_to_angles(angles_to_sph(rbind(c(pi / 2, 0, pi), c(pi, pi / 2, 4 ))))
 angles_to_sph(sph_to_angles(c(0, sqrt(0.5), sqrt(0.1), sqrt(0.4))))
 angles_to_sph(sph_to_angles(rbind(c(0, sqrt(0.5), sqrt(0.1), sqrt(0.4)),
                                   c(0, sqrt(0.5), sqrt(0.5), 0),

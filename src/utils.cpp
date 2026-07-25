@@ -12,8 +12,8 @@ arma::mat s(arma::mat A, bool add);
 
 //' @title Computation of the softplus function
 //'
-//' @description Computes the softplus function \eqn{\log(1+e^{t})} in a
-//' direct way, as it is supposed to be evaluated for large negative \eqn{t}.
+//' @description Computes the softplus function \eqn{\log(1+e^{t})} in a direct
+//' way, as it is supposed to be evaluated for large negative \eqn{t}.
 //'
 //' @param t vector or matrix.
 //' @return The softplus function evaluated at \code{t}.
@@ -33,15 +33,16 @@ arma::mat sfp(arma::mat t) {
 //' @title Projection onto the polysphere
 //'
 //' @description Projects points on \eqn{\mathbb{R}^{d_1 + \cdots + d_r + r}}
-//' onto the polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times
-//' \mathcal{S}^{d_r}} by normalizing each block of \eqn{d_j} coordinates.
+//' onto the polysphere
+//' \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}} by normalizing
+//' each block of \eqn{d_j} coordinates.
 //'
 //' @param x a matrix of size \code{c(n, sum(d) + r)}.
-//' @param ind_dj \code{0}-based index separating the blocks of spheres that
-//' is computed with \code{\link{comp_ind_dj}}.
+//' @param ind_dj \code{0}-based index separating the blocks of spheres that is
+//' computed with \code{\link{comp_ind_dj}}.
 //' @return A matrix of size \code{c(n, sum(d) + r)} with the projected points.
 //' @examples
-//' # Example on (S^1)^2
+//' # Project an arbitrary point in R^2 x R^2 onto (S^1)^2
 //' d <- c(1, 1)
 //' x <- rbind(c(2, 0, 1, 1))
 //' proj_polysph(x, ind_dj = comp_ind_dj(d))
@@ -65,6 +66,11 @@ arma::mat proj_polysph(arma::mat x, arma::uvec ind_dj) {
 
     arma::vec norm = arma::sqrt(arma::sum(
      arma::square(x.cols(ind_dj(dj), ind_dj(dj + 1) - 1)), 1));
+    if (arma::any(norm == 0)) {
+
+      Rcpp::stop("Zero-norm block found in x: cannot project onto the polysphere.");
+
+    }
     x.cols(ind_dj(dj), ind_dj(dj + 1) - 1).each_col() /= norm;
 
     // // SLOWER
@@ -82,10 +88,10 @@ arma::mat proj_polysph(arma::mat x, arma::uvec ind_dj) {
 //'
 //' @description Computation of the distance between points \eqn{\boldsymbol{x}}
 //' and \eqn{\boldsymbol{y}} on the polysphere
-//' \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}:
-//' \deqn{\sqrt{\sum_{j=1}^r
-//' d_{\mathcal{S}^{d_j}}(\boldsymbol{x}_j, \boldsymbol{y}_j)^2},}
-//' where \eqn{d_{\mathcal{S}^{d_j}}(\boldsymbol{x}_j, \boldsymbol{y}_j)=
+//' \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}:
+//' \deqn{\sqrt{\sum_{j=1}^r d_{\mathbb{S}^{d_j}}(\boldsymbol{x}_j,
+//' \boldsymbol{y}_j)^2},}
+//' where \eqn{d_{\mathbb{S}^{d_j}}(\boldsymbol{x}_j, \boldsymbol{y}_j)=
 //' \cos^{-1}(\boldsymbol{x}_j' \boldsymbol{y}_j)}.
 //'
 //' @inheritParams proj_polysph
@@ -181,7 +187,7 @@ arma::vec dist_polysph(arma::mat x, arma::mat y, arma::uvec ind_dj,
       if (max_abs > e1) {
 
         Rcpp::warning("max_i |x_j'y_j| = %g for j = %d. Clamping.",
-                      max_abs, dj + 1);
+                      max_abs, static_cast<int>(dj + 1));
 
       }
 
@@ -260,8 +266,8 @@ arma::mat dist_polysph_cross(arma::mat x, arma::mat y, arma::uvec ind_dj,
 
 //' @title Diamond cross-products
 //'
-//' @description Given a matrix \eqn{\boldsymbol{X}} whose \eqn{n} rows are on
-//' a polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}
+//' @description Given a matrix \eqn{\boldsymbol{X}} whose \eqn{n} rows are on a
+//' polysphere \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}
 //' \subset \mathbb{R}^p,}:
 //' \itemize{
 //' \item{\code{diamond_crossprod} computes the \eqn{n\times p\times p} cube
@@ -415,11 +421,12 @@ arma::mat s(arma::mat A, bool add = false) {
 
 //' @title Projection matrices \eqn{\boldsymbol{P}} and \eqn{\boldsymbol{A}}
 //'
-//' @description Computation of the projection matrices \eqn{\boldsymbol{P}}
-//' and \eqn{\boldsymbol{A}}. The \eqn{jj}-block of \eqn{\boldsymbol{P}} is
+//' @description Computation of the projection matrices \eqn{\boldsymbol{P}} and
+//' \eqn{\boldsymbol{A}}. The \eqn{jj}-block of \eqn{\boldsymbol{P}} is
 //' \eqn{\boldsymbol{I}_{d_j} - \boldsymbol{x}_j \boldsymbol{x}_j'}. The
-//' \eqn{jj}-block of \eqn{\boldsymbol{A}} is \eqn{(\boldsymbol{x}_j'
-//' \boldsymbol{v}_j) \boldsymbol{I}_{d_j}}, \eqn{j=1,\ldots,r}.
+//' \eqn{jj}-block of \eqn{\boldsymbol{A}} is
+//' \eqn{(\boldsymbol{x}_j' \boldsymbol{v}_j) \boldsymbol{I}_{d_j}},
+//' \eqn{j=1,\ldots,r}.
 //'
 //' @param x,v row vectors of size \code{sum(d) + r}.
 //' @inheritParams proj_polysph

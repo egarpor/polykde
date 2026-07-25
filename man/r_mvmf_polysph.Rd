@@ -11,11 +11,11 @@ r_mvmf_polysph(n, d, mu, kappa, prop, norm_mu = FALSE)
 
 \item{d}{vector of size \code{r} with dimensions.}
 
-\item{mu}{a matrix of size \code{c(m, sum(d + 1))} with the means of
-each mixture components in the rows.}
+\item{mu}{a matrix of size \code{c(m, sum(d + 1))} with the means of each
+mixture components in the rows.}
 
-\item{kappa}{a matrix of size \code{c(m, r)} with the concentrations of
-each mixture components in the rows.}
+\item{kappa}{a matrix of size \code{c(m, r)} with the concentrations of each
+mixture components in the rows.}
 
 \item{prop}{a vector of size \code{m} with the proportions of the mixture
 components.}
@@ -26,9 +26,9 @@ components.}
 A matrix of size \code{c(n, sum(d) + r)} with the sample.
 }
 \description{
-Simulates from an \eqn{m}-mixture of product of
-von Mises--Fisher distributions on the polysphere \eqn{\mathcal{S}^{d_1}
-\times \cdots \times \mathcal{S}^{d_r}}.
+Simulates from an \eqn{m}-mixture of product of von
+Mises--Fisher distributions on the polysphere
+\eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}.
 }
 \examples{
 # Simulate mixture of vMF data on (S^1)^2

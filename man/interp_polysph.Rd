@@ -11,8 +11,8 @@ interp_polysph(x, y, ind_dj, N = 10)
 
 \item{y}{a vector of size \code{sum(d) + r} with the end point.}
 
-\item{ind_dj}{\code{0}-based index separating the blocks of spheres that
-is computed with \code{\link{comp_ind_dj}}.}
+\item{ind_dj}{\code{0}-based index separating the blocks of spheres that is
+computed with \code{\link{comp_ind_dj}}.}
 
 \item{N}{number of points in the sequence. Defaults to \code{10}.}
 }

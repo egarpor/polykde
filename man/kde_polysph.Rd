@@ -4,10 +4,22 @@
 \alias{kde_polysph}
 \title{Polyspherical kernel density estimator}
 \usage{
-kde_polysph(x, X, d, h, weights = as.numeric(c()), log = FALSE,
-  wrt_unif = FALSE, normalized = TRUE, intrinsic = FALSE,
-  norm_x = FALSE, norm_X = FALSE, kernel = 1L, kernel_type = 1L,
-  k = 10)
+kde_polysph(
+  x,
+  X,
+  d,
+  h,
+  weights = as.numeric(c()),
+  log = FALSE,
+  wrt_unif = FALSE,
+  normalized = TRUE,
+  intrinsic = FALSE,
+  norm_x = FALSE,
+  norm_X = FALSE,
+  kernel = 1L,
+  kernel_type = 1L,
+  k = 10
+)
 }
 \arguments{
 \item{x}{a matrix of size \code{c(nx, sum(d) + r)} with the evaluation
@@ -20,8 +32,8 @@ points.}
 \item{h}{vector of size \code{r} with bandwidths.}
 
 \item{weights}{weights for each observation. If provided, a vector of size
-\code{n} with the weights for multiplying each kernel. If not provided,
-set internally to \code{rep(1 / n, n)}, which gives the standard estimator.}
+\code{n} with the weights for multiplying each kernel. If not provided, set
+internally to \code{rep(1 / n, n)}, which gives the standard estimator.}
 
 \item{log}{compute the logarithm of the density? Defaults to \code{FALSE}.}
 
@@ -29,8 +41,8 @@ set internally to \code{rep(1 / n, n)}, which gives the standard estimator.}
 measure. If \code{FALSE} (default), the density is with respect to the
 Lebesgue measure.}
 
-\item{normalized}{flag to compute the normalizing constant of the kernel
-and include it in the kernel density estimator. Defaults to \code{TRUE}.}
+\item{normalized}{flag to compute the normalizing constant of the kernel and
+include it in the kernel density estimator. Defaults to \code{TRUE}.}
 
 \item{intrinsic}{use the intrinsic distance, instead of the
 extrinsic-chordal distance, in the kernel? Defaults to \code{FALSE}.}
@@ -47,12 +59,12 @@ extrinsic-chordal distance, in the kernel? Defaults to \code{FALSE}.}
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 }
 \value{
-A column vector of size \code{c(nx, 1)} with the evaluation of
+A column matrix of size \code{c(nx, 1)} with the evaluation of the
 kernel density estimator.
 }
 \description{
 Computes the kernel density estimator for data on the
-polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
+polysphere \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}.
 Given a sample \eqn{\boldsymbol{X}_1,\ldots,\boldsymbol{X}_n}, this
 estimator is
 \deqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})=\sum_{i=1}^n
@@ -69,4 +81,15 @@ h <- c(0.2, 0.2)
 X <- r_vmf_polysph(n = n, d = d, mu = mu, kappa = kappa)
 kde_polysph(x = rbind(mu), X = X, d = d, h = h)
 d_vmf_polysph(x = rbind(mu), d = d, mu = mu, kappa = kappa)
+}
+\references{
+García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+with polyspherical data and its applications. \emph{Journal of the American
+Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+}
+\seealso{
+\code{\link{log_cv_kde_polysph}},
+\code{\link{grad_hess_kde_polysph}}, \code{\link{r_kde_polysph}},
+\code{\link{bw_rot_polysph}}, \code{\link{bw_cv_polysph}},
+\code{\link{bw_mrot_polysph}}.
 }

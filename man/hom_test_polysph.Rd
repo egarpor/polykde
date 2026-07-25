@@ -4,9 +4,21 @@
 \alias{hom_test_polysph}
 \title{Homogeneity test for several polyspherical samples}
 \usage{
-hom_test_polysph(X, d, labels, type = c("jsd", "mean", "scatter", "hd")[1],
-  h = NULL, kernel = 1, kernel_type = 1, k = 10, B = 1000,
-  M = 10000, plot_boot = FALSE, seed_jsd = NULL, cv_jsd = TRUE)
+hom_test_polysph(
+  X,
+  d,
+  labels,
+  type = c("jsd", "mean", "scatter", "hd")[1],
+  h = NULL,
+  kernel = 1,
+  kernel_type = 1,
+  k = 10,
+  B = 1000,
+  M = 10000,
+  plot_boot = FALSE,
+  seed_jsd = NULL,
+  cv_jsd = TRUE
+)
 }
 \arguments{
 \item{X}{a matrix of size \code{c(n, sum(d) + r)} with the sample.}
@@ -61,11 +73,12 @@ An object of class \code{"htest"} with the following fields:
 }
 \description{
 Permutation tests for the equality of distributions of two or
-\eqn{k} samples of data on \eqn{\mathcal{S}^{d_1} \times \cdots \times
-\mathcal{S}^{d_r}}. The Jensen--Shannon distance is used to construct a test
-statistic measuring the discrepancy between the \eqn{k} kernel density
-estimators. Tests based on the mean and scatter matrices are also available,
-but for only two samples (\eqn{k=2}).
+\eqn{k} samples of data on
+\eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}. The
+Jensen--Shannon distance is used to construct a test statistic measuring the
+discrepancy between the \eqn{k} kernel density estimators. Tests based on the
+mean and scatter matrices are also available, but for only two samples
+(\eqn{k=2}).
 }
 \details{
 Only \code{type = "jsd"} is able to deal with \eqn{k > 2}.
@@ -108,4 +121,13 @@ X3 <- rotasym::r_vMF(n = n[3], mu = c(0, 1, 0), kappa = 2)
 hom_test_polysph(X = rbind(X1, X2, X3), labels = rep(1:3, times = n),
                  d = 2, type = "jsd", h = 0.5)
 }
+}
+\references{
+García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+with polyspherical data and its applications. \emph{Journal of the American
+Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+}
+\seealso{
+\code{\link{kde_polysph}}, \code{\link{bw_rot_polysph}},
+\code{\link{bw_cv_polysph}}.
 }

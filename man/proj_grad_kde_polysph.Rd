@@ -4,10 +4,23 @@
 \alias{proj_grad_kde_polysph}
 \title{Projected gradient of the polyspherical kernel density estimator}
 \usage{
-proj_grad_kde_polysph(x, X, d, h, weights = as.numeric(c()),
-  wrt_unif = FALSE, normalized = TRUE, norm_x = FALSE, norm_X = FALSE,
-  kernel = 1L, kernel_type = 1L, k = 10, proj_alt = TRUE,
-  fix_u1 = TRUE, sparse = FALSE)
+proj_grad_kde_polysph(
+  x,
+  X,
+  d,
+  h,
+  weights = as.numeric(c()),
+  wrt_unif = FALSE,
+  normalized = TRUE,
+  norm_x = FALSE,
+  norm_X = FALSE,
+  kernel = 1L,
+  kernel_type = 1L,
+  k = 10,
+  proj_alt = TRUE,
+  fix_u1 = TRUE,
+  sparse = FALSE
+)
 }
 \arguments{
 \item{x}{a matrix of size \code{c(nx, sum(d) + r)} with the evaluation
@@ -20,15 +33,15 @@ points.}
 \item{h}{vector of size \code{r} with bandwidths.}
 
 \item{weights}{weights for each observation. If provided, a vector of size
-\code{n} with the weights for multiplying each kernel. If not provided,
-set internally to \code{rep(1 / n, n)}, which gives the standard estimator.}
+\code{n} with the weights for multiplying each kernel. If not provided, set
+internally to \code{rep(1 / n, n)}, which gives the standard estimator.}
 
 \item{wrt_unif}{flag to return a density with respect to the uniform
 measure. If \code{FALSE} (default), the density is with respect to the
 Lebesgue measure.}
 
-\item{normalized}{flag to compute the normalizing constant of the kernel
-and include it in the kernel density estimator. Defaults to \code{TRUE}.}
+\item{normalized}{flag to compute the normalizing constant of the kernel and
+include it in the kernel density estimator. Defaults to \code{TRUE}.}
 
 \item{norm_x, norm_X}{ensure a normalization of the data? Defaults to
 \code{FALSE}.}
@@ -60,9 +73,9 @@ Hessian eigenvalues (largest to smallest) evaluated at \code{x}.}
 }
 \description{
 Computes the projected gradient
-\eqn{\mathsf{D}_{(p-1)}\hat{f}(\boldsymbol{x};\boldsymbol{h})} of the
-kernel density estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the
-polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}},
+\eqn{\mathsf{D}_{(p-1)}\hat{f}(\boldsymbol{x};\boldsymbol{h})} of the kernel
+density estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the
+polysphere \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}},
 where \eqn{p=\sum_{j=1}^r d_j+r} is the dimension of the ambient space.
 }
 \examples{

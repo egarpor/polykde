@@ -1,31 +1,50 @@
 
-# Mesh for interpolation
-x_bessel <- c(10^seq(-10, -5, by = 1),
-              seq(1e-4, 1, by = 1e-4),
-              seq(1 + 1e-2, 10, by = 1e-3),
-              seq(10 + 1e-1, 100, by = 1e-2),
-              seq(100 + 1e0, 1e3, by = 1e0),
-              seq(1000 + 1e1, 5e4, by = 2e1))
+# Log-Bessel spline tables consumed by log_besselI_scaled(..., spline = TRUE)
+#
+# The (scaled, log) Bessel function log(exp(-x) * I_nu(x)) is smooth in
+# u = log(x), so it is interpolated on a uniform grid in u. Below x_lo an
+# analytic small-argument series is used and above x_hi a large-argument
+# asymptotic (Bessel::besselIasym) is used, so the stored spline only needs to
+# cover [x_lo, x_hi].
 
-# Evaluate log-Bessels
-nus <- seq(0, 60, by = 5)
-nus_char <- sprintf("%02d", nus)
-for (nu_i in nus_char) {
+# Grid parameters
+bessel_nus <- seq(0, 24.5, by = 0.5)
+bessel_x_lo <- 1e-5
+bessel_x_hi <- 1e4
+bessel_N <- 1400
 
-  # Call Bessel function
-  cat("nu =", nu_i, "\n")
-  bessel_nu_i <- log(besselI(x = x_bessel, nu = as.integer(nu_i) / 10,
-                             expon.scaled = TRUE))
+# Uniform knots in u = log(x)
+u_bessel <- seq(log(bessel_x_lo), log(bessel_x_hi), length.out = bessel_N)
+x_bessel <- exp(u_bessel)
 
-  # Change -Inf to -1e6
-  bessel_nu_i[is.infinite(bessel_nu_i)] <- -1e6
+# Analytic leading term of log(exp(-x) * I_nu(x)) as x -> 0
+log_besselI_series <- function(x, nu) {
+  if (nu == 0) -x else nu * log(x / 2) - lgamma(nu + 1) - x
+}
 
-  # Save object
-  assign(x = paste0("log_besselI_scaled_", nu_i, "_grid"),
-         value = bessel_nu_i)
+# Evaluate the (scaled, log) Bessel on the grid, one column per order
+logI_bessel <- matrix(NA_real_, nrow = bessel_N, ncol = length(bessel_nus))
+for (j in seq_along(bessel_nus)) {
+
+  nu <- bessel_nus[j]
+  cat("nu =", nu, "\n")
+  y <- log(besselI(x = x_bessel, nu = nu, expon.scaled = TRUE))
+
+  # Fill any underflow (-Inf) with the analytic series for small x. With
+  # x_lo = 1e-5 and nu <= 24.5 this never triggers, but it keeps the
+  # builder robust if x_lo or the order range are pushed further.
+  bad <- !is.finite(y) & x_bessel < 1e-2
+  if (any(bad)) {
+
+    y[bad] <- log_besselI_series(x_bessel[bad], nu)
+
+  }
+  stopifnot(all(is.finite(y)))
+  logI_bessel[, j] <- y
 
 }
 
 # Save tables
-save(list = c("x_bessel", paste0("log_besselI_scaled_", nus_char, "_grid")),
+save(list = c("u_bessel", "bessel_nus", "bessel_x_lo", "bessel_x_hi",
+              "logI_bessel"),
      file = "../R/sysdata.rda", compress = "xz")

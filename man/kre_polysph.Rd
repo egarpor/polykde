@@ -11,8 +11,8 @@ kre_polysph(x, X, Y, d, h, p = 0)
 
 \item{X}{a vector of size \code{n} with the predictor sample.}
 
-\item{Y}{a matrix of size \code{c(n, sum(d) + r)} with the response sample
-on the polysphere.}
+\item{Y}{a matrix of size \code{c(n, sum(d) + r)} with the response sample on
+the polysphere.}
 
 \item{d}{vector of size \code{r} with dimensions.}
 
@@ -30,16 +30,20 @@ Computes a local constant (Nadaraya--Watson) or local linear
 estimator with polyspherical response and scalar predictor.
 }
 \examples{
-x_grid <- seq(-0.25, 1.25, l = 200)
-n <- 50
-X <- seq(0, 1, l = n)
-Y <- r_path_s2r(n = n, r = 1, sigma = 0.1, spiral = TRUE)[, , 1]
-h0 <- bw_cv_kre_polysph(X = X, Y = Y, d = 2, p = 0, plot_cv = FALSE)$h_1se
-sc3 <- scatterplot3d::scatterplot3d(Y, pch = 16, xlim = c(-1, 1),
-                                    ylim = c(-1, 1), zlim = c(-1, 1),
-                                    xlab = "", ylab = "", zlab = "")
-sc3$points3d(kre_polysph(x = x_grid, X = X, Y = Y, d = 2, h = h0, p = 0),
-             pch = 16, type = "l", col = 2, lwd = 2)
-sc3$points3d(kre_polysph(x = x_grid, X = X, Y = Y, d = 2, h = h0, p = 1),
-             pch = 16, type = "l", col = 3, lwd = 2)
+\donttest{
+if (requireNamespace("scatterplot3d", quietly = TRUE)) {
+  x_grid <- seq(-0.25, 1.25, l = 200)
+  n <- 50
+  X <- seq(0, 1, l = n)
+  Y <- r_path_s2r(n = n, r = 1, sigma = 0.1, spiral = TRUE)[, , 1]
+  h0 <- bw_cv_kre_polysph(X = X, Y = Y, d = 2, p = 0, plot_cv = FALSE)$h_1se
+  sc3 <- scatterplot3d::scatterplot3d(Y, pch = 16, xlim = c(-1, 1),
+                                      ylim = c(-1, 1), zlim = c(-1, 1),
+                                      xlab = "", ylab = "", zlab = "")
+  sc3$points3d(kre_polysph(x = x_grid, X = X, Y = Y, d = 2, h = h0, p = 0),
+               pch = 16, type = "l", col = 2, lwd = 2)
+  sc3$points3d(kre_polysph(x = x_grid, X = X, Y = Y, d = 2, h = h0, p = 1),
+               pch = 16, type = "l", col = 3, lwd = 2)
+}
+}
 }

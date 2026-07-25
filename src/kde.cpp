@@ -21,7 +21,7 @@ const double log_M_PI = std::log(M_PI);
 //' @title Polyspherical kernel density estimator
 //'
 //' @description Computes the kernel density estimator for data on the
-//' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
+//' polysphere \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}.
 //' Given a sample \eqn{\boldsymbol{X}_1,\ldots,\boldsymbol{X}_n}, this
 //' estimator is
 //' \deqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})=\sum_{i=1}^n
@@ -34,14 +34,14 @@ const double log_M_PI = std::log(M_PI);
 //' @param d vector of size \code{r} with dimensions.
 //' @param h vector of size \code{r} with bandwidths.
 //' @param weights weights for each observation. If provided, a vector of size
-//' \code{n} with the weights for multiplying each kernel. If not provided,
-//' set internally to \code{rep(1 / n, n)}, which gives the standard estimator.
+//' \code{n} with the weights for multiplying each kernel. If not provided, set
+//' internally to \code{rep(1 / n, n)}, which gives the standard estimator.
 //' @param log compute the logarithm of the density? Defaults to \code{FALSE}.
 //' @param wrt_unif flag to return a density with respect to the uniform
 //' measure. If \code{FALSE} (default), the density is with respect to the
 //' Lebesgue measure.
-//' @param normalized flag to compute the normalizing constant of the kernel
-//' and include it in the kernel density estimator. Defaults to \code{TRUE}.
+//' @param normalized flag to compute the normalizing constant of the kernel and
+//' include it in the kernel density estimator. Defaults to \code{TRUE}.
 //' @param intrinsic use the intrinsic distance, instead of the
 //' extrinsic-chordal distance, in the kernel? Defaults to \code{FALSE}.
 //' @param norm_x,norm_X ensure a normalization of the data? Defaults to
@@ -51,8 +51,16 @@ const double log_M_PI = std::log(M_PI);
 //' @param kernel_type type of kernel employed: \code{1} for product kernel
 //' (default); \code{2} for spherically symmetric kernel.
 //' @param k softplus kernel parameter. Defaults to \code{10.0}.
-//' @return A column vector of size \code{c(nx, 1)} with the evaluation of
+//' @return A column matrix of size \code{c(nx, 1)} with the evaluation of the
 //' kernel density estimator.
+//' @references
+//' García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+//' with polyspherical data and its applications. \emph{Journal of the American
+//' Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+//' @seealso \code{\link{log_cv_kde_polysph}},
+//' \code{\link{grad_hess_kde_polysph}}, \code{\link{r_kde_polysph}},
+//' \code{\link{bw_rot_polysph}}, \code{\link{bw_cv_polysph}},
+//' \code{\link{bw_mrot_polysph}}.
 //' @examples
 //' # Simple check on S^1 x S^2
 //' n <- 1e3
@@ -104,14 +112,14 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
   arma::vec dd = arma::conv_to<arma::vec>::from(d);
 
   // Transform NumericVector to arma::vec
-  arma::vec log_weights = Rcpp::as<arma::vec>(Rcpp::wrap(weights));
+  arma::vec log_weights = Rcpp::as<arma::vec>(weights);
 
   // Are weights given?
   if (log_weights.n_elem == 0) {
 
     // Fill with -log(n) sample size
     log_weights.set_size(n);
-    log_weights.fill(-std::log(n));
+    log_weights.fill(-std::log(static_cast<double>(n)));
 
   } else {
 
@@ -390,7 +398,7 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
 //'
 //' @inheritParams kde_polysph
 //' @param norm_X ensure a normalization of the data? Defaults to \code{FALSE}.
-//' @return A column vector of size \code{c(n, 1)} with the evaluation of the
+//' @return A column matrix of size \code{c(n, 1)} with the evaluation of the
 //' logarithm of the cross-validated kernel density estimator.
 //' @examples
 //' # Simple check on S^1 x S^2
@@ -428,9 +436,14 @@ arma::vec log_cv_kde_polysph(arma::mat X, arma::uvec d, arma::vec h,
     Rcpp::stop("Size of h mismatches with d.");
 
   }
+  if (n < 2) {
+
+    Rcpp::stop("X must have at least 2 rows (n >= 2) for cross-validation.");
+
+  }
 
   // Transform NumericVector to arma::vec
-  arma::vec cv_weights = Rcpp::as<arma::vec>(Rcpp::wrap(weights));
+  arma::vec cv_weights = Rcpp::as<arma::vec>(weights);
 
   // Are weights given?
   if (cv_weights.n_elem == 0) {

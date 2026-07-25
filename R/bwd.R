@@ -1,6 +1,6 @@
 
-#' @title Cross-validation bandwidth selection for polyspherical kernel
-#' density estimator
+#' @title Cross-validation bandwidth selection for polyspherical kernel density
+#' estimator
 #'
 #' @description Likelihood Cross-Validation (LCV) and Least Squares
 #' Cross-Validation (LSCV) bandwidth selection for the polyspherical kernel
@@ -9,8 +9,8 @@
 #' @inheritParams kde_polysph
 #' @param type cross-validation type, either \code{"LCV"} (default) or
 #' \code{"LSCV"}.
-#' @param M Monte Carlo samples to use for approximating the integral in
-#' the LSCV loss.
+#' @param M number of Monte Carlo samples to use for approximating the integral
+#' in the LSCV loss. Defaults to \code{1e4}.
 #' @param bw0 initial bandwidth vector for minimizing the CV loss. If
 #' \code{NULL}, it is computed internally by magnifying the
 #' \code{\link{bw_rot_polysph}} bandwidths by 50\%. Can be also a matrix of
@@ -21,18 +21,19 @@
 #' @inheritParams bw_rot_polysph
 #' @param upscale rescale the resulting bandwidths to work for derivative
 #' estimation? Defaults to \code{FALSE}.
-#' @param imp_mc use importance sampling in the Monte Carlo approximation of
-#' the integral in the LSCV loss? It is more accurate but also more time
-#' consuming. Defaults to \code{TRUE}.
+#' @param imp_mc use importance sampling in the Monte Carlo approximation of the
+#' integral in the LSCV loss? It is more accurate but also more time consuming.
+#' Defaults to \code{TRUE}.
 #' @param seed_mc seed for the Monte Carlo simulations used to estimate the
 #' integral in the LSCV loss. Defaults to \code{NULL} (no seed is fixed for
 #' different bandwidths).
-#' @param exact_vmf use the closed-form for the LSCV loss with the
-#' von Mises--Fisher kernel? Defaults to \code{FALSE}.
+#' @param exact_vmf use the closed-form for the LSCV loss with the von
+#' Mises--Fisher kernel? Defaults to \code{FALSE}.
 #' @param common_h use the same bandwidth for all dimensions? Defaults to
 #' \code{FALSE}.
-#' @param spline use a faster spline approximation to compute Bessel functions?
-#' Defaults to \code{FALSE}.
+#' @param spline use a faster spline approximation to compute Bessel functions, when available (\code{d} up to 50)?
+#' @param arcsinh do an \eqn{\operatorname{arcsinh}} transformation of the LSCV
+#' loss to improve numerical stability? Defaults to \code{FALSE}.
 #' @param opt optimizer to use; either \code{"\link{optim}"} (default) or
 #' \code{"\link{nlm}"}.
 #' @param ncores number of cores used during the optimization. Defaults to
@@ -46,7 +47,12 @@
 #' @return A list with entries \code{bw} (optimal bandwidth) and \code{opt},
 #' the latter containing the output of \code{\link[stats]{nlm}},
 #' \code{\link[stats]{optim}}, or \code{\link[optimParallel]{optimParallel}}.
+#' @references
+#' García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+#' with polyspherical data and its applications. \emph{Journal of the American
+#' Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
 #' @examples
+#' \donttest{
 #' n <- 20
 #' d <- 1:2
 #' kappa <- rep(10, 2)
@@ -54,14 +60,15 @@
 #'                    kappa = kappa)
 #' bw_cv_polysph(X = X, d = d, type = "LCV")$bw
 #' bw_cv_polysph(X = X, d = d, type = "LSCV", exact_vmf = TRUE)$bw
+#' }
 #' @export
 bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
                           intrinsic = FALSE, type = c("LCV", "LSCV")[1],
                           M = 1e4, bw0 = NULL, na.rm = FALSE, h_min = 0,
                           upscale = FALSE, deriv = 0, imp_mc = TRUE,
                           seed_mc = NULL, exact_vmf = FALSE, common_h = FALSE,
-                          spline = FALSE, opt = c("optim", "nlm")[1],
-                          ncores = 1, ...) {
+                          spline = FALSE, arcsinh = FALSE,
+                          opt = c("optim", "nlm")[1], ncores = 1, ...) {
 
   # Check dimensions
   if (ncol(X) != sum(d + 1)) {
@@ -71,6 +78,22 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
   }
   n <- nrow(X)
   r <- length(d)
+
+  # Do not pollute the user's RNG state with the internal Monte Carlo seeds
+  if (!is.null(seed_mc)) {
+
+    if (exists(".Random.seed", envir = .GlobalEnv)) {
+
+      old_seed <- .GlobalEnv$.Random.seed
+      on.exit(assign(".Random.seed", old_seed, envir = .GlobalEnv), add = TRUE)
+
+    } else {
+
+      on.exit(rm(".Random.seed", envir = .GlobalEnv), add = TRUE)
+
+    }
+
+  }
 
   # Objective function
   if (type == "LCV") {
@@ -91,7 +114,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
       if (any(h_pos < h_min)) {
 
         message("h left-truncated to h_min")
-        penalty <- 1e6 * sum((h_pos - h_min)^2)
+        penalty <- 1e7 * sum((h_pos - h_min)^2)
         h_pos <- pmax(h_pos, h_min)
 
       }
@@ -106,9 +129,9 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
         # -LCV
         loss <- -sum(log_cv, na.rm = na.rm) + penalty
-        ifelse(!is.finite(loss), 1e6, loss)
+        ifelse(!is.finite(loss), 1e7, loss)
 
-      }, error = function(e) 1e6)
+      }, error = function(e) 1e7)
       return(loss)
 
     }
@@ -125,20 +148,28 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
       # Precompute matrix with the lower triangular parts of the matrices
       # (X_{il}'X_{jl})_{ij}, l = 1, ..., r.
+      # ||X_i - X_j|| = sqrt(2 * (1 - X_i'X_j))
+      #  => ||X_i - X_j||^2 = 2 * (1 - X_i'X_j)
+      #  => ||X_i - X_j||^2 / 2 = 1 - X_i'X_j
+      #  => X_i'X_j = 1 - ||X_i - X_j||^2 / 2
+      # The matrix is r x n2 for better column recycling later. It is filled
+      # by rows using as.numeric() on the "dist" objects to strip their class.
       ind_dj <- comp_ind_dj(d = d)
-      Xi_Xj_l <- diamond_rcrossprod(X = X, ind_dj = ind_dj)
-      Xi_Xj_l <- sapply(seq_len(r), function(j) {
+      n2 <- n * (n - 1) / 2
+      Xi_Xj_l <- matrix(nrow = r, ncol = n2)
+      for (l in seq_len(r)) {
 
-        Xi_Xj_l[, , j][lower.tri(Xi_Xj_l[, , j], diag = FALSE)]
+        d_ij <- as.numeric(dist(X[, (ind_dj[l] + 1):ind_dj[l + 1]],
+                                method = "euclidean", diag = FALSE,
+                                upper = FALSE))
+        Xi_Xj_l[l, ] <- 1 - 0.5 * d_ij^2
 
-      })
-      Xi_Xj_l <- t(Xi_Xj_l) # For better column recycling later
+      }
       norm_Xi_Xj_l <- sqrt(2 * (1 + Xi_Xj_l))
 
       # Precompute other fixed objects in the LSCV loss
       log_n <- log(n)
       log_2_n1 <- log(2 / (n - 1))
-      n2 <- n * (n - 1) / 2
 
       # LSCV loss
       obj <- function(log_h) {
@@ -156,7 +187,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
         if (any(h_pos < h_min)) {
 
           message("h left-truncated to h_min")
-          penalty <- 1e6 * sum((h_pos - h_min)^2)
+          penalty <- 1e7 * sum((h_pos - h_min)^2)
           h_pos <- pmax(h_pos, h_min)
 
         }
@@ -167,9 +198,9 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
           # Log-constants
           h_pos2 <- 1 / h_pos^2
           log_c_h2 <- sum(fast_log_c_vMF(p = d + 1, kappa = h_pos2,
-                                         spline = FALSE))
+                                         spline = spline))
           log_c_2h2 <- sum(fast_log_c_vMF(p = d + 1, kappa = 2 * h_pos2,
-                                          spline = FALSE))
+                                          spline = spline))
 
           # Compute X_{il}'X_{jl} / h_l^2 and
           # \sum_l \log(c_vMF(||X_{il}'X_{jl}|| / h_l^2))
@@ -183,15 +214,40 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
           }
 
-          # CV loss
-          cv_1 <- exp(2 * log_c_h2 - log_c_2h2 - log_n)
-          cv_2 <- 2 * sum(exp(Xi_Xj_l_h + log_c_h2 + (log_2_n1 - log_n)) -
-                            exp(2 * (log_c_h2 - log_n) - log_c_norm_Xi_Xj_l_h))
-          cv <- cv_1 - cv_2
-          loss <- cv + penalty
-          ifelse(!is.finite(loss), 1e6, loss)
+          # Compute arcsinh(CV) or CV loss?
+          if (arcsinh) {
 
-        }, error = function(e) 1e6)
+            # CV terms with LogSumExp trick
+            log_cv_1 <- 2 * log_c_h2 - log_c_2h2 - log_n
+            log_cv_2a <- log(2) +
+              log_sum_exp(Xi_Xj_l_h + log_c_h2 + (log_2_n1 - log_n))
+            log_cv_2b <- log(2) +
+              log_sum_exp(2 * (log_c_h2 - log_n) - log_c_norm_Xi_Xj_l_h)
+
+            # Positive and negative terms
+            log_A <- log_sum_exp(c(log_cv_1, log_cv_2b))
+            log_B <- log_cv_2a
+
+            # arcsinh-loss
+            log_diff <- log_diff_exp(log_p = log_A, log_n = log_B)
+            asinh_cv <- asinh_log(log_abs = log_diff$log_abs,
+                                  sgn = log_diff$sgn)
+            loss <- asinh_cv + penalty
+
+          } else {
+
+            # CV loss
+            cv_1 <- exp(2 * log_c_h2 - log_c_2h2 - log_n)
+            cv_2 <- 2 * sum(exp(Xi_Xj_l_h + log_c_h2 + (log_2_n1 - log_n)) -
+                              exp(2 * (log_c_h2 - log_n) -
+                                    log_c_norm_Xi_Xj_l_h))
+            cv <- cv_1 - cv_2
+            loss <- cv + penalty
+
+          }
+          ifelse(!is.finite(loss), 1e7, loss)
+
+        }, error = function(e) 1e7)
         return(exact_loss)
 
       }
@@ -230,7 +286,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
         if (any(h_pos < h_min)) {
 
           message("h left-truncated to h_min")
-          penalty <- 1e6 * sum((h_pos - h_min)^2)
+          penalty <- 1e7 * sum((h_pos - h_min)^2)
           h_pos <- pmax(h_pos, h_min)
 
         }
@@ -256,7 +312,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
                                          kernel_type = kernel_type, k = k,
                                          intrinsic = intrinsic)
             log_kde2_mc <- kde_polysph(x = mc_kde_samp, X = X, d = d,
-                                       h = h_pos, wrt_unif = FALSE,
+                                       h = h_pos, wrt_unif = TRUE,
                                        kernel = kernel, kernel_type =
                                          kernel_type, k = k, log = TRUE,
                                        intrinsic = intrinsic) - log(M)
@@ -265,37 +321,51 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
             # Uniform Monte Carlo
             log_kde2_mc <- 2 * kde_polysph(x = mc_samp, X = X, d = d,
-                                           h = h_pos, wrt_unif = FALSE,
+                                           h = h_pos, wrt_unif = TRUE,
                                            kernel = kernel, kernel_type =
                                              kernel_type, k = k,
                                            log = TRUE, intrinsic = intrinsic) -
-              log(M) + sum(rotasym::w_p(p = d + 1, log = TRUE))
+              log(M)
 
           }
-          max_log_kde2_mc <- max(log_kde2_mc)
-          log_int_kde2 <- ifelse(is.finite(max_log_kde2_mc),
-                                 max_log_kde2_mc +
-                                   log(sum(exp(log_kde2_mc - max_log_kde2_mc))),
-                                 -Inf)
+
+          # log_kde2_mc and log_cv_kde_polysph() below, are wrt the uniform
+          # measure. Converting them to the Lebesgue measure CV loss needs a
+          # factor w_log = log(prod(w_p(d + 1))) per density involved: net
+          # -w_log for the integral term (it is short one w_log from the MC
+          # average, and needs -2 * w_log from the square density to turn its
+          # i.e. +w_log - 2 * w_log), and -w_log for the (linear) CV term.
+          w_log <- sum(rotasym::w_p(p = d + 1, log = TRUE))
+          log_int_kde2 <- log_sum_exp(log_kde2_mc) - w_log
 
           # Sum part with LogSumExp trick
           log_cv_kde <- log_cv_kde_polysph(X = X, d = d, h = h_pos,
-                                           wrt_unif = FALSE, kernel = kernel,
+                                           wrt_unif = TRUE, kernel = kernel,
                                            kernel_type = kernel_type, k = k,
                                            intrinsic = intrinsic) -
             log(n) + log(2)
-          max_log_cv_kde <- max(log_cv_kde)
-          log_sum_cv_kde <- ifelse(is.finite(max_log_cv_kde),
-                                   max_log_cv_kde +
-                                     log(sum(exp(log_cv_kde - max_log_cv_kde))),
-                                   -Inf)
+          log_sum_cv_kde <- log_sum_exp(log_cv_kde) - w_log
 
-          # CV loss
-          cv <- exp(log_int_kde2) - exp(log_sum_cv_kde)
-          loss <- cv + penalty
-          ifelse(!is.finite(loss), 1e6, loss)
+          # Compute arcsinh(CV) or CV loss?
+          if (arcsinh) {
 
-        }, error = function(e) 1e6)
+            # arcsinh-loss
+            log_diff <- log_diff_exp(log_p = log_int_kde2,
+                                     log_n = log_sum_cv_kde)
+            asinh_cv <- asinh_log(log_abs = log_diff$log_abs,
+                                  sgn = log_diff$sgn)
+            loss <- asinh_cv + penalty
+
+          } else {
+
+            # CV loss
+            cv <- exp(log_int_kde2) - exp(log_sum_cv_kde)
+            loss <- cv + penalty
+
+          }
+          ifelse(!is.finite(loss), 1e7, loss)
+
+        }, error = function(e) 1e7)
         return(loss)
 
       }
@@ -404,7 +474,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
   # Upscale?
   if (upscale > 0) {
 
-    n_up <- n^(1 / (d * r + 4)) * n^(-1 / (d * r + 2 * deriv + 4))
+    n_up <- n^(1 / (d + 4)) * n^(-1 / (d * r + 2 * deriv + 4))
     bw <- bw * n_up
 
   }
@@ -420,6 +490,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 #' likelihood cross-validation with Epanechnikov kernels, for a given dataset
 #' and dimension.
 #'
+#' @inheritParams bw_rot_polysph
 #' @inheritParams bw_cv_polysph
 #' @return The minimum bandwidth allowed.
 #' @examples
@@ -448,6 +519,7 @@ bw_lcv_min_epa <- function(X, d, kernel_type = c("prod", "sph")[1]) {
   }
   n <- nrow(X)
   r <- length(d)
+  stopifnot(n >= 2)
 
   # Index for accessing each S^dj with ind[j]:(ind[j + 1] - 1)
   ind <- cumsum(c(1, d + 1))
@@ -458,7 +530,7 @@ bw_lcv_min_epa <- function(X, d, kernel_type = c("prod", "sph")[1]) {
     prods <- matrix(0, nrow = n, ncol = n)
     for (i in seq_len(n - 1)) {
       for (j in (i + 1):n) {
-        prods[i, j] <- max(sapply(1:r, function(k) {
+        prods[i, j] <- max(sapply(seq_len(r), function(k) {
           ind_k <- ind[k]:(ind[k + 1] - 1)
           1 - sum(X[i, ind_k] * X[j, ind_k])
         }))
@@ -541,22 +613,24 @@ curv_vmf_polysph <- function(kappa, d, log = FALSE) {
 }
 
 
-#' @title Rule-of-thumb bandwidth selection for polyspherical kernel
-#' density estimator
+#' @title Rule-of-thumb bandwidth selection for polyspherical kernel density
+#' estimator
 #'
 #' @description Computes the rule-of-thumb bandwidth for the polyspherical
 #' kernel density estimator using a product of von Mises--Fisher distributions
 #' as reference in the Asymptotic Mean Integrated Squared Error (AMISE).
 #'
 #' @inheritParams kde_polysph
+#' @param kernel_type type of kernel employed: \code{"prod"} for the product
+#' kernel (default) or \code{"sph"} for the spherically symmetric kernel.
 #' @param bw0 initial bandwidth for minimizing the CV loss. If \code{NULL}, it
 #' is computed internally by magnifying the \code{\link{bw_mrot_polysph}}
 #' bandwidths by 50\%. Can be also a matrix of initial bandwidth vectors.
 #' @param upscale rescale bandwidths to work on
-#' \eqn{\mathcal{S}^{d_1}\times\cdots\times \mathcal{S}^{d_r}} and for
-#' derivative estimation?
-#' Defaults to \code{FALSE}. If \code{upscale = 1}, the order \code{n} is
-#' upscaled. If \code{upscale = 2}, then also the kernel constant is upscaled.
+#' \eqn{\mathbb{S}^{d_1}\times\cdots\times \mathbb{S}^{d_r}} and for derivative
+#' estimation? Defaults to \code{FALSE}. If \code{upscale = 1}, the order
+#' \code{n} is upscaled. If \code{upscale = 2}, then also the kernel constant is
+#' upscaled.
 #' @param deriv derivative order to perform the upscaling. Defaults to \code{0}.
 #' @param kappa estimate of the concentration parameters. Computed if not
 #' provided (default).
@@ -573,6 +647,10 @@ curv_vmf_polysph <- function(kappa, d, log = FALSE) {
 #' that minimized the CV loss.
 #' @return A list with entries \code{bw} (optimal bandwidth) and \code{opt},
 #' the latter containing the output of \code{\link[stats]{nlm}}.
+#' @references
+#' García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+#' with polyspherical data and its applications. \emph{Journal of the American
+#' Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
 #' @examples
 #' n <- 100
 #' d <- 1:2
@@ -639,7 +717,7 @@ bw_rot_polysph <- function(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
   b <- b_d(kernel = kernel, d = d, k = k, kernel_type = kernel_type)
   v <- v_d(kernel = kernel, d = d, k = k, kernel_type = kernel_type)
   log_bias2 <- log_R_kappa +
-    ifelse(kernel_type == "prod", log(tcrossprod(b)), 2 * log(b[1]))
+    if (kernel_type == "prod") log(tcrossprod(b)) else 2 * log(b[1])
   log_var <- sum(log(v)) - log(n)
 
   # AMISE and gradient functions
@@ -740,6 +818,10 @@ bw_rot_polysph <- function(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
 #' @inheritParams kde_polysph
 #' @inheritParams bw_rot_polysph
 #' @return A vector of size \code{r} with the marginal optimal bandwidths.
+#' @references
+#' García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+#' with polyspherical data and its applications. \emph{Journal of the American
+#' Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
 #' @examples
 #' n <- 100
 #' d <- 1:2

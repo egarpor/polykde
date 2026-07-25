@@ -1,4 +1,4 @@
-# polykde
+# polykde <img src="man/figures/logo.png" align="right" height="175" alt="polykde logo"/>
 
 [![License:
 GPLv3](https://img.shields.io/badge/license-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
@@ -16,6 +16,21 @@ status](https://github.com/egarpor/polykde/workflows/test-coverage/badge.svg)](h
 Companion package for the article *Kernel density estimation with
 polyspherical data and its applications* (García-Portugués and
 Meilán-Vila, 2025).
+
+## Installation
+
+``` r
+# Install it from CRAN
+install.packages("polykde")
+library(polykde)
+```
+
+``` r
+# Alternatively, from GitHub
+library(pak)
+pak("egarpor/polykde")
+library(polykde)
+```
 
 ## Replicability
 

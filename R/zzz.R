@@ -1,17 +1,15 @@
 
 .onLoad <- function(libname = find.package("polykde"), pkgname = "polykde") {
 
-  # Assign global variables
+  # Build splines in u = log(x) from (u_bessel, bessel_nus, logI_bessel) in
+  # sysdata.rda
   env <- asNamespace(pkgname)
-  nus <- seq(0, 60, by = 5)
-  nus_char <- sprintf("%02d", nus)
-  for (nu_i in nus_char) {
+  for (j in seq_along(bessel_nus)) {
 
-    assign(x = paste0("log_besselI_scaled_spline_", nu_i),
-           value =
-             splinefun(x = x_bessel,
-                       y = get(paste0("log_besselI_scaled_", nu_i, "_grid"),
-                               envir = env)),
+    key <- sprintf("%03d", round(10 * bessel_nus[j]))
+    assign(x = paste0("log_besselI_scaled_spline_", key),
+           value = splinefun(x = u_bessel, y = logI_bessel[, j],
+                             method = "fmm"),
            pos = env)
 
   }
@@ -19,8 +17,8 @@
   # CRAN NOTE avoidance
   if (getRversion() >= "2.15.1") {
 
-    utils::globalVariables(c("x_bessel",
-                             paste0("log_besselI_scaled_", nus_char, "_grid")))
+    utils::globalVariables(c("u_bessel", "bessel_nus", "bessel_x_lo",
+                             "bessel_x_hi", "logI_bessel"))
 
   }
   invisible()

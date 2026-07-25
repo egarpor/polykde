@@ -294,6 +294,23 @@ test_that("vMF-specific Rcpp projected gradient with/without sparsity", {
                tolerance = 1e-6)
 })
 
+test_that("Sparse projected gradient works for r = 1", {
+
+  set.seed(1)
+  X_1 <- r_unif_polysph(n = 20, d = 2)
+  expect_equal(proj_grad_kde_polysph(x = X_1, X = X_1, d = 2, h = 0.5,
+                                     sparse = TRUE)$eta,
+               proj_grad_kde_polysph(x = X_1, X = X_1, d = 2, h = 0.5,
+                                     sparse = FALSE)$eta,
+               tolerance = 1e-8)
+  X_0 <- r_unif_polysph(n = 20, d = 1)
+  expect_error(
+    proj_grad_kde_polysph(x = X_0, X = X_0, d = 1, h = 0.5, sparse = TRUE),
+    "eigenvectors"
+  )
+
+})
+
 test_that("Projected gradient is orthogonal to x", {
   eta_1 <- drop(proj_grad_kde_polysph(x = x, X = X, d = d, h = h,
                                       proj_alt = TRUE)$eta)
@@ -304,6 +321,16 @@ test_that("Projected gradient is orthogonal to x", {
   expect_equal(drop(P %*% eta_1), eta_1, tolerance = 1e-9)
   expect_false(drop(x %*% eta_2) < 1e-9)
   expect_false(max(abs(drop(P %*% eta_2) - eta_2)) < 1e-9)
+})
+
+test_that("grad_hess_kde_polysph() runs for kernel = 2 and 3", {
+  # The mis-bound c_kern() call could silently corrupt or, depending on
+  # coercion, break the computation for kernel %in% c(2, 3)
+  for (ker in c(2, 3)) {
+    out <- grad_hess_kde_polysph(x = x, X = X, d = d, h = h, kernel = ker)
+    expect_true(all(is.finite(out$grad)))
+    expect_true(all(is.finite(out$hess)))
+  }
 })
 
 ## Normalizing constants

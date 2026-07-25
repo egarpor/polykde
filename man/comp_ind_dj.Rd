@@ -13,9 +13,9 @@ comp_ind_dj(d)
 A vector of size \code{sum(d) + 1}.
 }
 \description{
-Given Cartesian coordinates of polyspherical data, computes
-the \code{0}-based indexes at which the Cartesian coordinates for each
-sphere start and end.
+Given Cartesian coordinates of polyspherical data, computes the
+\code{0}-based indexes at which the Cartesian coordinates for each sphere
+start and end.
 }
 \examples{
 # Example on (S^1)^3
