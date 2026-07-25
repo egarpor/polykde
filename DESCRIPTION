@@ -1,7 +1,7 @@
 Package: polykde
 Type: Package
 Title: Polyspherical Kernel Density Estimation
-Version: 1.1.8
+Version: 1.2.0
 Date: 2026-07-25
 Authors@R: c(person(given = "Eduardo", family = "García-Portugués",
                     role = c("aut", "cre"), email = "edgarcia@est-econ.uc3m.es",
