@@ -35,3 +35,4 @@
 * Validate inputs in `log_cv_kde_polysph()`, `bw_lcv_min_epa()`, and `proj_polysph()`.
 * Add a package logo.
 * And the reference García-Portugués and Meilán-Vila (2023) (doi:10.1007/978-3-031-32729-2_4) to CITATION.
+* Documentation improvements.
