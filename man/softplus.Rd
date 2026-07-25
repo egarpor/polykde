@@ -16,10 +16,6 @@ The softplus function evaluated at \code{t}.
 Computes the softplus function \eqn{\log(1+e^{t})} in a
 numerically stable way for large absolute values of \eqn{t}.
 }
-\details{
-A C++ counterpart of this function is used internally within the
-polyspherical kernel routines for performance.
-}
 \examples{
 curve(softplus(10 * (1 - (1 - x) / 0.1)), from = -1, to = 1)
 }

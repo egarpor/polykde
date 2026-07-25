@@ -80,6 +80,22 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
   n <- nrow(X)
   r <- length(d)
 
+  # Do not pollute the user's RNG state with the internal Monte Carlo seeds
+  if (!is.null(seed_mc)) {
+
+    if (exists(".Random.seed", envir = .GlobalEnv)) {
+
+      old_seed <- .GlobalEnv$.Random.seed
+      on.exit(assign(".Random.seed", old_seed, envir = .GlobalEnv), add = TRUE)
+
+    } else {
+
+      on.exit(rm(".Random.seed", envir = .GlobalEnv), add = TRUE)
+
+    }
+
+  }
+
   # Objective function
   if (type == "LCV") {
 
@@ -297,8 +313,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
                                        h = h_pos, wrt_unif = TRUE,
                                        kernel = kernel, kernel_type =
                                          kernel_type, k = k, log = TRUE,
-                                       intrinsic = intrinsic) - log(M) +
-              sum(rotasym::w_p(p = d + 1, log = TRUE))
+                                       intrinsic = intrinsic) - log(M)
 
           } else {
 
@@ -311,7 +326,15 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
               log(M)
 
           }
-          log_int_kde2 <- log_sum_exp(log_kde2_mc)
+
+          # log_kde2_mc and log_cv_kde_polysph() below, are wrt the uniform
+          # measure. Converting them to the Lebesgue measure CV loss needs a
+          # factor w_log = log(prod(w_p(d + 1))) per density involved: net
+          # -w_log for the integral term (it is short one w_log from the MC
+          # average, and needs -2 * w_log from the square density to turn its
+          # i.e. +w_log - 2 * w_log), and -w_log for the (linear) CV term.
+          w_log <- sum(rotasym::w_p(p = d + 1, log = TRUE))
+          log_int_kde2 <- log_sum_exp(log_kde2_mc) - w_log
 
           # Sum part with LogSumExp trick
           log_cv_kde <- log_cv_kde_polysph(X = X, d = d, h = h_pos,
@@ -319,7 +342,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
                                            kernel_type = kernel_type, k = k,
                                            intrinsic = intrinsic) -
             log(n) + log(2)
-          log_sum_cv_kde <- log_sum_exp(log_cv_kde)
+          log_sum_cv_kde <- log_sum_exp(log_cv_kde) - w_log
 
           # Compute arcsinh(CV) or CV loss?
           if (arcsinh) {
@@ -449,7 +472,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
   # Upscale?
   if (upscale > 0) {
 
-    n_up <- n^(1 / (d * r + 4)) * n^(-1 / (d * r + 2 * deriv + 4))
+    n_up <- n^(1 / (d + 4)) * n^(-1 / (d * r + 2 * deriv + 4))
     bw <- bw * n_up
 
   }
