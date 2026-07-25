@@ -212,10 +212,12 @@ test_that("log_besselI_scaled() with NAs", {
                log_besselI_scaled(nu = 5.5, x = x, spline = FALSE))
 })
 
-test_that("Accuracy of log_besselI_scaled(nu = seq(0, 6, by = 0.5)) with
+test_that("Accuracy of log_besselI_scaled(nu = seq(0, 24.5, by = 0.5)) with
           spline approximations", {
-  x <- seq(1e-8, 1e4, l = 1e3)
-  nus <- seq(0, 6, by = 0.5)
+  # Spline domain [1e-5, 1e4] plus the x >= 1e4 asymptotic handoff; 5000 points
+  # deliberately off the 1400 stored knots
+  x <- 10^seq(-5, 4, length.out = 5000)
+  nus <- seq(0, 24.5, by = 0.5)
   for (nu in nus) {
     expect_equal(
       log_besselI_scaled(nu = nu, x = x, spline = TRUE),
@@ -224,10 +226,22 @@ test_that("Accuracy of log_besselI_scaled(nu = seq(0, 6, by = 0.5)) with
   }
 })
 
-test_that("Accuracy of log_besselI_scaled(nu = seq(0, 6, by = 0.5)) with
+test_that("Small-argument of log_besselI_scaled(spline = TRUE)", {
+  x <- c(1e-8, 1e-7, 1e-6)
+  for (nu in c(0, 0.5, 1, 2)) {
+    ref <- log(besselI(x, nu, expon.scaled = TRUE))
+    expect_true(all(is.finite(ref)))
+    expect_equal(log_besselI_scaled(nu = nu, x = x, spline = TRUE), ref,
+                 tolerance = 1e-8)
+  }
+  expect_equal(log_besselI_scaled(nu = 0, x = 0, spline = TRUE), 0)
+  expect_identical(log_besselI_scaled(nu = 5, x = 0, spline = TRUE), -Inf)
+})
+
+test_that("Accuracy of log_besselI_scaled(nu = seq(0, 24.5, by = 0.5)) with
           asymptotic approximations", {
   x <- seq(1e4, 1e5, l = 100)
-  nus <- seq(0, 10, by = 1)
+  nus <- seq(0, 24.5, by = 0.5)
   for (nu in nus) {
     expect_equal(
       log_besselI_scaled(nu = nu, x = x, spline = TRUE),
@@ -271,7 +285,8 @@ test_that("Edge cases of log_besselI_scaled()", {
   expect_no_error(log_besselI_scaled(nu = 1:3, x = NA, spline = FALSE))
   expect_error(log_besselI_scaled(nu = 1:3, x = 1:2, spline = FALSE))
   expect_error(log_besselI_scaled(nu = c(1, NA), x = 1:2, spline = FALSE))
-  expect_error(log_besselI_scaled(nu = 10, x = 0, spline = TRUE))
+  expect_error(log_besselI_scaled(nu = 25, x = 1, spline = TRUE))
+  expect_error(log_besselI_scaled(nu = 100, x = 0, spline = TRUE))
   expect_error(log_besselI_scaled(nu = 1:3, x = 0, spline = TRUE))
 })
 
