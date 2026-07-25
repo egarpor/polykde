@@ -81,8 +81,7 @@ Mises--Fisher kernel? Defaults to \code{FALSE}.}
 \item{common_h}{use the same bandwidth for all dimensions? Defaults to
 \code{FALSE}.}
 
-\item{spline}{use a faster spline approximation to compute Bessel functions?
-Only available for \code{d} up to 10. Defaults to \code{FALSE}.}
+\item{spline}{use a faster spline approximation to compute Bessel functions, when available (\code{d} up to 50)?}
 
 \item{arcsinh}{do an \eqn{\operatorname{arcsinh}} transformation of the LSCV
 loss to improve numerical stability? Defaults to \code{FALSE}.}
