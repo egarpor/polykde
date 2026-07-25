@@ -34,3 +34,23 @@ bibentry(
         "Journal of the American Statistical Association, to appear.",
         "https://doi.org/10.1080/01621459.2025.2521898")
 )
+
+bibentry(
+  bibtype      = "InCollection",
+  title        = "Hippocampus shape analysis via skeletal models and kernel smoothing",
+  author       = c(person(given = "Eduardo", family = "García-Portugués"),
+                   person(given = "Andrea", family = "Meilán-Vila")),
+  booktitle    = "Statistical Methods at the Forefront of Biomedical Advances",
+  editor       = c(person(given = "Yolanda", family = "Larriba")),
+  year         = "2023",
+  pages        = "63--82",
+  publisher    = "Springer",
+  address      = "Cham",
+  url          = "https://doi.org/10.1007/978-3-031-32729-2_4",
+  textVersion  =
+  paste("García-Portugués, E. and Meilán-Vila, A. (2023).",
+        "Hippocampus shape analysis via skeletal models and kernel smoothing.",
+        "In Larriba, Y. (Ed.), Statistical Methods at the Forefront of Biomedical Advances,",
+        "pp. 63-82. Springer, Cham.",
+        "https://doi.org/10.1007/978-3-031-32729-2_4")
+)

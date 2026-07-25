@@ -9,8 +9,8 @@
 #' @inheritParams kde_polysph
 #' @param type cross-validation type, either \code{"LCV"} (default) or
 #' \code{"LSCV"}.
-#' @param M Monte Carlo samples to use for approximating the integral in
-#' the LSCV loss.
+#' @param M number of Monte Carlo samples to use for approximating the
+#' integral in the LSCV loss. Defaults to \code{1e4}.
 #' @param bw0 initial bandwidth vector for minimizing the CV loss. If
 #' \code{NULL}, it is computed internally by magnifying the
 #' \code{\link{bw_rot_polysph}} bandwidths by 50\%. Can be also a matrix of

@@ -24,8 +24,7 @@ A matrix of size \code{c(n, sum(d) + r)} with the sample.
 }
 \description{
 Simulates from a product of von Mises--Fisher distributions on
-the polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times
-\mathcal{S}^{d_r}}.
+the polysphere \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}.
 }
 \examples{
 # Simulate vMF data on (S^1)^2

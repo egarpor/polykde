@@ -69,7 +69,7 @@ r_vmf_polysph <- function(n, d, mu, kappa, norm_mu = FALSE) {
   }
 
   # Sample
-  do.call(cbind, as.list(sapply(1:r, function(j) {
+  do.call(cbind, as.list(sapply(seq_len(r), function(j) {
     ind_j <- ind[j]:(ind[j + 1] - 1)
     rotasym::r_vMF(n = n, mu = mu[ind_j], kappa = kappa[j])
   }, simplify = FALSE)))
@@ -154,6 +154,12 @@ r_mvmf_polysph <- function(n, d, mu, kappa, prop, norm_mu = FALSE) {
 #' @param norm_mu ensure a normalization of \code{mu}? Defaults to \code{FALSE}.
 #' @inheritParams r_unif_polysph
 #' @inheritParams kde_polysph
+#' @param kernel kernel employed: \code{1} for von Mises--Fisher (default);
+#' \code{2} for Epanechnikov; \code{3} for softplus. The equivalent character
+#' codes \code{"1"}, \code{"2"}, and \code{"3"} are also accepted.
+#' @param kernel_type type of kernel employed: \code{1} for product kernel
+#' (default); \code{2} for spherically symmetric kernel. The equivalent
+#' character codes \code{"1"} and \code{"2"} are also accepted.
 #' @details Simulation for non-von Mises--Fisher spherically symmetric kernels
 #' is done by acceptance-rejection from a von Mises--Fisher proposal
 #' distribution.
@@ -583,7 +589,7 @@ r_path_s2r <- function(n, r, t = 0, c = 1,
     ph <- sort(runif(n, min = 0, max = pi))
 
     # Loop on the S^2's
-    for (j in 1:r) {
+    for (j in seq_len(r)) {
 
       # Unrotated sample
       eps <- rnorm(n, sd = sigma)
@@ -603,7 +609,7 @@ r_path_s2r <- function(n, r, t = 0, c = 1,
     U <- DirStats::to_cir(th = th)
 
     # Loop on the S^2's
-    for (j in 1:r) {
+    for (j in seq_len(r)) {
 
       # Use the moment estimators of a Beta(shape1, shape2) to get the
       # parameters yielding

@@ -156,7 +156,7 @@ bw_cv_kre_polysph <- function(X, Y, d, p = 0, h_grid = bw.nrd(X) *
 
     cv_kre <- function(h) {
 
-      Y_hat_i <- t(sapply(1:n, function(i) {
+      Y_hat_i <- t(sapply(seq_len(n), function(i) {
         kre_polysph(x = X[i], X = X[-i], Y = Y[-i, ], d = d, h = h, p = p)
       }))
       dist_polysph(x = Y, y = Y_hat_i, ind_dj = ind_dj, norm_x = TRUE,

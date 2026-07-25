@@ -5,8 +5,15 @@
 \title{Marginal rule-of-thumb bandwidth selection for polyspherical kernel
 density estimator}
 \usage{
-bw_mrot_polysph(X, d, kernel = 1, k = 10, upscale = FALSE, deriv = 0,
-  kappa = NULL)
+bw_mrot_polysph(
+  X,
+  d,
+  kernel = 1,
+  k = 10,
+  upscale = FALSE,
+  deriv = 0,
+  kappa = NULL
+)
 }
 \arguments{
 \item{X}{a matrix of size \code{c(n, sum(d) + r)} with the sample.}
@@ -19,10 +26,10 @@ bw_mrot_polysph(X, d, kernel = 1, k = 10, upscale = FALSE, deriv = 0,
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 
 \item{upscale}{rescale bandwidths to work on
-\eqn{\mathcal{S}^{d_1}\times\cdots\times \mathcal{S}^{d_r}} and for
-derivative estimation?
-Defaults to \code{FALSE}. If \code{upscale = 1}, the order \code{n} is
-upscaled. If \code{upscale = 2}, then also the kernel constant is upscaled.}
+\eqn{\mathbb{S}^{d_1}\times\cdots\times \mathbb{S}^{d_r}} and for derivative
+estimation? Defaults to \code{FALSE}. If \code{upscale = 1}, the order
+\code{n} is upscaled. If \code{upscale = 2}, then also the kernel constant is
+upscaled.}
 
 \item{deriv}{derivative order to perform the upscaling. Defaults to \code{0}.}
 
@@ -45,4 +52,9 @@ X <- r_vmf_polysph(n = n, d = d, mu = r_unif_polysph(n = 1, d = d),
                    kappa = kappa)
 bw_rot_polysph(X = X, d = d)$bw
 bw_mrot_polysph(X = X, d = d)
+}
+\references{
+García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+with polyspherical data and its applications. \emph{Journal of the American
+Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
 }

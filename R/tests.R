@@ -246,7 +246,7 @@ hom_test_polysph <- function(X, d, labels,
         perm_labels <- labels[perm_index]
 
         # Access groups
-        ind_j <- lapply(1:kg, function(j)
+        ind_j <- lapply(seq_len(kg), function(j)
           which(perm_labels == labels_levels[j]))
 
         # CV approximation of the H(f_j)'s and H(f_0)?
@@ -330,8 +330,12 @@ hom_test_polysph <- function(X, d, labels,
           ind_0 <- c(0, cumsum(M_j))
           for (j in seq_len(kg)) {
 
-            mc_samp_0[(ind_0[j] + 1):ind_0[j + 1], ] <-
-              mc_samp[[j]][1:M_j[j], , drop = FALSE]
+            if (M_j[j] > 0) {
+
+              mc_samp_0[(ind_0[j] + 1):ind_0[j + 1], ] <-
+                mc_samp[[j]][seq_len(M_j[j]), , drop = FALSE]
+
+            }
 
           }
 
@@ -412,7 +416,7 @@ hom_test_polysph <- function(X, d, labels,
   }
 
   # Original statistic
-  Tn_orig <- Tn(perm_index = 1:N)
+  Tn_orig <- Tn(perm_index = seq_len(N))
   if (!is.finite(Tn_orig) || Tn_orig == 0) {
 
     stop("The test statistic is not finite or is zero.")

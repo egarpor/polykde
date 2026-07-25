@@ -4,24 +4,45 @@
 \alias{view_srep}
 \title{s-rep viewer}
 \usage{
-view_srep(base, dirs, bdry, radii, show_base = TRUE, show_base_pt = TRUE,
-  show_bdry = TRUE, show_bdry_pt = TRUE, show_seg = TRUE,
-  col_base = "red", col_bndy = "blue", col_seg = "green",
-  static = TRUE, texts = NULL, cex_base = ifelse(static, 0.5, 6),
-  cex_bdry = ifelse(static, 1, 8), lwd_seg = ifelse(static, 1, 2),
-  cex_texts = 1, alpha_base = 0.1, alpha_bdry = 0.15, r_texts = 1.25,
-  alpha_ashape3d_base = NULL, alpha_ashape3d_bdry = NULL, lit = FALSE,
-  ...)
+view_srep(
+  base,
+  dirs,
+  bdry,
+  radii,
+  show_base = TRUE,
+  show_base_pt = TRUE,
+  show_bdry = TRUE,
+  show_bdry_pt = TRUE,
+  show_seg = TRUE,
+  col_base = "red",
+  col_bndy = "blue",
+  col_seg = "green",
+  static = TRUE,
+  texts = NULL,
+  cex_base = ifelse(static, 0.5, 6),
+  cex_bdry = ifelse(static, 1, 8),
+  lwd_seg = ifelse(static, 1, 2),
+  cex_texts = 1,
+  alpha_base = 0.1,
+  alpha_bdry = 0.15,
+  r_texts = 1.25,
+  alpha_ashape3d_base = NULL,
+  alpha_ashape3d_bdry = NULL,
+  lit = FALSE,
+  ...
+)
 }
 \arguments{
 \item{base}{base points, a matrix of size \code{c(nx, 3)}.}
 
-\item{dirs}{directions of spokes, a matrix of size \code{c(nx, 3)} with
-unit vectors.}
+\item{dirs}{directions of spokes, a matrix of size \code{c(nx, 3)} with unit
+vectors.}
 
-\item{bdry}{boundary points, a matrix of size \code{c(nx, 3)}.}
+\item{bdry}{boundary points, a matrix of size \code{c(nx, 3)}. Optional;
+computed internally as \code{base + radii * dirs} if missing.}
 
-\item{radii}{radii of spokes, a vector of size \code{nx}.}
+\item{radii}{radii of spokes, a vector of size \code{nx}. Optional; computed
+internally from \code{base} and \code{bdry} if missing.}
 
 \item{show_base, show_base_pt}{show base and base grid? Default to
 \code{TRUE}.}
@@ -34,9 +55,8 @@ unit vectors.}
 \item{col_base, col_bndy, col_seg}{colors for the base, boundary, and segments.
 Default to \code{"red"}, \code{"blue"}, and \code{"green"}, respectively.}
 
-\item{static}{use static
-(\code{\link[scatterplot3d]{scatterplot3d}}) or interactive
-(\code{\link[rgl]{plot3d}}) plot? Default to \code{TRUE}.}
+\item{static}{use static (\code{\link[scatterplot3d]{scatterplot3d}}) or
+interactive (\code{\link[rgl]{plot3d}}) plot? Default to \code{TRUE}.}
 
 \item{texts}{add text labels? If given, it should be a vector of size
 \code{nx} with the labels. Defaults to \code{NULL}.}
@@ -56,24 +76,38 @@ Defaults to \code{1.25}.}
 \item{alpha_ashape3d_base, alpha_ashape3d_bdry}{alpha parameters for
 \code{\link[alphashape3d]{ashape3d}}. Default to \code{NULL}.}
 
-\item{lit}{lit parameter passed to \code{\link[rgl]{material3d}}.
-Defaults to \code{FALSE}.}
+\item{lit}{lit parameter passed to \code{\link[rgl]{material3d}}. Defaults to
+\code{FALSE}.}
 
-\item{...}{further arguments to be passed to \code{\link[rgl]{plot3d}}
-or \code{\link[scatterplot3d]{scatterplot3d}}.}
+\item{...}{further arguments to be passed to \code{\link[rgl]{plot3d}} or
+\code{\link[scatterplot3d]{scatterplot3d}}.}
 }
 \value{
-Creates a static or interactive plot.
+Invisibly returns \code{NULL}. Called for the side effect of
+producing a static or interactive 3D plot of the s-rep.
 }
 \description{
 Plots a skeletal representation (s-rep) object based on its
 three-dimensional base, spokes, and boundary.
 }
 \examples{
-base <- r_unif_polysph(n = 50, d = 2)
-dirs <- base
-radii <- runif(nrow(base), min = 0.5, max = 1)
-bdry <- base + radii * dirs
-view_srep(base = base, dirs = dirs, bdry = bdry, radii = radii,
-          texts = 1:50, xlim = c(-2, 2), ylim = c(-2, 2), zlim = c(-2, 2))
+\donttest{
+if (requireNamespace("scatterplot3d", quietly = TRUE)) {
+  base <- r_unif_polysph(n = 50, d = 2)
+  dirs <- base
+  radii <- runif(nrow(base), min = 0.5, max = 1)
+  bdry <- base + radii * dirs
+  view_srep(base = base, dirs = dirs, bdry = bdry, radii = radii,
+            texts = 1:50, xlim = c(-2, 2), ylim = c(-2, 2), zlim = c(-2, 2))
+}
+}
+}
+\references{
+García-Portugués, E. and Meilán-Vila, A. (2023). Hippocampus shape analysis
+via skeletal models and kernel smoothing. In Larriba, Y. (Ed.),
+\emph{Statistical Methods at the Forefront of Biomedical Advances},
+pp. 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}.
+}
+\seealso{
+\code{\link{hippocampus}}, \code{\link{interp_polysph}}.
 }

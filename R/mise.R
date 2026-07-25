@@ -3,19 +3,18 @@
 #' estimator with von Mises--Fisher kernel for mixtures of von Mises--Fisher
 #' distributions
 #'
-#' @description The function \code{mise_vmf_polysph} computes the
-#' exact Mean Integrated Squared Error (MISE) of the kernel density estimator
-#' on the polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times
-#' \mathcal{S}^{d_r}} with respect to a density \eqn{f_m(\boldsymbol{x}) =
-#' \sum_{j=1}^m p_j
+#' @description The function \code{mise_vmf_polysph} computes the exact Mean
+#' Integrated Squared Error (MISE) of the kernel density estimator on the
+#' polysphere \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}} with
+#' respect to a density \eqn{f_m(\boldsymbol{x}) = \sum_{j=1}^m p_j
 #' f_{\mathrm{vMF}}(\boldsymbol{x}; \boldsymbol{\mu}_j, \kappa_j)} of an
 #' \eqn{m}-mixture of von Mises--Fisher distributions. The MISE is
 #' \deqn{\mathrm{MISE}_m[\hat{f}(\cdot;\boldsymbol{h})]=\mathbb{E}\left[
-#' \int_{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}
+#' \int_{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}
 #' \left(\hat{f}(\boldsymbol{x};\boldsymbol{h})-f_m(\boldsymbol{x})\right)^2
 #' \,\mathrm{d}\boldsymbol{x}\right]}
-#' and can be computed exactly from Propositions 4 and 5 in García-Portugués
-#' et al. (2013), using importance-sampling Monte Carlo to evaluate the matrices
+#' and can be computed exactly from Propositions 4 and 5 in García-Portugués et
+#' al. (2013), using importance-sampling Monte Carlo to evaluate the matrices
 #' \eqn{\boldsymbol{\Psi_1}} and \eqn{\boldsymbol{\Psi_2}}.
 #'
 #' @param h,log_h matrix of size \code{c(k, r)} with \code{k} vectors of
@@ -61,9 +60,9 @@ mise_vmf_polysph <- function(h, n, mu, kappa, prop, d, M_psi = 1e4,
 
   # Check mixture inputs
   r <- length(d)
-  mu <- rbind(mu)
-  kappa <- cbind(kappa)
   m <- length(prop)
+  mu <- rbind(mu)
+  if (!is.matrix(kappa)) kappa <- matrix(kappa, nrow = m)
   h <- rbind(h)
   stopifnot(nrow(kappa) == m)
   stopifnot(ncol(kappa) == r)
@@ -91,12 +90,11 @@ mise_vmf_polysph <- function(h, n, mu, kappa, prop, d, M_psi = 1e4,
   Psi_1 <- Psi_2 <- array(1, dim = c(nrow(h), m, m))
   for (j in seq_len(r)) {
 
+    seed_psi_j <- if (is.null(seed_psi)) NULL else seed_psi + j - 1
     mise_j <- mise_vmf(h = h[, j], n = n,
                        mu = mu[, (ind_dj[j] + 1):ind_dj[j + 1]],
                        kappa = kappa[, j], prop = prop, d = d[j],
-                       M_psi = M_psi, seed_psi = ifelse(is.null(seed_psi),
-                                                        NULL,
-                                                        seed_psi + j - 1),
+                       M_psi = M_psi, seed_psi = seed_psi_j,
                        spline = spline)
 
     # Exploiting structure in Proposition 5 of "Kernel density estimation for
@@ -164,11 +162,20 @@ mise_vmf <- function(h, n, mu, kappa, prop, d, M_psi = 1e4, seed_psi = NULL,
   Psi_0 <- exp(outer(log_C_kappa, log_C_kappa, "+") -
                  log_C_kappa_mu_i_kappa_mu_j)
 
-  # Set seeds for the Monte Carlos in the Psi_1 and Psi_2
+  # Set seeds for the Monte Carlos in the Psi_1 and Psi_2, restoring the user's
+  # RNG state on exit so the internal seed does not leak outside the call
   if (!is.null(seed_psi)) {
 
-    # old_seed <- .Random.seed
-    # on.exit({.Random.seed <<- old_seed})
+    if (exists(".Random.seed", envir = .GlobalEnv)) {
+
+      old_seed <- .GlobalEnv$.Random.seed
+      on.exit(assign(".Random.seed", old_seed, envir = .GlobalEnv), add = TRUE)
+
+    } else {
+
+      on.exit(rm(".Random.seed", envir = .GlobalEnv), add = TRUE)
+
+    }
     set.seed(seed_psi, kind = "Mersenne-Twister")
 
   }
@@ -272,15 +279,15 @@ log1p_mise <- function(log_h, n, d, mu, kappa, prop, M_psi = 1e4,
 #' \deqn{\boldsymbol{h}_{\mathrm{MISE}}=\arg\min_{\boldsymbol{h}>0}
 #' \mathrm{MISE}_m[\hat{f}(\cdot;\boldsymbol{h})]}
 #' of the kernel density estimator on the polysphere
-#' \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}} for an
-#' \eqn{m}-mixture of von Mises--Fisher densities
-#' \eqn{f_m(\boldsymbol{x}) = \sum_{j=1}^m p_j
-#' f_{\mathrm{vMF}}(\boldsymbol{x}; \boldsymbol{\mu}_j, \kappa_j)}.
+#' \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}} for an
+#' \eqn{m}-mixture of von Mises--Fisher densities \eqn{f_m(\boldsymbol{x}) =
+#' \sum_{j=1}^m p_j f_{\mathrm{vMF}}(\boldsymbol{x}; \boldsymbol{\mu}_j,
+#' \kappa_j)}.
 #'
 #' @inheritParams kde_polysph
 #' @inheritParams mise_vmf_polysph
-#' @param bw0 initial bandwidth vector for minimizing the MISE loss. Can be
-#' also a matrix of initial bandwidth vectors.
+#' @param bw0 initial bandwidth vector for minimizing the MISE loss. Can be also
+#' a matrix of initial bandwidth vectors.
 #' @inheritParams bw_rot_polysph
 #' @inheritParams log_besselI_scaled
 #' @param ... further arguments passed to \code{\link{nlm}}.
@@ -346,13 +353,13 @@ bw_mise_polysph <- function(n, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
 #'
 #' @description Computes the exact Integrated Squared Error (ISE) of the kernel
 #' density estimator on the polysphere
-#' \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}} with respect
-#' to a density \eqn{f_m(\boldsymbol{x}) = \sum_{j=1}^m p_j
+#' \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}} with respect to
+#' a density \eqn{f_m(\boldsymbol{x}) = \sum_{j=1}^m p_j
 #' f_{\mathrm{vMF}}(\boldsymbol{x}; \boldsymbol{\mu}_j, \kappa_j)} of an
 #' \eqn{m}-mixture of von Mises--Fisher distributions. The ISE is
 #' \deqn{\mathrm{ISE}_m[\hat{f}(\cdot;\boldsymbol{h})]
-#' =\|\hat{f}(\cdot;\boldsymbol{h})-f_m\|_2^2
-#' =\int_{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}
+#' =\|\hat{f}(\cdot;\boldsymbol{h})-f_m\|_2^2 =\int_{\mathbb{S}^{d_1} \times
+#' \cdots \times \mathbb{S}^{d_r}}
 #' \left(\hat{f}(\boldsymbol{x};\boldsymbol{h})-f_m(\boldsymbol{x})\right)^2
 #' \,\mathrm{d}\boldsymbol{x}.}
 #'
@@ -484,11 +491,20 @@ ise_vmf_polysph <- function(X, d, h, mu, kappa, prop, M_psi = 1e4,
 
   } else {
 
-    # Set seeds for the Monte Carlo
+    # Set seeds for the Monte Carlo, restoring the user's RNG state on exit
     if (!is.null(seed_psi)) {
 
-      # old_seed <- .Random.seed
-      # on.exit({.Random.seed <<- old_seed})
+      if (exists(".Random.seed", envir = .GlobalEnv)) {
+
+        old_seed <- .GlobalEnv$.Random.seed
+        on.exit(assign(".Random.seed", old_seed, envir = .GlobalEnv),
+                add = TRUE)
+
+      } else {
+
+        on.exit(rm(".Random.seed", envir = .GlobalEnv), add = TRUE)
+
+      }
       set.seed(seed_psi, kind = "Mersenne-Twister")
 
     }
@@ -539,16 +555,16 @@ log1p_ise <- function(log_h, X, d, mu, kappa, prop, M_psi = 1e4,
 #' \deqn{\boldsymbol{h}_{\mathrm{ISE}}=\arg\min_{\boldsymbol{h}>0}
 #' \mathrm{ISE}_m[\hat{f}(\cdot;\boldsymbol{h})]}
 #' of the kernel density estimator on the polysphere
-#' \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}} for an
-#' \eqn{m}-mixture of von Mises--Fisher densities
-#' \eqn{f_m(\boldsymbol{x}) = \sum_{j=1}^m p_j
-#' f_{\mathrm{vMF}}(\boldsymbol{x}; \boldsymbol{\mu}_j, \kappa_j)}.
+#' \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}} for an
+#' \eqn{m}-mixture of von Mises--Fisher densities \eqn{f_m(\boldsymbol{x}) =
+#' \sum_{j=1}^m p_j f_{\mathrm{vMF}}(\boldsymbol{x}; \boldsymbol{\mu}_j,
+#' \kappa_j)}.
 #'
 #' @inheritParams ise_vmf
 #' @inheritParams mise
 #' @inheritParams r_mvmf_polysph
-#' @param bw0 initial bandwidth vector for minimizing the ISE loss. Can be
-#' also a matrix of initial bandwidth vectors.
+#' @param bw0 initial bandwidth vector for minimizing the ISE loss. Can be also
+#' a matrix of initial bandwidth vectors.
 #' @return A list with entries \code{bw} (optimal bandwidth) and \code{opt},
 #' the latter containing the output of \code{\link[stats]{nlm}}.
 #' @examples
@@ -566,11 +582,19 @@ bw_ise_polysph <- function(X, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
                            x_mvmf = NULL, f_mvmf = NULL, seed_psi = NULL,
                            spline = FALSE, exact = FALSE, p = 2, ...) {
 
-  # Set seeds for the Monte Carlo
+  # Set seeds for the Monte Carlo, restoring the user's RNG state on exit
   if (!is.null(seed_psi)) {
 
-    # old_seed <- .Random.seed
-    # on.exit({.Random.seed <<- old_seed})
+    if (exists(".Random.seed", envir = .GlobalEnv)) {
+
+      old_seed <- .GlobalEnv$.Random.seed
+      on.exit(assign(".Random.seed", old_seed, envir = .GlobalEnv), add = TRUE)
+
+    } else {
+
+      on.exit(rm(".Random.seed", envir = .GlobalEnv), add = TRUE)
+
+    }
     set.seed(seed_psi, kind = "Mersenne-Twister")
 
   }

@@ -8,11 +8,9 @@
 \usage{
 dist_polysph(x, y, ind_dj, norm_x = FALSE, norm_y = FALSE, std = TRUE)
 
-dist_polysph_cross(x, y, ind_dj, norm_x = FALSE, norm_y = FALSE,
-  std = TRUE)
+dist_polysph_cross(x, y, ind_dj, norm_x = FALSE, norm_y = FALSE, std = TRUE)
 
-dist_polysph_matrix(x, ind_dj, norm_x = FALSE, norm_y = FALSE,
-  std = TRUE)
+dist_polysph_matrix(x, ind_dj, norm_x = FALSE, norm_y = FALSE, std = TRUE)
 }
 \arguments{
 \item{x}{a matrix of size \code{c(n, sum(d) + r)}.}
@@ -20,8 +18,8 @@ dist_polysph_matrix(x, ind_dj, norm_x = FALSE, norm_y = FALSE,
 \item{y}{either a matrix of size \code{c(m, sum(d) + r)} or a vector of
 length \code{sum(d) + r}.}
 
-\item{ind_dj}{\code{0}-based index separating the blocks of spheres that
-is computed with \code{\link{comp_ind_dj}}.}
+\item{ind_dj}{\code{0}-based index separating the blocks of spheres that is
+computed with \code{\link{comp_ind_dj}}.}
 
 \item{norm_x, norm_y}{ensure a normalization of the data? Default to
 \code{FALSE}.}
@@ -42,10 +40,10 @@ pairwise distances of \code{x}.}
 \description{
 Computation of the distance between points \eqn{\boldsymbol{x}}
 and \eqn{\boldsymbol{y}} on the polysphere
-\eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}:
-\deqn{\sqrt{\sum_{j=1}^r
-d_{\mathcal{S}^{d_j}}(\boldsymbol{x}_j, \boldsymbol{y}_j)^2},}
-where \eqn{d_{\mathcal{S}^{d_j}}(\boldsymbol{x}_j, \boldsymbol{y}_j)=
+\eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}:
+\deqn{\sqrt{\sum_{j=1}^r d_{\mathbb{S}^{d_j}}(\boldsymbol{x}_j,
+\boldsymbol{y}_j)^2},}
+where \eqn{d_{\mathbb{S}^{d_j}}(\boldsymbol{x}_j, \boldsymbol{y}_j)=
 \cos^{-1}(\boldsymbol{x}_j' \boldsymbol{y}_j)}.
 }
 \examples{

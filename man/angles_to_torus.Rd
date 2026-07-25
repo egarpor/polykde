@@ -13,8 +13,8 @@ torus_to_angles(x)
 \item{theta}{matrix of size \code{c(n, d)} with the angles.}
 
 \item{x}{matrix of size \code{c(n, 2 * d)} with the Cartesian coordinates on
-\eqn{(\mathcal{S}^1)^d}. Assumed to be of unit norm by pairs of coordinates
-in the rows.}
+\eqn{(\mathbb{S}^1)^d}. Assumed to be of unit norm by pairs of coordinates in
+the rows.}
 }
 \value{
 \itemize{
@@ -24,9 +24,9 @@ in the rows.}
 }
 \description{
 Transforms the angles \eqn{(\theta_1,\ldots,\theta_d)} in
-\eqn{[-\pi,\pi)^d} into the Cartesian coordinates
+\eqn{\mathbb{T}^d=[-\pi,\pi)^d} into the Cartesian coordinates
 \deqn{(\cos(x_1), \sin(x_1),\ldots,\cos(x_d), \sin(x_d))}
-of the torus \eqn{(\mathcal{S}^1)^d}, and vice versa.
+of the torus \eqn{(\mathbb{S}^1)^d}, and vice versa.
 }
 \examples{
 # Check changes of coordinates
