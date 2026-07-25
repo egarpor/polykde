@@ -27,12 +27,10 @@ define the center of the kernel.}
 \item{h}{vector of size \code{r} with bandwidths.}
 
 \item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
-\code{2} for Epanechnikov; \code{3} for softplus. The equivalent character
-codes \code{"1"}, \code{"2"}, and \code{"3"} are also accepted.}
+\code{2} for Epanechnikov; \code{3} for softplus.}
 
 \item{kernel_type}{type of kernel employed: \code{1} for product kernel
-(default); \code{2} for spherically symmetric kernel. The equivalent
-character codes \code{"1"} and \code{"2"} are also accepted.}
+(default); \code{2} for spherically symmetric kernel.}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 

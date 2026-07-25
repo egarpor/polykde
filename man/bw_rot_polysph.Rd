@@ -27,8 +27,7 @@ bw_rot_polysph(
 \code{2} for Epanechnikov; \code{3} for softplus.}
 
 \item{kernel_type}{type of kernel employed: \code{"prod"} for the product
-kernel (default) or \code{"sph"} for the spherically symmetric kernel. The
-numeric codes \code{1} and \code{2} are also accepted, respectively.}
+kernel (default) or \code{"sph"} for the spherically symmetric kernel.}
 
 \item{bw0}{initial bandwidth for minimizing the CV loss. If \code{NULL}, it
 is computed internally by magnifying the \code{\link{bw_mrot_polysph}}

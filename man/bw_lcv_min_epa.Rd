@@ -13,8 +13,7 @@ bw_lcv_min_epa(X, d, kernel_type = c("prod", "sph")[1])
 \item{d}{vector of size \code{r} with dimensions.}
 
 \item{kernel_type}{type of kernel employed: \code{"prod"} for the product
-kernel (default) or \code{"sph"} for the spherically symmetric kernel. The
-numeric codes \code{1} and \code{2} are also accepted, respectively.}
+kernel (default) or \code{"sph"} for the spherically symmetric kernel.}
 }
 \value{
 The minimum bandwidth allowed.

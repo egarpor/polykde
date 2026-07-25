@@ -6,8 +6,8 @@
 #'
 #' @param x a vector of size \code{nx} with the evaluation points.
 #' @param X a vector of size \code{n} with the predictor sample.
-#' @param Y a matrix of size \code{c(n, sum(d) + r)} with the response sample
-#' on the polysphere.
+#' @param Y a matrix of size \code{c(n, sum(d) + r)} with the response sample on
+#' the polysphere.
 #' @inheritParams kde_polysph
 #' @param h a positive scalar giving the bandwidth.
 #' @param p degree of local fit, either \code{0} or \code{1}. Defaults to
@@ -85,9 +85,9 @@ kre_polysph <- function(x, X, Y, d, h, p = 0) {
 #' regression
 #'
 #' @description Computes least squares cross-validation bandwidths for kernel
-#' regression estimation with polyspherical response and scalar predictor.
-#' It computes both the bandwidth that minimizes the cross-validation loss and
-#' its "one standard error" variant.
+#' regression estimation with polyspherical response and scalar predictor. It
+#' computes both the bandwidth that minimizes the cross-validation loss and its
+#' "one standard error" variant.
 #'
 #' @inheritParams kre_polysph
 #' @param h_grid bandwidth grid where to optimize the cross-validation loss.

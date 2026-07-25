@@ -29,8 +29,7 @@ hess_L(x, y, h, kernel = 1, k = 10)
 \item{t}{vector with the evaluation points.}
 
 \item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
-\code{2} for Epanechnikov; \code{3} for softplus. The equivalent character
-codes \code{"1"}, \code{"2"}, and \code{"3"} are also accepted.}
+\code{2} for Epanechnikov; \code{3} for softplus.}
 
 \item{squared}{square the kernel? Only for \code{deriv = 0}. Defaults to
 \code{FALSE}.}
@@ -48,8 +47,7 @@ Defaults to \code{0}.}
 \item{d}{vector of size \code{r} with dimensions.}
 
 \item{kernel_type}{type of kernel employed: \code{1} for product kernel
-(default); \code{2} for spherically symmetric kernel. The equivalent
-character codes \code{"1"} and \code{"2"} are also accepted.}
+(default); \code{2} for spherically symmetric kernel.}
 
 \item{log}{compute the logarithm of the constant? Defaults to \code{FALSE}.}
 

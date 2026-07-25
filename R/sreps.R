@@ -34,12 +34,12 @@ interp_polysph <- function(x, y, ind_dj, N = 10) {
 #' three-dimensional base, spokes, and boundary.
 #'
 #' @param base base points, a matrix of size \code{c(nx, 3)}.
-#' @param dirs directions of spokes, a matrix of size \code{c(nx, 3)} with
-#' unit vectors.
+#' @param dirs directions of spokes, a matrix of size \code{c(nx, 3)} with unit
+#' vectors.
 #' @param bdry boundary points, a matrix of size \code{c(nx, 3)}. Optional;
 #' computed internally as \code{base + radii * dirs} if missing.
-#' @param radii radii of spokes, a vector of size \code{nx}. Optional;
-#' computed internally from \code{base} and \code{bdry} if missing.
+#' @param radii radii of spokes, a vector of size \code{nx}. Optional; computed
+#' internally from \code{base} and \code{bdry} if missing.
 #' @param show_base,show_base_pt show base and base grid? Default to
 #' \code{TRUE}.
 #' @param show_bdry,show_bdry_pt show boundary and boundary grid? Default to
@@ -47,9 +47,8 @@ interp_polysph <- function(x, y, ind_dj, N = 10) {
 #' @param show_seg show segments? Defaults to \code{TRUE}.
 #' @param col_base,col_bndy,col_seg colors for the base, boundary, and segments.
 #' Default to \code{"red"}, \code{"blue"}, and \code{"green"}, respectively.
-#' @param static use static
-#' (\code{\link[scatterplot3d]{scatterplot3d}}) or interactive
-#' (\code{\link[rgl]{plot3d}}) plot? Default to \code{TRUE}.
+#' @param static use static (\code{\link[scatterplot3d]{scatterplot3d}}) or
+#' interactive (\code{\link[rgl]{plot3d}}) plot? Default to \code{TRUE}.
 #' @param texts add text labels? If given, it should be a vector of size
 #' \code{nx} with the labels. Defaults to \code{NULL}.
 #' @param cex_base,cex_bdry size of the base and boundary points.
@@ -61,10 +60,10 @@ interp_polysph <- function(x, y, ind_dj, N = 10) {
 #' Defaults to \code{1.25}.
 #' @param alpha_ashape3d_base,alpha_ashape3d_bdry alpha parameters for
 #' \code{\link[alphashape3d]{ashape3d}}. Default to \code{NULL}.
-#' @param lit lit parameter passed to \code{\link[rgl]{material3d}}.
-#' Defaults to \code{FALSE}.
-#' @param ... further arguments to be passed to \code{\link[rgl]{plot3d}}
-#' or \code{\link[scatterplot3d]{scatterplot3d}}.
+#' @param lit lit parameter passed to \code{\link[rgl]{material3d}}. Defaults to
+#' \code{FALSE}.
+#' @param ... further arguments to be passed to \code{\link[rgl]{plot3d}} or
+#' \code{\link[scatterplot3d]{scatterplot3d}}.
 #' @return Invisibly returns \code{NULL}. Called for the side effect of
 #' producing a static or interactive 3D plot of the s-rep.
 #' @references

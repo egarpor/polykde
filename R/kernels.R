@@ -1,20 +1,14 @@
 
 #' @title Kernels on the sphere and their derivatives
 #'
-#' @description An isotropic kernel \eqn{L} on \eqn{\mathcal{S}^d} and its
-#' normalizing constant are such that \eqn{\int_{\mathcal{S}^d} c(h, d, L)
+#' @description An isotropic kernel \eqn{L} on \eqn{\mathbb{S}^d} and its
+#' normalizing constant are such that \eqn{\int_{\mathbb{S}^d} c(h, d, L)
 #' L\left(\frac{1 - \boldsymbol{x}'\boldsymbol{y}}{h^2}\right)
 #' \,\mathrm{d}\boldsymbol{x} = 1} (extrinsic-chordal distance) or
-#' \eqn{\int_{\mathcal{S}^d} c(h, d, L)
+#' \eqn{\int_{\mathbb{S}^d} c(h, d, L)
 #' L\left(\frac{\cos^{-1}(\boldsymbol{x}'\boldsymbol{y})^2}{2h^2}\right)
 #' \,\mathrm{d}\boldsymbol{x} = 1} (intrinsic distance).
 #' @inheritParams kde_polysph
-#' @param kernel kernel employed: \code{1} for von Mises--Fisher (default);
-#' \code{2} for Epanechnikov; \code{3} for softplus. The equivalent character
-#' codes \code{"1"}, \code{"2"}, and \code{"3"} are also accepted.
-#' @param kernel_type type of kernel employed: \code{1} for product kernel
-#' (default); \code{2} for spherically symmetric kernel. The equivalent
-#' character codes \code{"1"} and \code{"2"} are also accepted.
 #' @param t vector with the evaluation points.
 #' @param squared square the kernel? Only for \code{deriv = 0}. Defaults to
 #' \code{FALSE}.
@@ -317,13 +311,10 @@ hess_L <- function(x, y, h, kernel = 1, k = 10) {
 #' @title Sample from the angular kernel density
 #'
 #' @description Simulation from the angular density function of an isotropic
-#' kernel on the sphere \eqn{\mathcal{S}^d}.
+#' kernel on the sphere \eqn{\mathbb{S}^d}.
 #'
 #' @inheritParams r_unif_polysph
 #' @inheritParams kde_polysph
-#' @param kernel kernel employed: \code{1} for von Mises--Fisher (default);
-#' \code{2} for Epanechnikov; \code{3} for softplus. The equivalent character
-#' codes \code{"1"}, \code{"2"}, and \code{"3"} are also accepted.
 #' @return A vector of size \code{n} with the sample.
 #' @examples
 #' hist(r_g_kern(n = 1e3, d = 2, h = 1, kernel = "1"), breaks = 30,
@@ -434,23 +425,19 @@ r_g_kern <- function(n, d, h, kernel = "1", k = 10) {
 
 #' @title Polyspherical kernel moments and efficiencies
 #'
-#' @description Computes moments of kernels on \eqn{\mathcal{S}^{d_1} \times
-#' \cdots \times \mathcal{S}^{d_r}} and efficiencies of kernels on
-#' \eqn{(\mathcal{S}^d)^r}.
+#' @description Computes moments of kernels on
+#' \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}} and efficiencies
+#' of kernels on \eqn{(\mathbb{S}^d)^r}.
 #'
 #' @param d a scalar with the common dimension of each sphere
-#' \eqn{\mathcal{S}^d}.
+#' \eqn{\mathbb{S}^d}.
 #' @param r a scalar with the number of polyspheres of the same dimension.
+#' @inheritParams bw_rot_polysph
 #' @inheritParams kde_polysph
 #' @param kernel_ref reference kernel to which compare the efficiency. Uses the
 #' same codification as the \code{kernel}. Defaults to \code{"2"}.
-#' @param kernel_type type of kernel. Must be either \code{"prod"} (product
-#' kernel, default) or \code{"sph"} (spherically symmetric kernel). The numeric
-#' codes \code{1} and \code{2} are also accepted, respectively.
-#' @param kernel_ref_type type of the reference kernel. Must be either
-#' \code{"prod"} (product kernel) or \code{"sph"} (spherically symmetric kernel,
-#' default). The numeric codes \code{1} and \code{2} are also accepted,
-#' respectively.
+#' @param kernel_ref_type type of the reference kernel. Uses the same
+#' codification as \code{kernel_type}. Defaults to \code{"sph"}.
 #' @param ... further arguments passed to \code{\link{integrate}}, such as
 #' \code{upper}, \code{abs.tol}, \code{rel.tol}, etc.
 #' @seealso \code{\link{kde_polysph}}, \code{\link{bw_rot_polysph}}.
@@ -750,8 +737,8 @@ v_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
 
 
 #' @rdname eff_kern
-#' @param bias,squared flags parameters for computing the numerator constants
-#' in the bias and variance constants. Default to \code{FALSE}.
+#' @param bias,squared flags parameters for computing the numerator constants in
+#' the bias and variance constants. Default to \code{FALSE}.
 #' @noRd
 lambda_h <- function(d, h = NULL, kernel = "1", bias = FALSE, squared = FALSE,
                      k = 10, ...) {

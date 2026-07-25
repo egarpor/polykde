@@ -1,6 +1,6 @@
 
-#' @title Cross-validation bandwidth selection for polyspherical kernel
-#' density estimator
+#' @title Cross-validation bandwidth selection for polyspherical kernel density
+#' estimator
 #'
 #' @description Likelihood Cross-Validation (LCV) and Least Squares
 #' Cross-Validation (LSCV) bandwidth selection for the polyspherical kernel
@@ -9,8 +9,8 @@
 #' @inheritParams kde_polysph
 #' @param type cross-validation type, either \code{"LCV"} (default) or
 #' \code{"LSCV"}.
-#' @param M number of Monte Carlo samples to use for approximating the
-#' integral in the LSCV loss. Defaults to \code{1e4}.
+#' @param M number of Monte Carlo samples to use for approximating the integral
+#' in the LSCV loss. Defaults to \code{1e4}.
 #' @param bw0 initial bandwidth vector for minimizing the CV loss. If
 #' \code{NULL}, it is computed internally by magnifying the
 #' \code{\link{bw_rot_polysph}} bandwidths by 50\%. Can be also a matrix of
@@ -21,20 +21,20 @@
 #' @inheritParams bw_rot_polysph
 #' @param upscale rescale the resulting bandwidths to work for derivative
 #' estimation? Defaults to \code{FALSE}.
-#' @param imp_mc use importance sampling in the Monte Carlo approximation of
-#' the integral in the LSCV loss? It is more accurate but also more time
-#' consuming. Defaults to \code{TRUE}.
+#' @param imp_mc use importance sampling in the Monte Carlo approximation of the
+#' integral in the LSCV loss? It is more accurate but also more time consuming.
+#' Defaults to \code{TRUE}.
 #' @param seed_mc seed for the Monte Carlo simulations used to estimate the
 #' integral in the LSCV loss. Defaults to \code{NULL} (no seed is fixed for
 #' different bandwidths).
-#' @param exact_vmf use the closed-form for the LSCV loss with the
-#' von Mises--Fisher kernel? Defaults to \code{FALSE}.
+#' @param exact_vmf use the closed-form for the LSCV loss with the von
+#' Mises--Fisher kernel? Defaults to \code{FALSE}.
 #' @param common_h use the same bandwidth for all dimensions? Defaults to
 #' \code{FALSE}.
 #' @param spline use a faster spline approximation to compute Bessel functions?
 #' Only available for \code{d} up to 10. Defaults to \code{FALSE}.
-#' @param arcsinh do an \eqn{\arcsinh} transformation of the LSCV loss to
-#' improve numerical stability? Defaults to \code{FALSE}.
+#' @param arcsinh do an \eqn{\operatorname{arcsinh}} transformation of the LSCV
+#' loss to improve numerical stability? Defaults to \code{FALSE}.
 #' @param opt optimizer to use; either \code{"\link{optim}"} (default) or
 #' \code{"\link{nlm}"}.
 #' @param ncores number of cores used during the optimization. Defaults to
@@ -465,6 +465,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 #' likelihood cross-validation with Epanechnikov kernels, for a given dataset
 #' and dimension.
 #'
+#' @inheritParams bw_rot_polysph
 #' @inheritParams bw_cv_polysph
 #' @return The minimum bandwidth allowed.
 #' @examples
@@ -493,6 +494,7 @@ bw_lcv_min_epa <- function(X, d, kernel_type = c("prod", "sph")[1]) {
   }
   n <- nrow(X)
   r <- length(d)
+  stopifnot(n >= 2)
 
   # Index for accessing each S^dj with ind[j]:(ind[j + 1] - 1)
   ind <- cumsum(c(1, d + 1))
@@ -503,7 +505,7 @@ bw_lcv_min_epa <- function(X, d, kernel_type = c("prod", "sph")[1]) {
     prods <- matrix(0, nrow = n, ncol = n)
     for (i in seq_len(n - 1)) {
       for (j in (i + 1):n) {
-        prods[i, j] <- max(sapply(1:r, function(k) {
+        prods[i, j] <- max(sapply(seq_len(r), function(k) {
           ind_k <- ind[k]:(ind[k + 1] - 1)
           1 - sum(X[i, ind_k] * X[j, ind_k])
         }))
@@ -586,22 +588,24 @@ curv_vmf_polysph <- function(kappa, d, log = FALSE) {
 }
 
 
-#' @title Rule-of-thumb bandwidth selection for polyspherical kernel
-#' density estimator
+#' @title Rule-of-thumb bandwidth selection for polyspherical kernel density
+#' estimator
 #'
 #' @description Computes the rule-of-thumb bandwidth for the polyspherical
 #' kernel density estimator using a product of von Mises--Fisher distributions
 #' as reference in the Asymptotic Mean Integrated Squared Error (AMISE).
 #'
 #' @inheritParams kde_polysph
+#' @param kernel_type type of kernel employed: \code{"prod"} for the product
+#' kernel (default) or \code{"sph"} for the spherically symmetric kernel.
 #' @param bw0 initial bandwidth for minimizing the CV loss. If \code{NULL}, it
 #' is computed internally by magnifying the \code{\link{bw_mrot_polysph}}
 #' bandwidths by 50\%. Can be also a matrix of initial bandwidth vectors.
 #' @param upscale rescale bandwidths to work on
-#' \eqn{\mathcal{S}^{d_1}\times\cdots\times \mathcal{S}^{d_r}} and for
-#' derivative estimation?
-#' Defaults to \code{FALSE}. If \code{upscale = 1}, the order \code{n} is
-#' upscaled. If \code{upscale = 2}, then also the kernel constant is upscaled.
+#' \eqn{\mathbb{S}^{d_1}\times\cdots\times \mathbb{S}^{d_r}} and for derivative
+#' estimation? Defaults to \code{FALSE}. If \code{upscale = 1}, the order
+#' \code{n} is upscaled. If \code{upscale = 2}, then also the kernel constant is
+#' upscaled.
 #' @param deriv derivative order to perform the upscaling. Defaults to \code{0}.
 #' @param kappa estimate of the concentration parameters. Computed if not
 #' provided (default).
@@ -688,7 +692,7 @@ bw_rot_polysph <- function(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
   b <- b_d(kernel = kernel, d = d, k = k, kernel_type = kernel_type)
   v <- v_d(kernel = kernel, d = d, k = k, kernel_type = kernel_type)
   log_bias2 <- log_R_kappa +
-    ifelse(kernel_type == "prod", log(tcrossprod(b)), 2 * log(b[1]))
+    if (kernel_type == "prod") log(tcrossprod(b)) else 2 * log(b[1])
   log_var <- sum(log(v)) - log(n)
 
   # AMISE and gradient functions

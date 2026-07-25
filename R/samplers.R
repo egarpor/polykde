@@ -2,7 +2,7 @@
 #' @title Sample uniform polyspherical data
 #'
 #' @description Simulates from a uniform distribution on the polysphere
-#' \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
+#' \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}.
 #'
 #' @param n sample size.
 #' @inheritParams kde_polysph
@@ -23,8 +23,7 @@ r_unif_polysph <- function(n, d) {
 #' @title Sample von Mises--Fisher distributed polyspherical data
 #'
 #' @description Simulates from a product of von Mises--Fisher distributions on
-#' the polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times
-#' \mathcal{S}^{d_r}}.
+#' the polysphere \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}.
 #'
 #' @param mu a vector of size \code{sum(d) + r} with the concatenated von
 #' Mises--Fisher means.
@@ -79,14 +78,14 @@ r_vmf_polysph <- function(n, d, mu, kappa, norm_mu = FALSE) {
 
 #' @title Sample mixtures of von Mises--Fisher distributed polyspherical data
 #'
-#' @description Simulates from an \eqn{m}-mixture of product of
-#' von Mises--Fisher distributions on the polysphere \eqn{\mathcal{S}^{d_1}
-#' \times \cdots \times \mathcal{S}^{d_r}}.
+#' @description Simulates from an \eqn{m}-mixture of product of von
+#' Mises--Fisher distributions on the polysphere
+#' \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}.
 #'
-#' @param mu a matrix of size \code{c(m, sum(d + 1))} with the means of
-#' each mixture components in the rows.
-#' @param kappa a matrix of size \code{c(m, r)} with the concentrations of
-#' each mixture components in the rows.
+#' @param mu a matrix of size \code{c(m, sum(d + 1))} with the means of each
+#' mixture components in the rows.
+#' @param kappa a matrix of size \code{c(m, r)} with the concentrations of each
+#' mixture components in the rows.
 #' @param prop a vector of size \code{m} with the proportions of the mixture
 #' components.
 #' @inheritParams r_kern_polysph
@@ -105,7 +104,7 @@ r_mvmf_polysph <- function(n, d, mu, kappa, prop, norm_mu = FALSE) {
   r <- length(d)
   m <- length(prop)
   mu <- rbind(mu)
-  kappa <- cbind(kappa)
+  if (!is.matrix(kappa)) kappa <- matrix(kappa, nrow = m)
   if (nrow(kappa) != m || ncol(kappa) != r) {
 
     stop("kappa size is not c(m, r).")
@@ -147,19 +146,13 @@ r_mvmf_polysph <- function(n, d, mu, kappa, prop, norm_mu = FALSE) {
 #' @title Sample kernel-distributed polyspherical data
 #'
 #' @description Simulates from the distribution defined by a kernel on the
-#' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
+#' polysphere \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}.
 #'
-#' @param mu a vector of size \code{sum(d) + r} with the concatenated means
-#' that define the center of the kernel.
+#' @param mu a vector of size \code{sum(d) + r} with the concatenated means that
+#' define the center of the kernel.
 #' @param norm_mu ensure a normalization of \code{mu}? Defaults to \code{FALSE}.
 #' @inheritParams r_unif_polysph
 #' @inheritParams kde_polysph
-#' @param kernel kernel employed: \code{1} for von Mises--Fisher (default);
-#' \code{2} for Epanechnikov; \code{3} for softplus. The equivalent character
-#' codes \code{"1"}, \code{"2"}, and \code{"3"} are also accepted.
-#' @param kernel_type type of kernel employed: \code{1} for product kernel
-#' (default); \code{2} for spherically symmetric kernel. The equivalent
-#' character codes \code{"1"} and \code{"2"} are also accepted.
 #' @details Simulation for non-von Mises--Fisher spherically symmetric kernels
 #' is done by acceptance-rejection from a von Mises--Fisher proposal
 #' distribution.
@@ -375,8 +368,8 @@ r_kern_polysph <- function(n, d, mu, h, kernel = 1, kernel_type = 1, k = 10,
 #' @title Sample from polyspherical kernel density estimator
 #'
 #' @description Simulates from the distribution defined by a polyspherical
-#' kernel density estimator on \eqn{\mathcal{S}^{d_1} \times \ldots \times
-#' \mathcal{S}^{d_r}}.
+#' kernel density estimator on
+#' \eqn{\mathbb{S}^{d_1} \times \ldots \times \mathbb{S}^{d_r}}.
 #'
 #' @inheritParams kde_polysph
 #' @param norm_X ensure a normalization of the data?
@@ -462,36 +455,36 @@ r_kde_polysph <- function(n, X, d, h, kernel = 1, kernel_type = 1, k = 10,
 
 #' @title Samplers of one-dimensional modes of variation for polyspherical data
 #'
-#' @description Functions for sampling data on \eqn{(\mathcal{S}^d)^r}, for
+#' @description Functions for sampling data on \eqn{(\mathbb{S}^d)^r}, for
 #' \eqn{d=1,2}, using one-dimensional modes of variation.
 #'
 #' @param n sample size.
-#' @param r number of spheres in the polysphere \eqn{(\mathcal{S}^d)^r}.
-#' @param alpha a vector of size \code{r} valued in \eqn{[-\pi,\pi)} with the
-#' initial angles for the linear trend. Chosen at random by default.
+#' @param r number of spheres in the polysphere \eqn{(\mathbb{S}^d)^r}.
+#' @param alpha a vector of size \code{r} valued in \eqn{\mathbb{T}=[-\pi,\pi)}
+#' with the initial angles for the linear trend. Chosen at random by default.
 #' @param k a vector of size \code{r} with the \bold{integer} slopes defining
 #' the angular linear trend. Chosen at random by default.
 #' @param sigma standard deviation of the noise about the one-dimensional mode
 #' of variation. Defaults to \code{0.25}.
-#' @param angles return angles in \eqn{[-\pi, \pi)}? Defaults to \code{FALSE}.
-#' @param c \href{https://en.wikipedia.org/wiki/Clélie}{Clélie curve}
-#' parameter, changing the spiral wrappings. Defaults to \code{1}.
+#' @param angles return angles in \eqn{\mathbb{T}=[-\pi, \pi)}? Defaults to
+#' \code{FALSE}.
+#' @param c \href{https://en.wikipedia.org/wiki/Clélie}{Clélie curve} parameter,
+#' changing the spiral wrappings. Defaults to \code{1}.
 #' @param t latitude, with respect to \code{Theta}, of the small circle.
 #' Defaults to \code{0} (equator).
 #' @param Theta a matrix of size \code{c(3, r)} giving the north poles for
-#' \eqn{\mathcal{S}^2}. Useful for rotating the sample. Chosen at random by
+#' \eqn{\mathbb{S}^2}. Useful for rotating the sample. Chosen at random by
 #' default.
 #' @param kappa concentration von Mises--Fisher parameter for longitudes in
 #' small circles. Defaults to \code{0} (uniform).
 #' @param spiral consider a spiral (or, more precisely, a
-#' \href{https://en.wikipedia.org/wiki/Clélie}{Clélie curve}) instead of
-#' a small circle? Defaults to \code{FALSE}.
+#' \href{https://en.wikipedia.org/wiki/Clélie}{Clélie curve}) instead of a small
+#' circle? Defaults to \code{FALSE}.
 #' @return
-#' An array of size \code{c(n, d, r)} with samples on \eqn{(\mathcal{S}^d)^r}.
+#' An array of size \code{c(n, d, r)} with samples on \eqn{(\mathbb{S}^d)^r}.
 #' If \code{angles = TRUE} for \code{r_path_s1r}, then a matrix of size
 #' \code{c(n ,r)} with angles is returned.
-#' @seealso
-#' \code{\link{r_unif_polysph}}, \code{\link{r_vmf_polysph}},
+#' @seealso \code{\link{r_unif_polysph}}, \code{\link{r_vmf_polysph}},
 #' \code{\link{r_mvmf_polysph}}, \code{\link{r_kern_polysph}},
 #' \code{\link{r_kde_polysph}}.
 #' @examples
