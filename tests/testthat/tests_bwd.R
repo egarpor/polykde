@@ -96,18 +96,18 @@ cv_naive <- function(h, X, d, mc_samp, kde_samp = FALSE) {
 
 test_that("bw_cv_polysph(type = \"LCV\") in sequential and parallel mode", {
   expect_equal(
-    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV",
+    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV", method = "L-BFGS-B",
                   control = list(maxit = 1e3))$opt$value,
-    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV",
+    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV", method = "L-BFGS-B",
                   control = list(maxit = 1e3), ncores = 2)$opt$value,
                tolerance = 1e-2)
 })
 
 test_that("bw_cv_polysph(type = \"LSCV\") in sequential and parallel mode", {
   expect_equal(
-    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
+    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV", method = "L-BFGS-B",
                   control = list(maxit = 1e3), seed_mc = 1)$opt$value,
-    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
+    bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV", method = "L-BFGS-B",
                   control = list(maxit = 1e3), seed_mc = 1,
                   ncores = 2)$opt$value,
     tolerance = 1e-2)
@@ -179,11 +179,11 @@ test_that("bw_cv_polysph(type = \"LSCV\", arcsinh = TRUE) loss", {
       bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
                     bw0 = f * h, M = M, control = list(maxit = 0),
                     method = "BFGS", exact_vmf = FALSE,
-                    arcsinh = TRUE)$opt$value,
+                    arcsinh = TRUE, seed_mc = 1)$opt$value,
       asinh(bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV",
                           bw0 = f * h, M = M, control = list(maxit = 0),
                           method = "BFGS", exact_vmf = FALSE,
-                          arcsinh = FALSE)$opt$value),
+                          arcsinh = FALSE, seed_mc = 1)$opt$value),
       tolerance = 1e-3)
 
   }
@@ -283,6 +283,16 @@ test_that("bw_cv_polysph(type = \"LCV\") with optim/nlm", {
     tolerance = 1e-2)
   expect_error(bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV",
                              opt = "nlm", ncores = 2))
+
+})
+
+test_that("bw_cv_polysph(upscale = TRUE) works for deriv = 0", {
+
+  set.seed(1)
+  X_up <- r_unif_polysph(n = 40, d = c(2, 2))
+  bw_no <- bw_cv_polysph(X = X_up, d = c(2, 2), upscale = FALSE)$bw
+  bw_up <- bw_cv_polysph(X = X_up, d = c(2, 2), upscale = TRUE)$bw
+  expect_true(all(bw_up > bw_no))
 
 })
 

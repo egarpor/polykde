@@ -81,6 +81,15 @@ test_that("mise_vmf_polysph() and mise_vmf() equal on the sphere", {
 
 })
 
+test_that("mise_vmf_polysph() accepts a length-r kappa vector when m = 1", {
+
+  mi <- mise_vmf_polysph(h = cbind(0.5, 0.5), n = 100,
+                         mu = rbind(c(1, 0, 1, 0)), kappa = c(5, 2),
+                         prop = 1, d = c(1, 1), seed_psi = 1)$mise
+  expect_true(is.finite(mi) && mi > 0)
+
+})
+
 test_that("bw_mise_polysph() minimizes the MISE on the sphere", {
 
   # Parameters
