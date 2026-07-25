@@ -616,3 +616,25 @@ test_that("Same result with kappa precomputed", {
     )
 
 })
+
+## RNG state restoration
+
+test_that("bw_cv_polysph() with seed_mc does not alter the RNG state", {
+
+  d_rng <- c(1, 1)
+  X_rng <- r_unif_polysph(n = 10, d = d_rng)
+
+  # An existing .Random.seed is restored
+  set.seed(123)
+  old_seed <- globalenv()$.Random.seed
+  bw_cv_polysph(X = X_rng, d = d_rng, type = "LSCV", M = 100, seed_mc = 1,
+                control = list(maxit = 1))
+  expect_identical(globalenv()$.Random.seed, old_seed)
+
+  # A nonexistent .Random.seed is not created
+  rm(".Random.seed", envir = globalenv())
+  bw_cv_polysph(X = X_rng, d = d_rng, type = "LSCV", M = 100, seed_mc = 1,
+                control = list(maxit = 1))
+  expect_null(globalenv()$.Random.seed)
+
+})

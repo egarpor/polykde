@@ -291,3 +291,25 @@ test_that("Edge cases hom_test_polysph()", {
                                 type = "mean", B = 1, M = M))
 
 })
+
+## RNG state restoration
+
+test_that("hom_test_polysph() with seed_jsd does not alter the RNG state", {
+
+  X_rng <- r_unif_polysph(n = 10, d = 1)
+  labels_rng <- rep(1:2, each = 5)
+
+  # An existing .Random.seed is restored
+  set.seed(123)
+  old_seed <- globalenv()$.Random.seed
+  hom_test_polysph(X = X_rng, d = 1, labels = labels_rng, type = "jsd",
+                   h = 0.5, B = 1, M = 100, seed_jsd = 1)
+  expect_identical(globalenv()$.Random.seed, old_seed)
+
+  # A nonexistent .Random.seed is not created
+  rm(".Random.seed", envir = globalenv())
+  hom_test_polysph(X = X_rng, d = 1, labels = labels_rng, type = "jsd",
+                   h = 0.5, B = 1, M = 100, seed_jsd = 1)
+  expect_null(globalenv()$.Random.seed)
+
+})

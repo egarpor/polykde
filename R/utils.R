@@ -487,7 +487,7 @@ log_diff_exp <- function(log_p, log_n, tol = 1e-15) {
   sgn[near_zero] <- 0
 
   # Positive case
-  ind_sgn_pos <- !is.na(sgn) & sgn >= 0
+  ind_sgn_pos <- !is.na(sgn) & sgn > 0
   log_abs[ind_sgn_pos] <- log_p[ind_sgn_pos] +
     log1m_exp(log_diff[ind_sgn_pos])
 
@@ -495,6 +495,12 @@ log_diff_exp <- function(log_p, log_n, tol = 1e-15) {
   ind_sgn_neg <- !is.na(sgn) & sgn < 0
   log_abs[ind_sgn_neg] <- log_n[ind_sgn_neg] +
     log1m_exp(-log_diff[ind_sgn_neg])
+
+  # Near-zero case: the difference is null at the working tolerance, so
+  # log|exp(x) - exp(y)| = -Inf. Set it directly, as log1m_exp() would be
+  # evaluated at a negative argument (giving NaN) whenever log_diff < 0
+  ind_sgn_zero <- !is.na(sgn) & sgn == 0
+  log_abs[ind_sgn_zero] <- -Inf
   return(list(log_abs = log_abs, sgn = sgn))
 
 }
