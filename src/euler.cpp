@@ -24,9 +24,9 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
 
 //' @title Euler algorithms for polyspherical density ridge estimation
 //'
-//' @description Functions to perform density ridge estimation on the
-//' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}
-//' through the Euler algorithm in standard, parallel, or block mode.
+//' @description Functions to perform density ridge estimation on the polysphere
+//' \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}} through the
+//' Euler algorithm in standard, parallel, or block mode.
 //'
 //' @param x a matrix of size \code{c(nx, sum(d) + r)} with the starting points
 //' for the Euler algorithm.

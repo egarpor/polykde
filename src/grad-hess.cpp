@@ -28,8 +28,8 @@ const double log_M_PI = std::log(M_PI);
 //' @description Computes the gradient
 //' \eqn{\mathsf{D}\hat{f}(\boldsymbol{x};\boldsymbol{h})} and Hessian matrix
 //' \eqn{\mathsf{H}\hat{f}(\boldsymbol{x};\boldsymbol{h})} of the kernel density
-//' estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the
-//' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
+//' estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the polysphere
+//' \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}.
 //'
 //' @inheritParams kde_polysph
 //' @param projected compute the \emph{projected} gradient and Hessian that
@@ -476,9 +476,9 @@ Rcpp::List grad_hess_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
 //' @title Projected gradient of the polyspherical kernel density estimator
 //'
 //' @description Computes the projected gradient
-//' \eqn{\mathsf{D}_{(p-1)}\hat{f}(\boldsymbol{x};\boldsymbol{h})} of the
-//' kernel density estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the
-//' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}},
+//' \eqn{\mathsf{D}_{(p-1)}\hat{f}(\boldsymbol{x};\boldsymbol{h})} of the kernel
+//' density estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the
+//' polysphere \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}},
 //' where \eqn{p=\sum_{j=1}^r d_j+r} is the dimension of the ambient space.
 //'
 //' @inheritParams kde_polysph

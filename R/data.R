@@ -5,8 +5,8 @@
 #' @description Contains skeletal representations (s-reps) for the hippocampus
 #' shapes of \eqn{177} 6-month-old infants. The s-reps models include \eqn{168}
 #' spokes, and hence the directions of the spokes form a sample on the
-#' polysphere \eqn{(\mathcal{S}^2)^{168}}. There are \eqn{34} infants that
-#' later developed autism.
+#' polysphere \eqn{(\mathbb{S}^2)^{168}}. There are \eqn{34} infants that later
+#' developed autism.
 #'
 #' @docType data
 #' @format A list with six fields:

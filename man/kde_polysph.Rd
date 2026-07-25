@@ -73,7 +73,6 @@ for a kernel \eqn{L} and a vector of bandwidths \eqn{\boldsymbol{h}}.
 }
 \examples{
 # Simple check on S^1 x S^2
-set.seed(123456)
 n <- 1e3
 d <- c(1, 2)
 mu <- c(0, 1, 0, 0, 1)

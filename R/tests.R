@@ -2,11 +2,12 @@
 #' @title Homogeneity test for several polyspherical samples
 #'
 #' @description Permutation tests for the equality of distributions of two or
-#' \eqn{k} samples of data on \eqn{\mathcal{S}^{d_1} \times \cdots \times
-#' \mathcal{S}^{d_r}}. The Jensen--Shannon distance is used to construct a test
-#' statistic measuring the discrepancy between the \eqn{k} kernel density
-#' estimators. Tests based on the mean and scatter matrices are also available,
-#' but for only two samples (\eqn{k=2}).
+#' \eqn{k} samples of data on
+#' \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}. The
+#' Jensen--Shannon distance is used to construct a test statistic measuring the
+#' discrepancy between the \eqn{k} kernel density estimators. Tests based on the
+#' mean and scatter matrices are also available, but for only two samples
+#' (\eqn{k=2}).
 #'
 #' @inheritParams kde_polysph
 #' @param labels vector with \code{k} different levels indicating the group.
@@ -440,15 +441,14 @@ hom_test_polysph <- function(X, d, labels,
     Tn_star[b] <- Tn(perm_index = perms[b, ])
     setTxtProgressBar(pb = pb, value = b / B)
 
-    # Current p-value
-    pvalue <- mean(Tn_star > Tn_orig, na.rm = TRUE)
-
     # Plot the position of the original statistic with respect to the
     # permutation replicates? Do it one out of ten replicates
     if (plot_boot && (b %% 10 == 0 || b == B)) {
 
-      hist(Tn_star, probability = TRUE, main = paste("p-value:",
-                                                     sprintf("%.4f", pvalue)),
+      # Running p-value only for the plot title
+      pvalue_plot <- (sum(Tn_star >= Tn_orig, na.rm = TRUE) + 1) / (b + 1)
+      hist(Tn_star, probability = TRUE,
+           main = paste("p-value:", sprintf("%.4f", pvalue_plot)),
            xlab = expression(T[n]^"*"),
            xlim = range(c(Tn_star, Tn_orig), na.rm = TRUE))
       rug(Tn_star)
@@ -457,6 +457,9 @@ hom_test_polysph <- function(X, d, labels,
     }
 
   }
+
+  # Permutation p-value with the standard correction, computed outside the loop
+  pvalue <- (sum(Tn_star >= Tn_orig, na.rm = TRUE) + 1) / (B + 1)
 
   # Construct an "htest" result
   Tn_orig <- c("Tn" = Tn_orig)
@@ -475,11 +478,11 @@ hom_test_polysph <- function(X, d, labels,
 #' @title Hellinger distance between two densities via Monte Carlo
 #'
 #' @description Computes the Hellinger distance
-#' \deqn{H(f, g) = \sqrt{1 - \int_{\mathcal{S}^{d_1} \times \ldots \times
-#' \mathcal{S}^{d_r}} \sqrt{f(\boldsymbol{x}) g(\boldsymbol{x})}
-#' \,\mathrm{d}\boldsymbol{x}}} between two densities \eqn{f} and \eqn{g} on
-#' \eqn{\mathcal{S}^{d_1} \times \ldots \times \mathcal{S}^{d_r}} via
-#' Monte Carlo.
+#' \deqn{H(f, g) = \sqrt{1 - \int_{\mathbb{S}^{d_1} \times \ldots \times
+#' \mathbb{S}^{d_r}} \sqrt{f(\boldsymbol{x}) g(\boldsymbol{x})}
+#' \,\mathrm{d}\boldsymbol{x}}}
+#' between two densities \eqn{f} and \eqn{g} on
+#' \eqn{\mathbb{S}^{d_1} \times \ldots \times \mathbb{S}^{d_r}} via Monte Carlo.
 #'
 #' @param log_f,log_g logarithms of \eqn{f} and \eqn{g} evaluated in a Monte
 #' Carlo sample.

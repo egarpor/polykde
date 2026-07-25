@@ -3,9 +3,9 @@
 
 #' @title Euler algorithms for polyspherical density ridge estimation
 #'
-#' @description Functions to perform density ridge estimation on the
-#' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}
-#' through the Euler algorithm in standard, parallel, or block mode.
+#' @description Functions to perform density ridge estimation on the polysphere
+#' \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}} through the
+#' Euler algorithm in standard, parallel, or block mode.
 #'
 #' @param x a matrix of size \code{c(nx, sum(d) + r)} with the starting points
 #' for the Euler algorithm.
@@ -36,53 +36,85 @@
 #' points of Euler algorithm defining the estimated ridge.}
 #' \item{lamb_norm_y}{a matrix of size \code{c(nx, sum(d) + r)} with the
 #' Hessian eigenvalues (largest to smallest) evaluated at end points.}
-#' \item{log_dens_y}{a column vector of size \code{c(nx, 1)} with the
+#' \item{log_dens_y}{a column matrix of size \code{c(nx, 1)} with the
 #' logarithm of the density at end points.}
 #' \item{paths}{an array of size \code{c(nx, sum(d) + r, N + 1)} containing
 #' the Euler paths.}
 #' \item{start_x}{a matrix of size \code{c(nx, sum(d) + r)} with the starting
 #' points for the Euler algorithm.}
-#' \item{iter}{a column vector of size \code{c(nx, 1)} counting the iterations
+#' \item{iter}{a column matrix of size \code{c(nx, 1)} counting the iterations
 #' required for each point.}
-#' \item{conv}{a column vector of size \code{c(nx, 1)} with convergence flags.}
+#' \item{conv}{a column matrix of size \code{c(nx, 1)} with convergence flags.}
 #' \item{d}{vector \code{d}.}
 #' \item{h}{bandwidth used for the kernel density estimator.}
-#' \item{error}{a column vector of size \code{c(nx, 1)} indicating if errors
+#' \item{error}{a column matrix of size \code{c(nx, 1)} indicating if errors
 #' were found for each path.}
+#' @references
+#' García-Portugués, E. and Meilán-Vila, A. (2023). Hippocampus shape analysis
+#' via skeletal models and kernel smoothing. In Larriba, Y. (Ed.),
+#' \emph{Statistical Methods at the Forefront of Biomedical Advances},
+#' pp. 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}.
+#' @seealso
+#' \code{\link{clean_euler_ridge}}, \code{\link{index_ridge}},
+#' \code{\link{proj_grad_kde_polysph}}, \code{\link{grad_hess_kde_polysph}}.
 #' @examples
-#' ## Test on S^2 with a small circle trend
+#' \donttest{
+#' if (requireNamespace("scatterplot3d", quietly = TRUE) &&
+#'     requireNamespace("viridis", quietly = TRUE)) {
 #'
-#' # Sample
-#' r <- 1
-#' d <- 2
-#' n <- 50
-#' ind_dj <- comp_ind_dj(d = d)
+#'   ## Test on S^2 with a small circle trend
+#'
+#'   # Sample
+#'   r <- 1
+#'   d <- 2
+#'   n <- 50
+#'   ind_dj <- comp_ind_dj(d = d)
+#'   set.seed(987204452)
+#'   X <- r_path_s2r(n = n, r = r, spiral = FALSE, Theta = cbind(c(1, 0, 0)),
+#'                   sigma = 0.35)[, , 1]
+#'   col_X_alp <- viridis::viridis(n, alpha = 0.25)
+#'   col_X <- viridis::viridis(n)
+#'
+#'   # Euler
+#'   h_rid <- 0.5
+#'   h_eu <- h_rid^2
+#'   N <- 30
+#'   eps <- 1e-6
+#'   Y <- euler_ridge(x = X, X = X, d = d, h = h_rid, h_euler = h_eu,
+#'                    N = N, eps = eps, keep_paths = TRUE)
+#'   Y
+#'
+#'   # Visualization
+#'   i <- N # Between 1 and N
+#'   sc3 <- scatterplot3d::scatterplot3d(Y$paths[, , 1], color = col_X_alp,
+#'                                       pch = 19, xlim = c(-1, 1),
+#'                                       ylim = c(-1, 1), zlim = c(-1, 1),
+#'                                       xlab = "x", ylab = "y", zlab = "z")
+#'   sc3$points3d(rbind(Y$paths[, , i]), col = col_X, pch = 16, cex = 0.75)
+#'   for (k in seq_len(nrow(Y$paths))) {
+#'
+#'     sc3$points3d(t(Y$paths[k, , ]), col = col_X_alp[k], type = "l")
+#'
+#'   }
+#'
+#' }
+#'
+#' ## Parallel and block variants on (S^2)^4
 #' set.seed(987204452)
-#' X <- r_path_s2r(n = n, r = r, spiral = FALSE, Theta = cbind(c(1, 0, 0)),
-#'                 sigma = 0.35)[, , 1]
-#' col_X_alp <- viridis::viridis(n, alpha = 0.25)
-#' col_X <- viridis::viridis(n)
-#'
-#' # Euler
-#' h_rid <- 0.5
+#' r <- 4
+#' d <- rep(2, r)
+#' ind_dj <- comp_ind_dj(d = d)
+#' n <- 30
+#' X <- r_unif_polysph(n = n, d = d)
+#' h_rid <- rep(0.7, r)
 #' h_eu <- h_rid^2
-#' N <- 30
-#' eps <- 1e-6
-#' Y <- euler_ridge(x = X, X = X, d = d, h = h_rid, h_euler = h_eu,
-#'                  N = N, eps = eps, keep_paths = TRUE)
-#' Y
-#'
-#' # Visualization
-#' i <- N # Between 1 and N
-#' sc3 <- scatterplot3d::scatterplot3d(Y$paths[, , 1], color = col_X_alp,
-#'                                     pch = 19, xlim = c(-1, 1),
-#'                                     ylim = c(-1, 1), zlim = c(-1, 1),
-#'                                     xlab = "x", ylab = "y", zlab = "z")
-#' sc3$points3d(rbind(Y$paths[, , i]), col = col_X, pch = 16, cex = 0.75)
-#' for (k in seq_len(nrow(Y$paths))) {
-#'
-#'   sc3$points3d(t(Y$paths[k, , ]), col = col_X_alp[k], type = "l")
-#'
+#' # Parallel: same algorithm as euler_ridge but distributing starting points
+#' Y_par <- parallel_euler_ridge(x = X[1:5, , drop = FALSE], X = X, d = d,
+#'                               h = h_rid, h_euler = h_eu, N = 20, cores = 1)
+#' # Block: marginal Euler over groups of spheres (all d's must be equal)
+#' Y_block <- block_euler_ridge(x = X[1:5, , drop = FALSE], X = X, d = d,
+#'                              h = h_rid, h_euler = h_eu,
+#'                              ind_blocks = c(1, 1, 2, 2), N = 20)
 #' }
 #' @export
 euler_ridge <- function(x, X, d, h, h_euler = as.numeric( c()), weights = as.numeric( c()), wrt_unif = FALSE, normalized = TRUE, norm_x = FALSE, norm_X = FALSE, kernel = 1L, kernel_type = 1L, k = 10.0, N = 1e3L, eps = 1e-5, keep_paths = FALSE, proj_alt = TRUE, fix_u1 = TRUE, sparse = FALSE, show_prog = TRUE, show_prog_j = FALSE) {
@@ -94,8 +126,8 @@ euler_ridge <- function(x, X, d, h, h_euler = as.numeric( c()), weights = as.num
 #' @description Computes the gradient
 #' \eqn{\mathsf{D}\hat{f}(\boldsymbol{x};\boldsymbol{h})} and Hessian matrix
 #' \eqn{\mathsf{H}\hat{f}(\boldsymbol{x};\boldsymbol{h})} of the kernel density
-#' estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the
-#' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
+#' estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the polysphere
+#' \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}.
 #'
 #' @inheritParams kde_polysph
 #' @param projected compute the \emph{projected} gradient and Hessian that
@@ -104,7 +136,7 @@ euler_ridge <- function(x, X, d, h, h_euler = as.numeric( c()), weights = as.num
 #' @param norm_grad_hess normalize the gradient and Hessian dividing by the
 #' kernel density estimator? Defaults to \code{FALSE}.
 #' @return A list with the following fields:
-#' \item{dens}{a column vector of size \code{c(nx, 1)} with the kernel
+#' \item{dens}{a column matrix of size \code{c(nx, 1)} with the kernel
 #' density estimator evaluated at \code{x}.}
 #' \item{grad}{a matrix of size \code{c(nx, sum(d) + r)} with the gradient of
 #' the kernel density estimator evaluated at \code{x}.}
@@ -129,9 +161,9 @@ grad_hess_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), projec
 #' @title Projected gradient of the polyspherical kernel density estimator
 #'
 #' @description Computes the projected gradient
-#' \eqn{\mathsf{D}_{(p-1)}\hat{f}(\boldsymbol{x};\boldsymbol{h})} of the
-#' kernel density estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the
-#' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}},
+#' \eqn{\mathsf{D}_{(p-1)}\hat{f}(\boldsymbol{x};\boldsymbol{h})} of the kernel
+#' density estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the
+#' polysphere \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}},
 #' where \eqn{p=\sum_{j=1}^r d_j+r} is the dimension of the ambient space.
 #'
 #' @inheritParams kde_polysph
@@ -164,7 +196,7 @@ proj_grad_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), wrt_un
 #' @title Polyspherical kernel density estimator
 #'
 #' @description Computes the kernel density estimator for data on the
-#' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
+#' polysphere \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}.
 #' Given a sample \eqn{\boldsymbol{X}_1,\ldots,\boldsymbol{X}_n}, this
 #' estimator is
 #' \deqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})=\sum_{i=1}^n
@@ -177,14 +209,14 @@ proj_grad_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), wrt_un
 #' @param d vector of size \code{r} with dimensions.
 #' @param h vector of size \code{r} with bandwidths.
 #' @param weights weights for each observation. If provided, a vector of size
-#' \code{n} with the weights for multiplying each kernel. If not provided,
-#' set internally to \code{rep(1 / n, n)}, which gives the standard estimator.
+#' \code{n} with the weights for multiplying each kernel. If not provided, set
+#' internally to \code{rep(1 / n, n)}, which gives the standard estimator.
 #' @param log compute the logarithm of the density? Defaults to \code{FALSE}.
 #' @param wrt_unif flag to return a density with respect to the uniform
 #' measure. If \code{FALSE} (default), the density is with respect to the
 #' Lebesgue measure.
-#' @param normalized flag to compute the normalizing constant of the kernel
-#' and include it in the kernel density estimator. Defaults to \code{TRUE}.
+#' @param normalized flag to compute the normalizing constant of the kernel and
+#' include it in the kernel density estimator. Defaults to \code{TRUE}.
 #' @param intrinsic use the intrinsic distance, instead of the
 #' extrinsic-chordal distance, in the kernel? Defaults to \code{FALSE}.
 #' @param norm_x,norm_X ensure a normalization of the data? Defaults to
@@ -194,8 +226,16 @@ proj_grad_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), wrt_un
 #' @param kernel_type type of kernel employed: \code{1} for product kernel
 #' (default); \code{2} for spherically symmetric kernel.
 #' @param k softplus kernel parameter. Defaults to \code{10.0}.
-#' @return A column vector of size \code{c(nx, 1)} with the evaluation of
+#' @return A column matrix of size \code{c(nx, 1)} with the evaluation of the
 #' kernel density estimator.
+#' @references
+#' García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+#' with polyspherical data and its applications. \emph{Journal of the American
+#' Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+#' @seealso \code{\link{log_cv_kde_polysph}},
+#' \code{\link{grad_hess_kde_polysph}}, \code{\link{r_kde_polysph}},
+#' \code{\link{bw_rot_polysph}}, \code{\link{bw_cv_polysph}},
+#' \code{\link{bw_mrot_polysph}}.
 #' @examples
 #' # Simple check on S^1 x S^2
 #' n <- 1e3
@@ -219,7 +259,7 @@ kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), log = FALSE, wrt
 #'
 #' @inheritParams kde_polysph
 #' @param norm_X ensure a normalization of the data? Defaults to \code{FALSE}.
-#' @return A column vector of size \code{c(n, 1)} with the evaluation of the
+#' @return A column matrix of size \code{c(n, 1)} with the evaluation of the
 #' logarithm of the cross-validated kernel density estimator.
 #' @examples
 #' # Simple check on S^1 x S^2
@@ -236,8 +276,8 @@ log_cv_kde_polysph <- function(X, d, h, weights = as.numeric( c()), wrt_unif = F
 
 #' @title Computation of the softplus function
 #'
-#' @description Computes the softplus function \eqn{\log(1+e^{t})} in a
-#' direct way, as it is supposed to be evaluated for large negative \eqn{t}.
+#' @description Computes the softplus function \eqn{\log(1+e^{t})} in a direct
+#' way, as it is supposed to be evaluated for large negative \eqn{t}.
 #'
 #' @param t vector or matrix.
 #' @return The softplus function evaluated at \code{t}.
@@ -251,15 +291,16 @@ sfp <- function(t) {
 #' @title Projection onto the polysphere
 #'
 #' @description Projects points on \eqn{\mathbb{R}^{d_1 + \cdots + d_r + r}}
-#' onto the polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times
-#' \mathcal{S}^{d_r}} by normalizing each block of \eqn{d_j} coordinates.
+#' onto the polysphere
+#' \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}} by normalizing
+#' each block of \eqn{d_j} coordinates.
 #'
 #' @param x a matrix of size \code{c(n, sum(d) + r)}.
-#' @param ind_dj \code{0}-based index separating the blocks of spheres that
-#' is computed with \code{\link{comp_ind_dj}}.
+#' @param ind_dj \code{0}-based index separating the blocks of spheres that is
+#' computed with \code{\link{comp_ind_dj}}.
 #' @return A matrix of size \code{c(n, sum(d) + r)} with the projected points.
 #' @examples
-#' # Example on (S^1)^2
+#' # Project an arbitrary point in R^2 x R^2 onto (S^1)^2
 #' d <- c(1, 1)
 #' x <- rbind(c(2, 0, 1, 1))
 #' proj_polysph(x, ind_dj = comp_ind_dj(d))
@@ -272,10 +313,10 @@ proj_polysph <- function(x, ind_dj) {
 #'
 #' @description Computation of the distance between points \eqn{\boldsymbol{x}}
 #' and \eqn{\boldsymbol{y}} on the polysphere
-#' \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}:
-#' \deqn{\sqrt{\sum_{j=1}^r
-#' d_{\mathcal{S}^{d_j}}(\boldsymbol{x}_j, \boldsymbol{y}_j)^2},}
-#' where \eqn{d_{\mathcal{S}^{d_j}}(\boldsymbol{x}_j, \boldsymbol{y}_j)=
+#' \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}:
+#' \deqn{\sqrt{\sum_{j=1}^r d_{\mathbb{S}^{d_j}}(\boldsymbol{x}_j,
+#' \boldsymbol{y}_j)^2},}
+#' where \eqn{d_{\mathbb{S}^{d_j}}(\boldsymbol{x}_j, \boldsymbol{y}_j)=
 #' \cos^{-1}(\boldsymbol{x}_j' \boldsymbol{y}_j)}.
 #'
 #' @inheritParams proj_polysph
@@ -325,8 +366,8 @@ dist_polysph_cross <- function(x, y, ind_dj, norm_x = FALSE, norm_y = FALSE, std
 
 #' @title Diamond cross-products
 #'
-#' @description Given a matrix \eqn{\boldsymbol{X}} whose \eqn{n} rows are on
-#' a polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}
+#' @description Given a matrix \eqn{\boldsymbol{X}} whose \eqn{n} rows are on a
+#' polysphere \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}
 #' \subset \mathbb{R}^p,}:
 #' \itemize{
 #' \item{\code{diamond_crossprod} computes the \eqn{n\times p\times p} cube
@@ -380,11 +421,12 @@ s <- function(A, add = FALSE) {
 
 #' @title Projection matrices \eqn{\boldsymbol{P}} and \eqn{\boldsymbol{A}}
 #'
-#' @description Computation of the projection matrices \eqn{\boldsymbol{P}}
-#' and \eqn{\boldsymbol{A}}. The \eqn{jj}-block of \eqn{\boldsymbol{P}} is
+#' @description Computation of the projection matrices \eqn{\boldsymbol{P}} and
+#' \eqn{\boldsymbol{A}}. The \eqn{jj}-block of \eqn{\boldsymbol{P}} is
 #' \eqn{\boldsymbol{I}_{d_j} - \boldsymbol{x}_j \boldsymbol{x}_j'}. The
-#' \eqn{jj}-block of \eqn{\boldsymbol{A}} is \eqn{(\boldsymbol{x}_j'
-#' \boldsymbol{v}_j) \boldsymbol{I}_{d_j}}, \eqn{j=1,\ldots,r}.
+#' \eqn{jj}-block of \eqn{\boldsymbol{A}} is
+#' \eqn{(\boldsymbol{x}_j' \boldsymbol{v}_j) \boldsymbol{I}_{d_j}},
+#' \eqn{j=1,\ldots,r}.
 #'
 #' @param x,v row vectors of size \code{sum(d) + r}.
 #' @inheritParams proj_polysph

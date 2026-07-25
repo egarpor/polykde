@@ -2,14 +2,14 @@
 #' @title Conversion between the angular and Cartesian coordinates of the torus
 #'
 #' @description Transforms the angles \eqn{(\theta_1,\ldots,\theta_d)} in
-#' \eqn{[-\pi,\pi)^d} into the Cartesian coordinates
+#' \eqn{\mathbb{T}^d=[-\pi,\pi)^d} into the Cartesian coordinates
 #' \deqn{(\cos(x_1), \sin(x_1),\ldots,\cos(x_d), \sin(x_d))}
-#' of the torus \eqn{(\mathcal{S}^1)^d}, and vice versa.
+#' of the torus \eqn{(\mathbb{S}^1)^d}, and vice versa.
 #'
 #' @param theta matrix of size \code{c(n, d)} with the angles.
 #' @param x matrix of size \code{c(n, 2 * d)} with the Cartesian coordinates on
-#' \eqn{(\mathcal{S}^1)^d}. Assumed to be of unit norm by pairs of coordinates
-#' in the rows.
+#' \eqn{(\mathbb{S}^1)^d}. Assumed to be of unit norm by pairs of coordinates in
+#' the rows.
 #' @return
 #' \itemize{
 #' \item{\code{angles_to_torus}: the matrix \code{x}.}
@@ -33,7 +33,7 @@ angles_to_torus <- function(theta) {
 
   # Apply transformation
   d <- ncol(theta)
-  ind <- c(rbind(seq_len(d), seq(d + 1, 2 * d, by = 1)))
+  ind <- c(rbind(seq_len(d), seq_len(d) + d))
   return(cbind(cos(theta), sin(theta))[, ind, drop = FALSE])
 
 }
@@ -71,15 +71,15 @@ torus_to_angles <- function(x) {
 #' (hyper)sphere
 #'
 #' @description Transforms the angles \eqn{(\theta_1,\ldots,\theta_d)} in
-#' \eqn{[0,\pi)^{d-1}\times[-\pi,\pi)} into the Cartesian coordinates
+#' \eqn{[0,\pi)^{d-1}\times[0,2\pi)} into the Cartesian coordinates
 #' \deqn{(\cos(x_1),\sin(x_1)\cos(x_2),\ldots,
 #' \sin(x_1)\cdots\sin(x_{d-1})\cos(x_d),
 #' \sin(x_1)\cdots\sin(x_{d-1})\sin(x_d))}
-#' of the sphere \eqn{\mathcal{S}^{d}}, and vice versa.
+#' of the sphere \eqn{\mathbb{S}^{d}}, and vice versa.
 #'
 #' @param theta matrix of size \code{c(n, d)} with the angles.
-#' @param x matrix of size \code{c(n, d + 1)} with the Cartesian coordinates
-#' on \eqn{\mathcal{S}^{d}}. Assumed to be of unit norm by rows.
+#' @param x matrix of size \code{c(n, d + 1)} with the Cartesian coordinates on
+#' \eqn{\mathbb{S}^{d}}. Assumed to be of unit norm by rows.
 #' @return
 #' \itemize{
 #' \item{\code{angles_to_sph}: the matrix \code{x}.}
@@ -88,7 +88,7 @@ torus_to_angles <- function(x) {
 #' @examples
 #' # Check changes of coordinates
 #' sph_to_angles(angles_to_sph(c(pi / 2, 0, pi)))
-#' sph_to_angles(angles_to_sph(rbind(c(pi / 2, 0, pi), c(pi, pi / 2, 0))))
+#' sph_to_angles(angles_to_sph(rbind(c(pi / 2, 0, pi), c(pi, pi / 2, 4 ))))
 #' angles_to_sph(sph_to_angles(c(0, sqrt(0.5), sqrt(0.1), sqrt(0.4))))
 #' angles_to_sph(sph_to_angles(rbind(c(0, sqrt(0.5), sqrt(0.1), sqrt(0.4)),
 #'                                   c(0, sqrt(0.5), sqrt(0.5), 0),
@@ -155,10 +155,10 @@ sph_to_angles <- function(x) {
 #' polysphere
 #'
 #' @description Obtain the angular coordinates of points on a polysphere
-#' \eqn{\mathcal{S}^{d_1}\times\cdots\times\mathcal{S}^{d_r}}, and vice versa.
+#' \eqn{\mathbb{S}^{d_1}\times\cdots\times\mathbb{S}^{d_r}}, and vice versa.
 #'
 #' @param x matrix of size \code{c(n, sum(d + 1))} with the Cartesian
-#' coordinates on \eqn{\mathcal{S}^{d_1}\times\cdots\times\mathcal{S}^{d_r}}.
+#' coordinates on \eqn{\mathbb{S}^{d_1}\times\cdots\times\mathbb{S}^{d_r}}.
 #' Assumed to be of unit norm by blocks of coordinates in the rows.
 #' @param theta matrix of size \code{c(n, sum(d))} with the angles.
 #' @param d vector with the dimensions of the polysphere.
@@ -239,7 +239,7 @@ polysph_to_angles <- function(x, d) {
 
 #' @title Fibonacci lattice on the sphere
 #'
-#' @description Computes the Fibonacci lattice on the sphere \eqn{\mathcal{S}^2}
+#' @description Computes the Fibonacci lattice on the sphere \eqn{\mathbb{S}^2}
 #' to produce pseudo-equispaced points.
 #' @param n number of points to be produced.
 #' @return A matrix of size \code{c(n, 3)} with the spherical coordinates.
@@ -266,7 +266,7 @@ fib_latt <- function(n) {
 #'
 #' @description Computes the Hammer projection of points on the sphere.
 #' @param x matrix of size \code{c(n, 3)} with the Cartesian coordinates on
-#' \eqn{\mathcal{S}^2}. Assumed to be of unit norm in the rows.
+#' \eqn{\mathbb{S}^2}. Assumed to be of unit norm in the rows.
 #' @param y matrix of size \code{c(n, 2)} with the Hammer coordinates.
 #' @return
 #' \itemize{
