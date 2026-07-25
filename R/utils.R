@@ -225,24 +225,28 @@ J_d_k <- function(d, k = 10, upper = Inf, ...) {
 }
 
 
-#' @title Fast evaluation of \eqn{\log(e^{-x} \mathcal{I}_{\nu}(x))}
+#' @title Fast and stable evaluation of \eqn{\log(e^{-x} \mathcal{I}_{\nu}(x))}
 #'
-#' @description Computes a fast approximation of the logarithm of the scaled
-#' modified Bessel function of the first kind for orders
-#' \eqn{\nu = 0, 0.5, 1, \ldots, 24.5} using spline interpolation.
+#' @description Computes a fast and stable approximation of the logarithm of
+#' the scaled modified Bessel function of the first kind. Spline interpolation
+#' is used for the tabulated orders \eqn{\nu = 0, 0.5, 1, \ldots, 24.5}; any
+#' other order falls back to a direct evaluation.
 #'
 #' @param nu a scalar with the order of the Bessel function.
 #' @param x vector with evaluation points for the Bessel function.
 #' @param spline if \code{TRUE}, uses a fast spline interpolation for the values
-#' of the Bessel function, for \code{nu = seq(0, 24.5, by = 0.5)}. If
-#' \code{FALSE}, uses the standard \code{\link[base]{besselI}} function.
+#' of the Bessel function when \code{nu} is a single value in
+#' \code{seq(0, 24.5, by = 0.5)}; for any other \code{nu} (off-grid or a vector
+#' of orders), it falls back to the standard \code{\link[base]{besselI}}
+#' computation. If \code{FALSE}, always uses \code{\link[base]{besselI}}.
 #' Defaults to \code{FALSE}.
-#' @details When \code{spline = TRUE}, the (scaled, log) Bessel function is
-#' approximated, for \code{nu} in \code{seq(0, 24.5, by = 0.5)}, by cubic spline
-#' interpolation in \code{u = log(x)} over \code{x} in \code{[1e-5, 1e4]}; below
-#' \code{1e-5} an exact small-argument series
-#' \eqn{\nu \log(x/2) - \log\Gamma(\nu + 1) - x} is used. When
-#' \code{spline = FALSE}, the standard \code{\link[base]{besselI}} is used.
+#' @details When \code{spline = TRUE} and \code{nu} is a single value in
+#' \code{seq(0, 24.5, by = 0.5)}, the (scaled, log) Bessel function is
+#' approximated by cubic spline interpolation in \code{u = log(x)} over \code{x}
+#' in \code{[1e-5, 1e4]}; below \code{1e-5} an exact small-argument series
+#' \eqn{\nu \log(x/2) - \log\Gamma(\nu + 1) - x} is used. For any other
+#' \code{nu} (off-grid or vectorized) or \code{spline = FALSE}, the standard
+#' \code{\link[base]{besselI}} is used.
 #'
 #' In both cases, for \code{x} larger than \code{1e4} a large-argument
 #' asymptotic approximation with \code{\link[Bessel]{besselIasym}} is used. For
@@ -289,15 +293,16 @@ log_besselI_scaled <- function(nu, x, spline = FALSE) {
 
   }
 
+  # The spline tables only cover a single nu in bessel_nus; for any other nu
+  # (off-grid or vectorized), set spline = FALSE.
+  if (spline && !(single_nu && any(abs(bessel_nus - nu) < 1e-8))) {
+
+    spline <- FALSE
+
+  }
+
   # Spline interpolation and asymptotic approximations
   if (spline) {
-
-    # Check length nu
-    if (!single_nu) {
-
-      stop("nu must have length 1 if spline = TRUE.")
-
-    }
 
     # Three regimes (spline requires a single nu, so x is never broadcast here):
     # analytic small-argument series below bessel_x_lo, cubic spline in
@@ -307,16 +312,6 @@ log_besselI_scaled <- function(nu, x, spline = FALSE) {
     ind_small <- x < bessel_x_lo
     ind_asymp <- x >= bessel_x_hi
     ind_spl <- !ind_small & !ind_asymp
-
-    # The spline table must exist for this order whenever a non-asymptotic value
-    # is drawn (spline or small-argument series); the asymptotics work for any nu
-    if ((any(ind_spl) || any(ind_small)) &&
-          !any(abs(bessel_nus - nu) < 1e-8)) {
-
-      stop(paste0("nu = ", nu, " must be in seq(0, ", max(bessel_nus),
-                  ", by = 0.5) if spline = TRUE."))
-
-    }
 
     # Cubic spline in u = log(x)
     if (any(ind_spl)) {
@@ -375,7 +370,8 @@ log_besselI_scaled <- function(nu, x, spline = FALSE) {
       # https://dlmf.nist.gov/10.41#E3
       res[ind_nu_asymp] <- Bessel::besselI.nuAsym(x = x[ind_nu_asymp],
                                                   nu = nu[ind_nu_asymp],
-                                                  k.max = 5, expon.scaled = TRUE,
+                                                  k.max = 5,
+                                                  expon.scaled = TRUE,
                                                   log = TRUE)
 
     }
