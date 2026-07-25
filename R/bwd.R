@@ -31,8 +31,7 @@
 #' Mises--Fisher kernel? Defaults to \code{FALSE}.
 #' @param common_h use the same bandwidth for all dimensions? Defaults to
 #' \code{FALSE}.
-#' @param spline use a faster spline approximation to compute Bessel functions?
-#' Only available for \code{d} up to 10. Defaults to \code{FALSE}.
+#' @param spline use a faster spline approximation to compute Bessel functions, when available (\code{d} up to 50)?
 #' @param arcsinh do an \eqn{\operatorname{arcsinh}} transformation of the LSCV
 #' loss to improve numerical stability? Defaults to \code{FALSE}.
 #' @param opt optimizer to use; either \code{"\link{optim}"} (default) or
