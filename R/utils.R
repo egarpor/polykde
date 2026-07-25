@@ -6,8 +6,6 @@
 #'
 #' @param t vector or matrix.
 #' @return The softplus function evaluated at \code{t}.
-#' @details A C++ counterpart of this function is used internally within the
-#' polyspherical kernel routines for performance.
 #' @examples
 #' curve(softplus(10 * (1 - (1 - x) / 0.1)), from = -1, to = 1)
 #' @export
@@ -208,8 +206,8 @@ polylog_minus_exp_mu <- function(mu, s, upper = Inf, ...) {
 
 #' @title Computes the integral \eqn{J_{d, k}}
 #'
-#' @description Computes the integral \eqn{J_{d, k}=\int_0^\infty e^{2
-#' \log(\log(1 + e^{k(1 - t)}))} t^{d / 2 - 1} dt}.
+#' @description Computes the integral \eqn{J_{d, k}=\int_0^\infty
+#' e^{2 \log(\log(1 + e^{k(1 - t)}))} t^{d / 2 - 1} dt}.
 #'
 #' @inheritParams eff_kern
 #' @inheritParams polylog_minus_exp_mu

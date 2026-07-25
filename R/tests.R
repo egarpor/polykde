@@ -274,8 +274,11 @@ hom_test_polysph <- function(X, d, labels,
                                           wrt_unif = TRUE)
           log_f0_cv <- log_f0_cv / N
 
-          # H_f0 - sum(probs * H_fj), removing Infs and NaNs from the sum
-          H_f0_fj_dif <- -log_f0_cv + log_fj_cv
+          # H_f0 - sum(probs * H_fj), removing Infs and NaNs from the sum.
+          # log_fj_cv is filled in group order, whereas log_f0_cv follows the
+          # original order of X, so realign before filtering by is.finite().
+          ord <- unlist(ind_j)
+          H_f0_fj_dif <- log_fj_cv - log_f0_cv[ord]
           H_f0_fj_dif[!is.finite(H_f0_fj_dif)] <- NA
           jsd <- sum(H_f0_fj_dif, na.rm = TRUE)
 
@@ -407,11 +410,20 @@ hom_test_polysph <- function(X, d, labels,
 
   }
 
-  # Set seeds for the Monte Carlos inside the JSD statistic
+  # Set seeds for the Monte Carlos inside the JSD statistic, restoring the
+  # user's RNG state on exit so the internal seed does not leak outside the call
   if (!is.null(seed_jsd) && type == "jsd") {
 
-    # old_seed <- .Random.seed
-    # on.exit({.Random.seed <<- old_seed})
+    if (exists(".Random.seed", envir = .GlobalEnv)) {
+
+      old_seed <- .GlobalEnv$.Random.seed
+      on.exit(assign(".Random.seed", old_seed, envir = .GlobalEnv), add = TRUE)
+
+    } else {
+
+      on.exit(rm(".Random.seed", envir = .GlobalEnv), add = TRUE)
+
+    }
     set.seed(seed_jsd, kind = "Mersenne-Twister")
 
   }

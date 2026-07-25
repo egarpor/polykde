@@ -11,12 +11,12 @@ parallel_euler_ridge <- function(x, X, d, h, h_euler, N = 1e3, eps = 1e-5,
   # Parallel backend
   old_dopar <- doFuture::registerDoFuture()
   old_plan <- future::plan(future::multisession(), workers = cores)
-  options(future.rng.onMisuse = "ignore")
+  old_opt <- options(future.rng.onMisuse = "ignore")
   on.exit({
 
     with(old_dopar, foreach::setDoPar(fun = fun, data = data, info = info))
     future::plan(old_plan)
-    options(future.rng.onMisuse = NULL)
+    options(old_opt)
 
   })
   `%op%` <- foreach::`%dopar%`
@@ -24,7 +24,7 @@ parallel_euler_ridge <- function(x, X, d, h, h_euler, N = 1e3, eps = 1e-5,
   # Measure progress?
   if (requireNamespace("progressr", quietly = TRUE)) {
 
-    prog <- progressr::progressor(along = 1:nx)
+    prog <- progressr::progressor(along = seq_len(nx))
 
   }
 
@@ -37,7 +37,7 @@ parallel_euler_ridge <- function(x, X, d, h, h_euler, N = 1e3, eps = 1e-5,
 
   # Eulers
   k <- 0
-  eu_list <- foreach::foreach(k = 1:nx, .combine = c, .inorder = TRUE,
+  eu_list <- foreach::foreach(k = seq_len(nx), .combine = c, .inorder = TRUE,
                               .multicombine = TRUE, .maxcombine = 100,
                               .packages = "polykde",
                               .export = "empty_euler") %op% {
@@ -108,7 +108,7 @@ block_euler_ridge <- function(x, X, d, h, h_euler, ind_blocks, N = 1e3,
     stop("Length of ind_blocks is not r.")
 
   }
-  if (!all(1:n_blocks %in% blocks)) {
+  if (!all(seq_len(n_blocks) %in% blocks)) {
 
     stop("The unique elements of ind_blocks are not 1:n_blocks.")
 
@@ -196,17 +196,17 @@ block_euler_ridge <- function(x, X, d, h, h_euler, ind_blocks, N = 1e3,
   e_block$h <- c(e_block$h)[ind_reord_blocks]
 
   # Final checks
-  if (any(e_block$start_x != x)) {
+  if (any(abs(e_block$start_x - x) > 1e-10)) {
 
     warning("Unequal x and $start_x: wrong recollection of blocks!")
 
   }
-  if (any(e_block$h != h)) {
+  if (any(abs(e_block$h - h) > 1e-10)) {
 
     warning("Unequal h and $h: wrong recollection of blocks!")
 
   }
-  if (any(e_block$d != d)) {
+  if (!identical(as.integer(e_block$d), as.integer(d))) {
 
     warning("Unequal d and $d: wrong recollection of blocks!")
 
@@ -219,8 +219,8 @@ block_euler_ridge <- function(x, X, d, h, h_euler, ind_blocks, N = 1e3,
 #' @title Clean ridge points coming from spurious fits
 #'
 #' @description Remove points from the ridge that are spurious. The cleaning is
-#' done by removing end points in the Euler algorithm that did not converge,
-#' do not have a negative second eigenvalue, or are in low-density regions.
+#' done by removing end points in the Euler algorithm that did not converge, do
+#' not have a negative second eigenvalue, or are in low-density regions.
 #'
 #' @param e outcome from \code{\link{euler_ridge}} or
 #' \code{\link{parallel_euler_ridge}}.
@@ -311,7 +311,12 @@ clean_euler_ridge <- function(e, X, p_out = NULL) {
   # Keep only convergent points with negative second eigenvalue
   keep <- !out & lambda_2_neg & conv
   message("Removed end points: ", sum(!keep))
-  for (j in c(1:7)[-4]) e[[j]] <- e[[j]][keep, , drop = FALSE]
+  for (nm in c("ridge_y", "lamb_norm_y", "log_dens_y", "start_x", "iter",
+               "conv")) {
+
+    e[[nm]] <- e[[nm]][keep, , drop = FALSE]
+
+  }
   e$paths <- e$paths[keep, , , drop = FALSE]
 
   # Add information on removed points
@@ -321,8 +326,8 @@ clean_euler_ridge <- function(e, X, p_out = NULL) {
 }
 
 
-#' @title Index a ridge curve, creating the Smoothed and Indexed Estimated
-#' Ridge (SIER)
+#' @title Index a ridge curve, creating the Smoothed and Indexed Estimated Ridge
+#' (SIER)
 #'
 #' @description Indexing of an unordered collection of points defining the
 #' estimated density ridge curve. The indexing is done by a multidimensional

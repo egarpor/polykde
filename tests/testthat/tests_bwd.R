@@ -46,17 +46,17 @@ cv_naive <- function(h, X, d, mc_samp, kde_samp = FALSE) {
     set.seed(seed, kind = "Mersenne-Twister")
     mc_kde_samp <- r_kde_polysph(n = M, X = X, d = d, h = h, kernel = 1)
     cv_1 <- mean(kde_polysph(x = mc_kde_samp, X = X, d = d, kernel = 1, h = h,
-                             wrt_unif = TRUE))
+                             wrt_unif = FALSE))
     cv_2 <- 2 * mean(exp(log_cv_kde_polysph(X = X, d = d, kernel = 1, h = h,
-                                            wrt_unif = TRUE)))
+                                            wrt_unif = FALSE)))
 
   } else {
 
     cv_1 <- prod(rotasym::w_p(p = d + 1)) *
       mean(kde_polysph(x = mc_samp, X = X, d = d, kernel = 1, h = h,
-                       wrt_unif = TRUE)^2)
+                       wrt_unif = FALSE)^2)
     cv_2 <- 2 * mean(exp(log_cv_kde_polysph(X = X, d = d, kernel = 1, h = h,
-                                            wrt_unif = TRUE)))
+                                            wrt_unif = FALSE)))
 
   }
 

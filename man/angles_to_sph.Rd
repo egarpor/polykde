@@ -33,7 +33,7 @@ of the sphere \eqn{\mathbb{S}^{d}}, and vice versa.
 \examples{
 # Check changes of coordinates
 sph_to_angles(angles_to_sph(c(pi / 2, 0, pi)))
-sph_to_angles(angles_to_sph(rbind(c(pi / 2, 0, pi), c(pi, pi / 2, 0))))
+sph_to_angles(angles_to_sph(rbind(c(pi / 2, 0, pi), c(pi, pi / 2, 4 ))))
 angles_to_sph(sph_to_angles(c(0, sqrt(0.5), sqrt(0.1), sqrt(0.4))))
 angles_to_sph(sph_to_angles(rbind(c(0, sqrt(0.5), sqrt(0.1), sqrt(0.4)),
                                   c(0, sqrt(0.5), sqrt(0.5), 0),

@@ -13,8 +13,8 @@
 #' \int_{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}
 #' \left(\hat{f}(\boldsymbol{x};\boldsymbol{h})-f_m(\boldsymbol{x})\right)^2
 #' \,\mathrm{d}\boldsymbol{x}\right]}
-#' and can be computed exactly from Propositions 4 and 5 in García-Portugués et
-#' al. (2013), using importance-sampling Monte Carlo to evaluate the matrices
+#' and can be computed exactly from Propositions 4 and 5 in García-Portugués
+#' et al. (2013), using importance-sampling Monte Carlo to evaluate the matrices
 #' \eqn{\boldsymbol{\Psi_1}} and \eqn{\boldsymbol{\Psi_2}}.
 #'
 #' @param h,log_h matrix of size \code{c(k, r)} with \code{k} vectors of
