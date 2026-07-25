@@ -152,21 +152,24 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
       #  => ||X_i - X_j||^2 = 2 * (1 - X_i'X_j)
       #  => ||X_i - X_j||^2 / 2 = 1 - X_i'X_j
       #  => X_i'X_j = 1 - ||X_i - X_j||^2 / 2
+      # The matrix is r x n2 for better column recycling later. It is filled
+      # by rows using as.numeric() on the "dist" objects to strip their class.
       ind_dj <- comp_ind_dj(d = d)
-      Xi_Xj_l <- sapply(seq_len(r), function(j) {
+      n2 <- n * (n - 1) / 2
+      Xi_Xj_l <- matrix(nrow = r, ncol = n2)
+      for (l in seq_len(r)) {
 
-        d_ij <- dist(X[, (ind_dj[j] + 1):ind_dj[j + 1]], method = "euclidean",
-                     diag = FALSE, upper = FALSE)
-        1 - 0.5 * d_ij^2
+        d_ij <- as.numeric(dist(X[, (ind_dj[l] + 1):ind_dj[l + 1]],
+                                method = "euclidean", diag = FALSE,
+                                upper = FALSE))
+        Xi_Xj_l[l, ] <- 1 - 0.5 * d_ij^2
 
-      })
-      Xi_Xj_l <- t(Xi_Xj_l) # For better column recycling later
+      }
       norm_Xi_Xj_l <- sqrt(2 * (1 + Xi_Xj_l))
 
       # Precompute other fixed objects in the LSCV loss
       log_n <- log(n)
       log_2_n1 <- log(2 / (n - 1))
-      n2 <- n * (n - 1) / 2
 
       # LSCV loss
       obj <- function(log_h) {
