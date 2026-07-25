@@ -13,7 +13,7 @@
 .DS_Store
 ^\.positai$
 ^\.claude$
-^paper/$
-^scripts/$
 ^Rplots\.pdf$
-CLAUDE.md
+^CLAUDE\.md$
+^paper$
+^scripts$
