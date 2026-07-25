@@ -16,7 +16,7 @@ polysph_to_angles(x, d)
 \item{d}{vector with the dimensions of the polysphere.}
 
 \item{x}{matrix of size \code{c(n, sum(d + 1))} with the Cartesian
-coordinates on \eqn{\mathcal{S}^{d_1}\times\cdots\times\mathcal{S}^{d_r}}.
+coordinates on \eqn{\mathbb{S}^{d_1}\times\cdots\times\mathbb{S}^{d_r}}.
 Assumed to be of unit norm by blocks of coordinates in the rows.}
 }
 \value{
@@ -27,7 +27,7 @@ Assumed to be of unit norm by blocks of coordinates in the rows.}
 }
 \description{
 Obtain the angular coordinates of points on a polysphere
-\eqn{\mathcal{S}^{d_1}\times\cdots\times\mathcal{S}^{d_r}}, and vice versa.
+\eqn{\mathbb{S}^{d_1}\times\cdots\times\mathbb{S}^{d_r}}, and vice versa.
 }
 \examples{
 # Check changes of coordinates

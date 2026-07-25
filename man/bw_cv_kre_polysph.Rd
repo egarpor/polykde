@@ -5,14 +5,21 @@
 \title{Cross-validation bandwidth selection for polyspherical-on-scalar
 regression}
 \usage{
-bw_cv_kre_polysph(X, Y, d, p = 0, h_grid = bw.nrd(X) * 10^seq(-2, 2, l =
-  100), plot_cv = TRUE, fast = TRUE)
+bw_cv_kre_polysph(
+  X,
+  Y,
+  d,
+  p = 0,
+  h_grid = bw.nrd(X) * 10^seq(-2, 2, l = 100),
+  plot_cv = TRUE,
+  fast = TRUE
+)
 }
 \arguments{
 \item{X}{a vector of size \code{n} with the predictor sample.}
 
-\item{Y}{a matrix of size \code{c(n, sum(d) + r)} with the response sample
-on the polysphere.}
+\item{Y}{a matrix of size \code{c(n, sum(d) + r)} with the response sample on
+the polysphere.}
 
 \item{d}{vector of size \code{r} with dimensions.}
 
@@ -37,18 +44,20 @@ minimal cross-validation loss.}
 }
 \description{
 Computes least squares cross-validation bandwidths for kernel
-regression estimation with polyspherical response and scalar predictor.
-It computes both the bandwidth that minimizes the cross-validation loss and
-its "one standard error" variant.
+regression estimation with polyspherical response and scalar predictor. It
+computes both the bandwidth that minimizes the cross-validation loss and its
+"one standard error" variant.
 }
 \details{
 A similar output to \code{glmnet}'s \code{\link[glmnet]{cv.glmnet}}
 is returned.
 }
 \examples{
+\donttest{
 n <- 50
 X <- seq(0, 1, l = n)
 Y <- r_path_s2r(n = n, r = 1, sigma = 0.1, spiral = TRUE)[, , 1]
 bw_cv_kre_polysph(X = X, Y = Y, d = 2, p = 0)
 bw_cv_kre_polysph(X = X, Y = Y, d = 2, p = 1, fast = FALSE)
+}
 }

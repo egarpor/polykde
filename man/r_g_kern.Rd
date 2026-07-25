@@ -14,7 +14,8 @@ r_g_kern(n, d, h, kernel = "1", k = 10)
 \item{h}{vector of size \code{r} with bandwidths.}
 
 \item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
-\code{2} for Epanechnikov; \code{3} for softplus.}
+\code{2} for Epanechnikov; \code{3} for softplus. The equivalent character
+codes \code{"1"}, \code{"2"}, and \code{"3"} are also accepted.}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
 }
@@ -23,7 +24,7 @@ A vector of size \code{n} with the sample.
 }
 \description{
 Simulation from the angular density function of an isotropic
-kernel on the sphere \eqn{\mathcal{S}^d}.
+kernel on the sphere \eqn{\mathbb{S}^d}.
 }
 \examples{
 hist(r_g_kern(n = 1e3, d = 2, h = 1, kernel = "1"), breaks = 30,

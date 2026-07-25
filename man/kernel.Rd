@@ -8,11 +8,18 @@
 \alias{hess_L}
 \title{Kernels on the sphere and their derivatives}
 \usage{
-L(t, kernel = "1", squared = FALSE, deriv = 0, k = 10,
-  inc_sfp = TRUE)
+L(t, kernel = "1", squared = FALSE, deriv = 0, k = 10, inc_sfp = TRUE)
 
-c_kern(h, d, kernel = "1", kernel_type = "1", k = 10, log = FALSE,
-  inc_sfp = TRUE, intrinsic = FALSE)
+c_kern(
+  h,
+  d,
+  kernel = "1",
+  kernel_type = "1",
+  k = 10,
+  log = FALSE,
+  inc_sfp = TRUE,
+  intrinsic = FALSE
+)
 
 grad_L(x, y, h, kernel = 1, k = 10)
 
@@ -22,7 +29,8 @@ hess_L(x, y, h, kernel = 1, k = 10)
 \item{t}{vector with the evaluation points.}
 
 \item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
-\code{2} for Epanechnikov; \code{3} for softplus.}
+\code{2} for Epanechnikov; \code{3} for softplus. The equivalent character
+codes \code{"1"}, \code{"2"}, and \code{"3"} are also accepted.}
 
 \item{squared}{square the kernel? Only for \code{deriv = 0}. Defaults to
 \code{FALSE}.}
@@ -40,7 +48,8 @@ Defaults to \code{0}.}
 \item{d}{vector of size \code{r} with dimensions.}
 
 \item{kernel_type}{type of kernel employed: \code{1} for product kernel
-(default); \code{2} for spherically symmetric kernel.}
+(default); \code{2} for spherically symmetric kernel. The equivalent
+character codes \code{"1"} and \code{"2"} are also accepted.}
 
 \item{log}{compute the logarithm of the constant? Defaults to \code{FALSE}.}
 
@@ -59,11 +68,11 @@ points.}
 }
 }
 \description{
-An isotropic kernel \eqn{L} on \eqn{\mathcal{S}^d} and its
-normalizing constant are such that \eqn{\int_{\mathcal{S}^d} c(h, d, L)
+An isotropic kernel \eqn{L} on \eqn{\mathbb{S}^d} and its
+normalizing constant are such that \eqn{\int_{\mathbb{S}^d} c(h, d, L)
 L\left(\frac{1 - \boldsymbol{x}'\boldsymbol{y}}{h^2}\right)
 \,\mathrm{d}\boldsymbol{x} = 1} (extrinsic-chordal distance) or
-\eqn{\int_{\mathcal{S}^d} c(h, d, L)
+\eqn{\int_{\mathbb{S}^d} c(h, d, L)
 L\left(\frac{\cos^{-1}(\boldsymbol{x}'\boldsymbol{y})^2}{2h^2}\right)
 \,\mathrm{d}\boldsymbol{x} = 1} (intrinsic distance).
 }

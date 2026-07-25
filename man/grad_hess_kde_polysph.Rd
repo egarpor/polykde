@@ -4,10 +4,24 @@
 \alias{grad_hess_kde_polysph}
 \title{Gradient and Hessian of the polyspherical kernel density estimator}
 \usage{
-grad_hess_kde_polysph(x, X, d, h, weights = as.numeric(c()),
-  projected = TRUE, proj_alt = TRUE, norm_grad_hess = FALSE,
-  log = FALSE, wrt_unif = FALSE, normalized = TRUE, norm_x = FALSE,
-  norm_X = FALSE, kernel = 1L, kernel_type = 1L, k = 10)
+grad_hess_kde_polysph(
+  x,
+  X,
+  d,
+  h,
+  weights = as.numeric(c()),
+  projected = TRUE,
+  proj_alt = TRUE,
+  norm_grad_hess = FALSE,
+  log = FALSE,
+  wrt_unif = FALSE,
+  normalized = TRUE,
+  norm_x = FALSE,
+  norm_X = FALSE,
+  kernel = 1L,
+  kernel_type = 1L,
+  k = 10
+)
 }
 \arguments{
 \item{x}{a matrix of size \code{c(nx, sum(d) + r)} with the evaluation
@@ -20,8 +34,8 @@ points.}
 \item{h}{vector of size \code{r} with bandwidths.}
 
 \item{weights}{weights for each observation. If provided, a vector of size
-\code{n} with the weights for multiplying each kernel. If not provided,
-set internally to \code{rep(1 / n, n)}, which gives the standard estimator.}
+\code{n} with the weights for multiplying each kernel. If not provided, set
+internally to \code{rep(1 / n, n)}, which gives the standard estimator.}
 
 \item{projected}{compute the \emph{projected} gradient and Hessian that
 accounts for the radial projection? Defaults to \code{TRUE}.}
@@ -37,8 +51,8 @@ kernel density estimator? Defaults to \code{FALSE}.}
 measure. If \code{FALSE} (default), the density is with respect to the
 Lebesgue measure.}
 
-\item{normalized}{flag to compute the normalizing constant of the kernel
-and include it in the kernel density estimator. Defaults to \code{TRUE}.}
+\item{normalized}{flag to compute the normalizing constant of the kernel and
+include it in the kernel density estimator. Defaults to \code{TRUE}.}
 
 \item{norm_x, norm_X}{ensure a normalization of the data? Defaults to
 \code{FALSE}.}
@@ -53,7 +67,7 @@ and include it in the kernel density estimator. Defaults to \code{TRUE}.}
 }
 \value{
 A list with the following fields:
-\item{dens}{a column vector of size \code{c(nx, 1)} with the kernel
+\item{dens}{a column matrix of size \code{c(nx, 1)} with the kernel
 density estimator evaluated at \code{x}.}
 \item{grad}{a matrix of size \code{c(nx, sum(d) + r)} with the gradient of
 the kernel density estimator evaluated at \code{x}.}
@@ -64,8 +78,8 @@ Hessian matrix of the kernel density estimator evaluated at \code{x}.}
 Computes the gradient
 \eqn{\mathsf{D}\hat{f}(\boldsymbol{x};\boldsymbol{h})} and Hessian matrix
 \eqn{\mathsf{H}\hat{f}(\boldsymbol{x};\boldsymbol{h})} of the kernel density
-estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the
-polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
+estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the polysphere
+\eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}.
 }
 \examples{
 # Simple check on (S^1)^2

@@ -13,7 +13,7 @@ fib_latt(n)
 A matrix of size \code{c(n, 3)} with the spherical coordinates.
 }
 \description{
-Computes the Fibonacci lattice on the sphere \eqn{\mathcal{S}^2}
+Computes the Fibonacci lattice on the sphere \eqn{\mathbb{S}^2}
 to produce pseudo-equispaced points.
 }
 \examples{
