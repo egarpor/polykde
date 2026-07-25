@@ -169,3 +169,33 @@ test_that("bw_ise_polysph() minimizes the ISE on the sphere", {
   expect_lte(bw_ise$opt$minimum, min(log1p_ise_bw0))
 
 })
+
+## RNG state restoration
+
+test_that("seed_psi does not alter the RNG state", {
+
+  mu <- rbind(c(1, 0), c(-1, 0))
+  kappa <- c(1, 1)
+  prop <- c(0.5, 0.5)
+  X_rng <- r_unif_polysph(n = 5, d = 1)
+  seeded_calls <- function() {
+    mise_vmf(h = 0.5, n = 5, mu = mu, kappa = kappa, prop = prop, d = 1,
+             M_psi = 10, seed_psi = 1)
+    ise_vmf_polysph(X = X_rng, d = 1, h = 0.5, mu = mu, kappa = cbind(kappa),
+                    prop = prop, M_psi = 10, seed_psi = 1)
+    bw_ise_polysph(X = X_rng, d = 1, bw0 = 1, mu = mu, kappa = cbind(kappa),
+                   prop = prop, M_psi = 10, seed_psi = 1)
+  }
+
+  # An existing .Random.seed is restored
+  set.seed(123)
+  old_seed <- globalenv()$.Random.seed
+  seeded_calls()
+  expect_identical(globalenv()$.Random.seed, old_seed)
+
+  # A nonexistent .Random.seed is not created
+  rm(".Random.seed", envir = globalenv())
+  seeded_calls()
+  expect_null(globalenv()$.Random.seed)
+
+})

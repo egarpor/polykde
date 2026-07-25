@@ -395,6 +395,17 @@ test_that("log_diff_exp() respects the near-zero tolerance", {
   expect_equal(ld$sgn, c(0, 0, 1))
 })
 
+test_that("log_diff_exp() returns a null difference on both sides of zero", {
+
+  log_p <- c(1, 1, 1 + 3e-16)
+  log_n <- c(1, 1 + 3e-16, 1)
+  ld <- expect_no_warning(log_diff_exp(log_p = log_p, log_n = log_n))
+  expect_equal(ld$sgn, c(0, 0, 0))
+  expect_equal(ld$log_abs, rep(-Inf, 3))
+  expect_equal(ld$sgn * exp(ld$log_abs), rep(0, 3))
+
+})
+
 ## asinh_log()
 
 test_that("asinh_log() works fine for large positive log_abs arguments", {
