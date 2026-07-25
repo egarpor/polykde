@@ -262,6 +262,8 @@ test_that("Edge cases log_cv_kde_polysph()", {
   expect_error(log_cv_kde_polysph(X = X, d = d, h = 0 * h))
   expect_equal(log_cv_kde_polysph(X = 2 * X, d = d, h = h, norm_X = TRUE),
                log_cv_kde_polysph(X = X, d = d, h = h))
+  expect_error(log_cv_kde_polysph(X = X[1, , drop = FALSE], d = d, h = h),
+               "n >= 2")
 })
 
 ## Weights
@@ -323,6 +325,9 @@ test_that("bw_lcv_min_epa is the critical point", {
                                                 wrt_unif = TRUE, kernel = 2))))
   expect_true(any(!is.finite(log_cv_kde_polysph(X = X, d = d, h = h_bad_2,
                                                 wrt_unif = TRUE, kernel = 2))))
+})
+test_that("bw_lcv_min_epa() requires n >= 2", {
+  expect_error(bw_lcv_min_epa(X = X[1, , drop = FALSE], d = d))
 })
 
 ## Others
