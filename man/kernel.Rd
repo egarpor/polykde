@@ -8,11 +8,18 @@
 \alias{hess_L}
 \title{Kernels on the sphere and their derivatives}
 \usage{
-L(t, kernel = "1", squared = FALSE, deriv = 0, k = 10,
-  inc_sfp = TRUE)
+L(t, kernel = "1", squared = FALSE, deriv = 0, k = 10, inc_sfp = TRUE)
 
-c_kern(h, d, kernel = "1", kernel_type = "1", k = 10, log = FALSE,
-  inc_sfp = TRUE, intrinsic = FALSE)
+c_kern(
+  h,
+  d,
+  kernel = "1",
+  kernel_type = "1",
+  k = 10,
+  log = FALSE,
+  inc_sfp = TRUE,
+  intrinsic = FALSE
+)
 
 grad_L(x, y, h, kernel = 1, k = 10)
 
@@ -59,11 +66,11 @@ points.}
 }
 }
 \description{
-An isotropic kernel \eqn{L} on \eqn{\mathcal{S}^d} and its
-normalizing constant are such that \eqn{\int_{\mathcal{S}^d} c(h, d, L)
+An isotropic kernel \eqn{L} on \eqn{\mathbb{S}^d} and its
+normalizing constant are such that \eqn{\int_{\mathbb{S}^d} c(h, d, L)
 L\left(\frac{1 - \boldsymbol{x}'\boldsymbol{y}}{h^2}\right)
 \,\mathrm{d}\boldsymbol{x} = 1} (extrinsic-chordal distance) or
-\eqn{\int_{\mathcal{S}^d} c(h, d, L)
+\eqn{\int_{\mathbb{S}^d} c(h, d, L)
 L\left(\frac{\cos^{-1}(\boldsymbol{x}'\boldsymbol{y})^2}{2h^2}\right)
 \,\mathrm{d}\boldsymbol{x} = 1} (intrinsic distance).
 }

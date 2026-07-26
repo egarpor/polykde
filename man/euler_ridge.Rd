@@ -6,18 +6,56 @@
 \alias{block_euler_ridge}
 \title{Euler algorithms for polyspherical density ridge estimation}
 \usage{
-euler_ridge(x, X, d, h, h_euler = as.numeric(c()),
-  weights = as.numeric(c()), wrt_unif = FALSE, normalized = TRUE,
-  norm_x = FALSE, norm_X = FALSE, kernel = 1L, kernel_type = 1L,
-  k = 10, N = 1000L, eps = 1e-05, keep_paths = FALSE,
-  proj_alt = TRUE, fix_u1 = TRUE, sparse = FALSE, show_prog = TRUE,
-  show_prog_j = FALSE)
+euler_ridge(
+  x,
+  X,
+  d,
+  h,
+  h_euler = as.numeric(c()),
+  weights = as.numeric(c()),
+  wrt_unif = FALSE,
+  normalized = TRUE,
+  norm_x = FALSE,
+  norm_X = FALSE,
+  kernel = 1L,
+  kernel_type = 1L,
+  k = 10,
+  N = 1000L,
+  eps = 1e-05,
+  keep_paths = FALSE,
+  proj_alt = TRUE,
+  fix_u1 = TRUE,
+  sparse = FALSE,
+  show_prog = TRUE,
+  show_prog_j = FALSE
+)
 
-parallel_euler_ridge(x, X, d, h, h_euler, N = 1000, eps = 1e-05,
-  keep_paths = FALSE, cores = 1, ...)
+parallel_euler_ridge(
+  x,
+  X,
+  d,
+  h,
+  h_euler,
+  N = 1000,
+  eps = 1e-05,
+  keep_paths = FALSE,
+  cores = 1,
+  ...
+)
 
-block_euler_ridge(x, X, d, h, h_euler, ind_blocks, N = 1000, eps = 1e-05,
-  keep_paths = FALSE, cores = 1, ...)
+block_euler_ridge(
+  x,
+  X,
+  d,
+  h,
+  h_euler,
+  ind_blocks,
+  N = 1000,
+  eps = 1e-05,
+  keep_paths = FALSE,
+  cores = 1,
+  ...
+)
 }
 \arguments{
 \item{x}{a matrix of size \code{c(nx, sum(d) + r)} with the starting points
@@ -33,15 +71,15 @@ for the Euler algorithm.}
 method. Set internally as \code{h} if not provided.}
 
 \item{weights}{weights for each observation. If provided, a vector of size
-\code{n} with the weights for multiplying each kernel. If not provided,
-set internally to \code{rep(1 / n, n)}, which gives the standard estimator.}
+\code{n} with the weights for multiplying each kernel. If not provided, set
+internally to \code{rep(1 / n, n)}, which gives the standard estimator.}
 
 \item{wrt_unif}{flag to return a density with respect to the uniform
 measure. If \code{FALSE} (default), the density is with respect to the
 Lebesgue measure.}
 
-\item{normalized}{flag to compute the normalizing constant of the kernel
-and include it in the kernel density estimator. Defaults to \code{TRUE}.}
+\item{normalized}{flag to compute the normalizing constant of the kernel and
+include it in the kernel density estimator. Defaults to \code{TRUE}.}
 
 \item{norm_x, norm_X}{ensure a normalization of the data? Defaults to
 \code{FALSE}.}
@@ -87,24 +125,24 @@ The three functions return a list with the following fields:
 points of Euler algorithm defining the estimated ridge.}
 \item{lamb_norm_y}{a matrix of size \code{c(nx, sum(d) + r)} with the
 Hessian eigenvalues (largest to smallest) evaluated at end points.}
-\item{log_dens_y}{a column vector of size \code{c(nx, 1)} with the
+\item{log_dens_y}{a column matrix of size \code{c(nx, 1)} with the
 logarithm of the density at end points.}
 \item{paths}{an array of size \code{c(nx, sum(d) + r, N + 1)} containing
 the Euler paths.}
 \item{start_x}{a matrix of size \code{c(nx, sum(d) + r)} with the starting
 points for the Euler algorithm.}
-\item{iter}{a column vector of size \code{c(nx, 1)} counting the iterations
+\item{iter}{a column matrix of size \code{c(nx, 1)} counting the iterations
 required for each point.}
-\item{conv}{a column vector of size \code{c(nx, 1)} with convergence flags.}
+\item{conv}{a column matrix of size \code{c(nx, 1)} with convergence flags.}
 \item{d}{vector \code{d}.}
 \item{h}{bandwidth used for the kernel density estimator.}
-\item{error}{a column vector of size \code{c(nx, 1)} indicating if errors
+\item{error}{a column matrix of size \code{c(nx, 1)} indicating if errors
 were found for each path.}
 }
 \description{
-Functions to perform density ridge estimation on the
-polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}
-through the Euler algorithm in standard, parallel, or block mode.
+Functions to perform density ridge estimation on the polysphere
+\eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}} through the
+Euler algorithm in standard, parallel, or block mode.
 }
 \details{
 \code{euler_ridge} is the main function to perform density ridge
@@ -116,38 +154,72 @@ of spheres, instead of jointly in the whole polysphere. This function
 requires that all the dimensions are the same.
 }
 \examples{
-## Test on S^2 with a small circle trend
+\donttest{
+if (requireNamespace("scatterplot3d", quietly = TRUE) &&
+    requireNamespace("viridis", quietly = TRUE)) {
 
-# Sample
-r <- 1
-d <- 2
-n <- 50
-ind_dj <- comp_ind_dj(d = d)
-set.seed(987204452)
-X <- r_path_s2r(n = n, r = r, spiral = FALSE, Theta = cbind(c(1, 0, 0)),
-                sigma = 0.35)[, , 1]
-col_X_alp <- viridis::viridis(n, alpha = 0.25)
-col_X <- viridis::viridis(n)
+  ## Test on S^2 with a small circle trend
 
-# Euler
-h_rid <- 0.5
-h_eu <- h_rid^2
-N <- 30
-eps <- 1e-6
-Y <- euler_ridge(x = X, X = X, d = d, h = h_rid, h_euler = h_eu,
-                 N = N, eps = eps, keep_paths = TRUE)
-Y
+  # Sample
+  r <- 1
+  d <- 2
+  n <- 50
+  ind_dj <- comp_ind_dj(d = d)
+  set.seed(987204452)
+  X <- r_path_s2r(n = n, r = r, spiral = FALSE, Theta = cbind(c(1, 0, 0)),
+                  sigma = 0.35)[, , 1]
+  col_X_alp <- viridis::viridis(n, alpha = 0.25)
+  col_X <- viridis::viridis(n)
 
-# Visualization
-i <- N # Between 1 and N
-sc3 <- scatterplot3d::scatterplot3d(Y$paths[, , 1], color = col_X_alp,
-                                    pch = 19, xlim = c(-1, 1),
-                                    ylim = c(-1, 1), zlim = c(-1, 1),
-                                    xlab = "x", ylab = "y", zlab = "z")
-sc3$points3d(rbind(Y$paths[, , i]), col = col_X, pch = 16, cex = 0.75)
-for (k in seq_len(nrow(Y$paths))) {
+  # Euler
+  h_rid <- 0.5
+  h_eu <- h_rid^2
+  N <- 30
+  eps <- 1e-6
+  Y <- euler_ridge(x = X, X = X, d = d, h = h_rid, h_euler = h_eu,
+                   N = N, eps = eps, keep_paths = TRUE)
+  Y
 
-  sc3$points3d(t(Y$paths[k, , ]), col = col_X_alp[k], type = "l")
+  # Visualization
+  i <- N # Between 1 and N
+  sc3 <- scatterplot3d::scatterplot3d(Y$paths[, , 1], color = col_X_alp,
+                                      pch = 19, xlim = c(-1, 1),
+                                      ylim = c(-1, 1), zlim = c(-1, 1),
+                                      xlab = "x", ylab = "y", zlab = "z")
+  sc3$points3d(rbind(Y$paths[, , i]), col = col_X, pch = 16, cex = 0.75)
+  for (k in seq_len(nrow(Y$paths))) {
+
+    sc3$points3d(t(Y$paths[k, , ]), col = col_X_alp[k], type = "l")
+
+  }
 
 }
+
+## Parallel and block variants on (S^2)^4
+set.seed(987204452)
+r <- 4
+d <- rep(2, r)
+ind_dj <- comp_ind_dj(d = d)
+n <- 30
+X <- r_unif_polysph(n = n, d = d)
+h_rid <- rep(0.7, r)
+h_eu <- h_rid^2
+# Parallel: same algorithm as euler_ridge but distributing starting points
+Y_par <- parallel_euler_ridge(x = X[1:5, , drop = FALSE], X = X, d = d,
+                              h = h_rid, h_euler = h_eu, N = 20, cores = 1)
+# Block: marginal Euler over groups of spheres (all d's must be equal)
+Y_block <- block_euler_ridge(x = X[1:5, , drop = FALSE], X = X, d = d,
+                             h = h_rid, h_euler = h_eu,
+                             ind_blocks = c(1, 1, 2, 2), N = 20)
+}
+}
+\references{
+García-Portugués, E. and Meilán-Vila, A. (2023). Hippocampus shape analysis
+via skeletal models and kernel smoothing. In Larriba, Y. (Ed.),
+\emph{Statistical Methods at the Forefront of Biomedical Advances},
+pp. 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}.
+}
+\seealso{
+\code{\link{clean_euler_ridge}}, \code{\link{index_ridge}},
+\code{\link{proj_grad_kde_polysph}}, \code{\link{grad_hess_kde_polysph}}.
 }

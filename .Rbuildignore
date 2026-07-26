@@ -4,9 +4,16 @@
 ^README.*$
 ^replication
 ^data-raw
+^logo$
 ^CRAN-RELEASE$
 ^cran-comments\.md$
 ^LICENSE\.md$
 ^\.github$
 ^CRAN-SUBMISSION$
 .DS_Store
+^\.positai$
+^\.claude$
+^Rplots\.pdf$
+^CLAUDE\.md$
+^paper$
+^scripts$

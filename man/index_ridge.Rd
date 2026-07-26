@@ -2,12 +2,21 @@
 % Please edit documentation in R/euler.R
 \name{index_ridge}
 \alias{index_ridge}
-\title{Index a ridge curve, creating the Smoothed and Indexed Estimated
-Ridge (SIER)}
+\title{Index a ridge curve, creating the Smoothed and Indexed Estimated Ridge
+(SIER)}
 \usage{
-index_ridge(endpoints, X, d, l_index = 1000, f_index = 2,
-  probs_scores = seq(0, 1, l = 101), verbose = FALSE, type_bwd = c("1se",
-  "min")[1], p = 0, ...)
+index_ridge(
+  endpoints,
+  X,
+  d,
+  l_index = 1000,
+  f_index = 2,
+  probs_scores = seq(0, 1, l = 101),
+  verbose = FALSE,
+  type_bwd = c("1se", "min")[1],
+  p = 0,
+  ...
+)
 }
 \arguments{
 \item{endpoints}{a matrix of size \code{c(nx, sum(d) + r)} with the end
@@ -68,56 +77,68 @@ scaling is adequate. The indexing will not work properly if the ridge points
 define a closed curve.
 }
 \examples{
-## Test on (S^1)^2
+\donttest{
+if (requireNamespace("sdetorus", quietly = TRUE) &&
+    requireNamespace("viridis", quietly = TRUE)) {
 
-# Sample
-set.seed(132121)
-r <- 2
-d <- rep(1, r)
-n <- 200
-ind_dj <- comp_ind_dj(d = d)
-Th <- matrix(runif(n = n * (r - 1), min = -pi / 2, max = pi / 2),
-             nrow = n, ncol = r - 1)
-Th[, r - 1] <- sort(Th[, r - 1])
-Th <- cbind(Th, sdetorus::toPiInt(
-  pi + Th[, r - 1] + runif(n = n, min = -pi / 4, max = pi / 4)))
-X <- angles_to_torus(Th)
-col_X_alp <- viridis::viridis(n, alpha = 0.25)
-col_X <- viridis::viridis(n)
+  ## Test on (S^1)^2
 
-# Euler
-h_rid <- rep(0.75, r)
-h_eu <- h_rid^2
-N <- 200
-eps <- 1e-6
-Y <- euler_ridge(x = X, X = X, d = d, h = h_rid, h_euler = h_eu,
-                 N = N, eps = eps, keep_paths = TRUE)
+  # Sample
+  r <- 2
+  d <- rep(1, r)
+  n <- 200
+  ind_dj <- comp_ind_dj(d = d)
+  Th <- matrix(runif(n = n * (r - 1), min = -pi / 2, max = pi / 2),
+               nrow = n, ncol = r - 1)
+  Th[, r - 1] <- sort(Th[, r - 1])
+  Th <- cbind(Th, sdetorus::toPiInt(
+    pi + Th[, r - 1] + runif(n = n, min = -pi / 4, max = pi / 4)))
+  X <- angles_to_torus(Th)
+  col_X_alp <- viridis::viridis(n, alpha = 0.25)
+  col_X <- viridis::viridis(n)
 
-# Visualization
-i <- N # Between 1 and N
-plot(rbind(torus_to_angles(Y$paths[, , 1])), col = col_X_alp, pch = 19,
-     axes = FALSE, xlim = c(-pi, pi), ylim = c(-pi, pi),
-     xlab = "", ylab = "")
-points(rbind(torus_to_angles(Y$paths[, , i])), col = col_X, pch = 16,
-       cex = 0.75)
-sdetorus::torusAxis(1:2)
-for (k in seq_len(nrow(Y$paths))) {
+  # Euler
+  h_rid <- rep(0.75, r)
+  h_eu <- h_rid^2
+  N <- 200
+  eps <- 1e-6
+  Y <- euler_ridge(x = X, X = X, d = d, h = h_rid, h_euler = h_eu,
+                   N = N, eps = eps, keep_paths = TRUE)
 
-  xy <- torus_to_angles(t(Y$paths[k, , ]))
-  sdetorus::linesTorus(x = xy[, 1], y = xy[, 2], col = col_X_alp[k])
+  # Visualization
+  i <- N # Between 1 and N
+  plot(rbind(torus_to_angles(Y$paths[, , 1])), col = col_X_alp, pch = 19,
+       axes = FALSE, xlim = c(-pi, pi), ylim = c(-pi, pi),
+       xlab = "", ylab = "")
+  points(rbind(torus_to_angles(Y$paths[, , i])), col = col_X, pch = 16,
+         cex = 0.75)
+  sdetorus::torusAxis(1:2)
+  for (k in seq_len(nrow(Y$paths))) {
+
+    xy <- torus_to_angles(t(Y$paths[k, , ]))
+    sdetorus::linesTorus(x = xy[, 1], y = xy[, 2], col = col_X_alp[k])
+
+  }
+
+  # SIER
+  ind_rid <- index_ridge(endpoints = Y$ridge_y, X = X, d = d,
+                         probs_scores = seq(0, 1, l = 50))
+  xy <- torus_to_angles(ind_rid$ridge_grid)
+  sdetorus::linesTorus(x = xy[, 1], y = xy[, 2], col = 2, lwd = 2)
+  points(torus_to_angles(ind_rid$ridge_fun(quantile(ind_rid$scores_grid))),
+         col = 4, pch = 19)
+
+  # Scores
+  plot(density(ind_rid$scores_X), type = "l", xlab = "Scores",
+       ylab = "Density", main = "Scores density")
+  for (i in 1:n) rug(ind_rid$scores_X[i], col = col_X[i])
 
 }
-
-# SIER
-ind_rid <- index_ridge(endpoints = Y$ridge_y, X = X, d = d,
-                       probs_scores = seq(0, 1, l = 50))
-xy <- torus_to_angles(ind_rid$ridge_grid)
-sdetorus::linesTorus(x = xy[, 1], y = xy[, 2], col = 2, lwd = 2)
-points(torus_to_angles(ind_rid$ridge_fun(quantile(ind_rid$scores_grid))),
-       col = 4, pch = 19)
-
-# Scores
-plot(density(ind_rid$scores_X), type = "l", xlab = "Scores",
-     ylab = "Density", main = "Scores density")
-for (i in 1:n) rug(ind_rid$scores_X[i], col = col_X[i])
+}
+}
+\references{
+García-Portugués, E. and Meilán-Vila, A. (2023). Hippocampus shape analysis
+via skeletal models and kernel smoothing. In Larriba, Y. (Ed.),
+\emph{Statistical Methods at the Forefront of Biomedical Advances},
+pp. 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}.
 }

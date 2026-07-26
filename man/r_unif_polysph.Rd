@@ -16,7 +16,7 @@ A matrix of size \code{c(n, sum(d) + r)} with the sample.
 }
 \description{
 Simulates from a uniform distribution on the polysphere
-\eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
+\eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}.
 }
 \examples{
 # Simulate uniform data on (S^1)^2

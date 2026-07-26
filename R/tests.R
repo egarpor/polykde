@@ -2,11 +2,12 @@
 #' @title Homogeneity test for several polyspherical samples
 #'
 #' @description Permutation tests for the equality of distributions of two or
-#' \eqn{k} samples of data on \eqn{\mathcal{S}^{d_1} \times \cdots \times
-#' \mathcal{S}^{d_r}}. The Jensen--Shannon distance is used to construct a test
-#' statistic measuring the discrepancy between the \eqn{k} kernel density
-#' estimators. Tests based on the mean and scatter matrices are also available,
-#' but for only two samples (\eqn{k=2}).
+#' \eqn{k} samples of data on
+#' \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}. The
+#' Jensen--Shannon distance is used to construct a test statistic measuring the
+#' discrepancy between the \eqn{k} kernel density estimators. Tests based on the
+#' mean and scatter matrices are also available, but for only two samples
+#' (\eqn{k=2}).
 #'
 #' @inheritParams kde_polysph
 #' @param labels vector with \code{k} different levels indicating the group.
@@ -45,6 +46,12 @@
 #' \item{alternative}{a character string describing the alternative hypothesis.}
 #' \item{method}{the kind of test performed.}
 #' \item{data.name}{a character string giving the name of the data.}
+#' @references
+#' García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+#' with polyspherical data and its applications. \emph{Journal of the American
+#' Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+#' @seealso \code{\link{kde_polysph}}, \code{\link{bw_rot_polysph}},
+#' \code{\link{bw_cv_polysph}}.
 #' @examples
 #' ## Two-sample case
 #' \donttest{
@@ -240,7 +247,7 @@ hom_test_polysph <- function(X, d, labels,
         perm_labels <- labels[perm_index]
 
         # Access groups
-        ind_j <- lapply(1:kg, function(j)
+        ind_j <- lapply(seq_len(kg), function(j)
           which(perm_labels == labels_levels[j]))
 
         # CV approximation of the H(f_j)'s and H(f_0)?
@@ -267,8 +274,11 @@ hom_test_polysph <- function(X, d, labels,
                                           wrt_unif = TRUE)
           log_f0_cv <- log_f0_cv / N
 
-          # H_f0 - sum(probs * H_fj), removing Infs and NaNs from the sum
-          H_f0_fj_dif <- -log_f0_cv + log_fj_cv
+          # H_f0 - sum(probs * H_fj), removing Infs and NaNs from the sum.
+          # log_fj_cv is filled in group order, whereas log_f0_cv follows the
+          # original order of X, so realign before filtering by is.finite().
+          ord <- unlist(ind_j)
+          H_f0_fj_dif <- log_fj_cv - log_f0_cv[ord]
           H_f0_fj_dif[!is.finite(H_f0_fj_dif)] <- NA
           jsd <- sum(H_f0_fj_dif, na.rm = TRUE)
 
@@ -324,8 +334,12 @@ hom_test_polysph <- function(X, d, labels,
           ind_0 <- c(0, cumsum(M_j))
           for (j in seq_len(kg)) {
 
-            mc_samp_0[(ind_0[j] + 1):ind_0[j + 1], ] <-
-              mc_samp[[j]][1:M_j[j], , drop = FALSE]
+            if (M_j[j] > 0) {
+
+              mc_samp_0[(ind_0[j] + 1):ind_0[j + 1], ] <-
+                mc_samp[[j]][seq_len(M_j[j]), , drop = FALSE]
+
+            }
 
           }
 
@@ -396,17 +410,26 @@ hom_test_polysph <- function(X, d, labels,
 
   }
 
-  # Set seeds for the Monte Carlos inside the JSD statistic
+  # Set seeds for the Monte Carlos inside the JSD statistic, restoring the
+  # user's RNG state on exit so the internal seed does not leak outside the call
   if (!is.null(seed_jsd) && type == "jsd") {
 
-    # old_seed <- .Random.seed
-    # on.exit({.Random.seed <<- old_seed})
+    if (exists(".Random.seed", envir = .GlobalEnv)) {
+
+      old_seed <- .GlobalEnv$.Random.seed
+      on.exit(assign(".Random.seed", old_seed, envir = .GlobalEnv), add = TRUE)
+
+    } else {
+
+      on.exit(rm(".Random.seed", envir = .GlobalEnv), add = TRUE)
+
+    }
     set.seed(seed_jsd, kind = "Mersenne-Twister")
 
   }
 
   # Original statistic
-  Tn_orig <- Tn(perm_index = 1:N)
+  Tn_orig <- Tn(perm_index = seq_len(N))
   if (!is.finite(Tn_orig) || Tn_orig == 0) {
 
     stop("The test statistic is not finite or is zero.")
@@ -430,15 +453,14 @@ hom_test_polysph <- function(X, d, labels,
     Tn_star[b] <- Tn(perm_index = perms[b, ])
     setTxtProgressBar(pb = pb, value = b / B)
 
-    # Current p-value
-    pvalue <- mean(Tn_star > Tn_orig, na.rm = TRUE)
-
     # Plot the position of the original statistic with respect to the
     # permutation replicates? Do it one out of ten replicates
     if (plot_boot && (b %% 10 == 0 || b == B)) {
 
-      hist(Tn_star, probability = TRUE, main = paste("p-value:",
-                                                     sprintf("%.4f", pvalue)),
+      # Running p-value only for the plot title
+      pvalue_plot <- (sum(Tn_star >= Tn_orig, na.rm = TRUE) + 1) / (b + 1)
+      hist(Tn_star, probability = TRUE,
+           main = paste("p-value:", sprintf("%.4f", pvalue_plot)),
            xlab = expression(T[n]^"*"),
            xlim = range(c(Tn_star, Tn_orig), na.rm = TRUE))
       rug(Tn_star)
@@ -447,6 +469,9 @@ hom_test_polysph <- function(X, d, labels,
     }
 
   }
+
+  # Permutation p-value with the standard correction, computed outside the loop
+  pvalue <- (sum(Tn_star >= Tn_orig, na.rm = TRUE) + 1) / (B + 1)
 
   # Construct an "htest" result
   Tn_orig <- c("Tn" = Tn_orig)
@@ -465,11 +490,11 @@ hom_test_polysph <- function(X, d, labels,
 #' @title Hellinger distance between two densities via Monte Carlo
 #'
 #' @description Computes the Hellinger distance
-#' \deqn{H(f, g) = \sqrt(1 - \int_{\mathcal{S}^{d_1} \times \ldots \times
-#' \mathcal{S}^{d_r}} \sqrt(f(\boldsymbol{x}) g(\boldsymbol{x}))
-#' \,\mathrm{d}\boldsymbol{x})} between two densities \eqn{f} and \eqn{g} on
-#' \eqn{\mathcal{S}^{d_1} \times \ldots \times \mathcal{S}^{d_r}} via
-#' Monte Carlo.
+#' \deqn{H(f, g) = \sqrt{1 - \int_{\mathbb{S}^{d_1} \times \ldots \times
+#' \mathbb{S}^{d_r}} \sqrt{f(\boldsymbol{x}) g(\boldsymbol{x})}
+#' \,\mathrm{d}\boldsymbol{x}}}
+#' between two densities \eqn{f} and \eqn{g} on
+#' \eqn{\mathbb{S}^{d_1} \times \ldots \times \mathbb{S}^{d_r}} via Monte Carlo.
 #'
 #' @param log_f,log_g logarithms of \eqn{f} and \eqn{g} evaluated in a Monte
 #' Carlo sample.

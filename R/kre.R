@@ -6,8 +6,8 @@
 #'
 #' @param x a vector of size \code{nx} with the evaluation points.
 #' @param X a vector of size \code{n} with the predictor sample.
-#' @param Y a matrix of size \code{c(n, sum(d) + r)} with the response sample
-#' on the polysphere.
+#' @param Y a matrix of size \code{c(n, sum(d) + r)} with the response sample on
+#' the polysphere.
 #' @inheritParams kde_polysph
 #' @param h a positive scalar giving the bandwidth.
 #' @param p degree of local fit, either \code{0} or \code{1}. Defaults to
@@ -15,18 +15,22 @@
 #' @return A vector of size \code{nx} with the estimated regression curve
 #' evaluated at \code{x}.
 #' @examples
-#' x_grid <- seq(-0.25, 1.25, l = 200)
-#' n <- 50
-#' X <- seq(0, 1, l = n)
-#' Y <- r_path_s2r(n = n, r = 1, sigma = 0.1, spiral = TRUE)[, , 1]
-#' h0 <- bw_cv_kre_polysph(X = X, Y = Y, d = 2, p = 0, plot_cv = FALSE)$h_1se
-#' sc3 <- scatterplot3d::scatterplot3d(Y, pch = 16, xlim = c(-1, 1),
-#'                                     ylim = c(-1, 1), zlim = c(-1, 1),
-#'                                     xlab = "", ylab = "", zlab = "")
-#' sc3$points3d(kre_polysph(x = x_grid, X = X, Y = Y, d = 2, h = h0, p = 0),
-#'              pch = 16, type = "l", col = 2, lwd = 2)
-#' sc3$points3d(kre_polysph(x = x_grid, X = X, Y = Y, d = 2, h = h0, p = 1),
-#'              pch = 16, type = "l", col = 3, lwd = 2)
+#' \donttest{
+#' if (requireNamespace("scatterplot3d", quietly = TRUE)) {
+#'   x_grid <- seq(-0.25, 1.25, l = 200)
+#'   n <- 50
+#'   X <- seq(0, 1, l = n)
+#'   Y <- r_path_s2r(n = n, r = 1, sigma = 0.1, spiral = TRUE)[, , 1]
+#'   h0 <- bw_cv_kre_polysph(X = X, Y = Y, d = 2, p = 0, plot_cv = FALSE)$h_1se
+#'   sc3 <- scatterplot3d::scatterplot3d(Y, pch = 16, xlim = c(-1, 1),
+#'                                       ylim = c(-1, 1), zlim = c(-1, 1),
+#'                                       xlab = "", ylab = "", zlab = "")
+#'   sc3$points3d(kre_polysph(x = x_grid, X = X, Y = Y, d = 2, h = h0, p = 0),
+#'                pch = 16, type = "l", col = 2, lwd = 2)
+#'   sc3$points3d(kre_polysph(x = x_grid, X = X, Y = Y, d = 2, h = h0, p = 1),
+#'                pch = 16, type = "l", col = 3, lwd = 2)
+#' }
+#' }
 #' @export
 kre_polysph <- function(x, X, Y, d, h, p = 0) {
 
@@ -81,9 +85,9 @@ kre_polysph <- function(x, X, Y, d, h, p = 0) {
 #' regression
 #'
 #' @description Computes least squares cross-validation bandwidths for kernel
-#' regression estimation with polyspherical response and scalar predictor.
-#' It computes both the bandwidth that minimizes the cross-validation loss and
-#' its "one standard error" variant.
+#' regression estimation with polyspherical response and scalar predictor. It
+#' computes both the bandwidth that minimizes the cross-validation loss and its
+#' "one standard error" variant.
 #'
 #' @inheritParams kre_polysph
 #' @param h_grid bandwidth grid where to optimize the cross-validation loss.
@@ -100,11 +104,13 @@ kre_polysph <- function(x, X, Y, d, h, p = 0) {
 #' \item{cvm}{the mean of the cross-validation loss curve.}
 #' \item{cvse}{the standard error of the cross-validation loss curve.}
 #' @examples
+#' \donttest{
 #' n <- 50
 #' X <- seq(0, 1, l = n)
 #' Y <- r_path_s2r(n = n, r = 1, sigma = 0.1, spiral = TRUE)[, , 1]
 #' bw_cv_kre_polysph(X = X, Y = Y, d = 2, p = 0)
 #' bw_cv_kre_polysph(X = X, Y = Y, d = 2, p = 1, fast = FALSE)
+#' }
 #' @export
 bw_cv_kre_polysph <- function(X, Y, d, p = 0, h_grid = bw.nrd(X) *
                                 10^seq(-2, 2, l = 100), plot_cv = TRUE,
@@ -150,7 +156,7 @@ bw_cv_kre_polysph <- function(X, Y, d, p = 0, h_grid = bw.nrd(X) *
 
     cv_kre <- function(h) {
 
-      Y_hat_i <- t(sapply(1:n, function(i) {
+      Y_hat_i <- t(sapply(seq_len(n), function(i) {
         kre_polysph(x = X[i], X = X[-i], Y = Y[-i, ], d = d, h = h, p = p)
       }))
       dist_polysph(x = Y, y = Y_hat_i, ind_dj = ind_dj, norm_x = TRUE,

@@ -12,6 +12,15 @@ test_that("Normalization in dist_polysph()", {
   expect_equal(proj_polysph(x = 1:n * X, ind_dj = ind_dj), X)
 })
 
+test_that("proj_polysph() rejects zero-norm blocks", {
+  expect_error(
+    proj_polysph(x = rbind(c(0, 0, 1, 1)), ind_dj = comp_ind_dj(c(1, 1))),
+    "Zero-norm"
+  )
+  out <- proj_polysph(x = rbind(c(2, 0, 1, 1)), ind_dj = comp_ind_dj(c(1, 1)))
+  expect_equal(unname(out[1, 1:2]), c(1, 0))
+})
+
 ## dist_polysph()
 
 r <- 2
@@ -62,6 +71,12 @@ test_that("dist_polysph_cross() equals dist_polysph_matrix() for x = y", {
     c(dist_polysph_matrix(x = X1, ind_dj = ind_dj, std = FALSE)),
     c(dist_polysph_cross(x = X1, y = X1, ind_dj = ind_dj, std = FALSE)),
     tolerance = 1e-6)
+})
+
+test_that("dist_polysph_matrix() handles a single row", {
+  dm <- dist_polysph_matrix(x = rbind(c(1, 0)), ind_dj = c(0, 2))
+  expect_equal(dim(dm), c(1L, 1L))
+  expect_equal(unname(dm[1, 1]), 0)
 })
 
 test_that("dist_polysph_cross() equals dist_polysph()", {
@@ -170,82 +185,79 @@ test_that("polylog_minus_exp_mu() edge cases", {
 
 ## log_besselI_scaled()
 
+# Exact / asymptotic references for the three computation regimes
+besselI_ref <- function(nu, x) log(besselI(x, nu, expon.scaled = TRUE))
+xasym_ref <- function(nu, x) {
+  Bessel::besselIasym(x = x, nu = nu, k.max = 10, expon.scaled = TRUE,
+                      log = TRUE)
+}
+nuasym_ref <- function(nu, x) {
+  Bessel::besselI.nuAsym(x = x, nu = nu, k.max = 5, expon.scaled = TRUE,
+                         log = TRUE)
+}
+
+# The vectorized call must equal the element-wise evaluation (with recycling)
+expect_vectorized <- function(nu, x, spline = FALSE) {
+  nx <- max(length(nu), length(x))
+  nu_i <- rep_len(nu, nx)
+  x_i <- rep_len(x, nx)
+  expect_equal(log_besselI_scaled(nu = nu, x = x, spline = spline),
+               sapply(seq_len(nx), function(i)
+                 log_besselI_scaled(nu = nu_i[i], x = x_i[i], spline = spline)))
+}
+
+# spline = TRUE must agree with the direct spline = FALSE evaluation
+expect_spline_agrees <- function(nu, x, tolerance = 1e-9) {
+  expect_equal(log_besselI_scaled(nu = nu, x = x, spline = TRUE),
+               log_besselI_scaled(nu = nu, x = x, spline = FALSE),
+               tolerance = tolerance)
+}
+
 test_that("Correct vectorizations on nu and x for spline = FALSE", {
   xs <- 1:10
   nus <- c(1:9, 101)
-  nus_a <- c(101:102)
-  expect_equal(polykde:::log_besselI_scaled(nu = nus, x = xs, spline = FALSE),
-               sapply(seq_along(nus), function(i)
-                 polykde:::log_besselI_scaled(nu = nus[i], x = xs[i],
-                                              spline = FALSE)))
-  expect_equal(polykde:::log_besselI_scaled(nu = nus, x = xs[4],
-                                            spline = FALSE),
-               sapply(seq_along(nus), function(i)
-                 polykde:::log_besselI_scaled(nu = nus[i], x = xs,
-                                              spline = FALSE)[4]))
-  expect_equal(polykde:::log_besselI_scaled(nu = nus[4], x = xs,
-                                            spline = FALSE),
-               sapply(seq_along(nus), function(i)
-                 polykde:::log_besselI_scaled(nu = nus, x = xs[i],
-                                              spline = FALSE)[4]))
-  expect_equal(polykde:::log_besselI_scaled(nu = nus_a, x = xs[4],
-                                            spline = FALSE),
-               sapply(seq_along(nus_a), function(i)
-                 polykde:::log_besselI_scaled(nu = nus_a[i], x = xs,
-                                              spline = FALSE)[4]))
+  nus_a <- 101:102
+  expect_vectorized(nus, xs)
+  expect_vectorized(nus, xs[4])
+  expect_vectorized(nus[4], xs)
+  expect_vectorized(nus_a, xs[4])
 })
 
 test_that("Correct vectorizations on nu and x for spline = FALSE and NA's", {
   xs <- c(1, NA, 3:4, NA)
   nus <- 1:5
+  expect_vectorized(nus, xs)
   for (j in 1:2) {
-    expect_equal(polykde:::log_besselI_scaled(nu = nus, x = xs, spline = FALSE),
-                 sapply(seq_along(nus), function(i)
-                   polykde:::log_besselI_scaled(nu = nus[i], x = xs[i],
-                                                spline = FALSE)))
-    expect_equal(polykde:::log_besselI_scaled(nu = nus, x = xs[j],
-                                              spline = FALSE),
-                 sapply(seq_along(nus), function(i)
-                   polykde:::log_besselI_scaled(nu = nus[i], x = xs,
-                                                spline = FALSE)[j]))
-    expect_equal(polykde:::log_besselI_scaled(nu = nus[j], x = xs,
-                                              spline = FALSE),
-                 sapply(seq_along(nus), function(i)
-                   polykde:::log_besselI_scaled(nu = nus, x = xs[i],
-                                                spline = FALSE)[j]))
+    expect_vectorized(nus, xs[j])
+    expect_vectorized(nus[j], xs)
   }
 })
 
 test_that("log_besselI_scaled() with NAs", {
   x <- c(1, 2, NA, 1e5)
-  expect_equal(log_besselI_scaled(nu = 1, x = x, spline = TRUE),
-               log_besselI_scaled(nu = 1, x = x, spline = FALSE))
-  expect_equal(log_besselI_scaled(nu = 5.5, x = x, spline = TRUE),
-               log_besselI_scaled(nu = 5.5, x = x, spline = FALSE))
+  expect_spline_agrees(1, x)
+  expect_spline_agrees(5.5, x)
 })
 
-test_that("Accuracy of log_besselI_scaled(nu = seq(0, 6, by = 0.5)) with
-          spline approximations", {
-  x <- seq(1e-8, 1e4, l = 1e3)
-  nus <- seq(0, 6, by = 0.5)
-  for (nu in nus) {
-    expect_equal(
-      polykde:::log_besselI_scaled(nu = nu, x = x, spline = TRUE),
-      polykde:::log_besselI_scaled(nu = nu, x = x, spline = FALSE),
-      tolerance = 1e-9)
+test_that("Accuracy of log_besselI_scaled(nu = seq(0, 24.5, by = 0.5)) over
+          spline and asymptotic x grids", {
+  for (x in list(10^seq(-5, 4, length.out = 5000), seq(1e4, 1e5, l = 100))) {
+    for (nu in seq(0, 24.5, by = 0.5)) {
+      expect_spline_agrees(nu, x)
+    }
   }
 })
 
-test_that("Accuracy of log_besselI_scaled(nu = seq(0, 6, by = 0.5)) with
-          asymptotic approximations", {
-  x <- seq(1e4, 1e5, l = 100)
-  nus <- seq(0, 10, by = 1)
-  for (nu in nus) {
-    expect_equal(
-      polykde:::log_besselI_scaled(nu = nu, x = x, spline = TRUE),
-      polykde:::log_besselI_scaled(nu = nu, x = x, spline = FALSE),
-      tolerance = 1e-9)
+test_that("Small-argument of log_besselI_scaled(spline = TRUE)", {
+  x <- c(1e-8, 1e-7, 1e-6)
+  for (nu in c(0, 0.5, 1, 2)) {
+    ref <- besselI_ref(nu, x)
+    expect_true(all(is.finite(ref)))
+    expect_equal(log_besselI_scaled(nu = nu, x = x, spline = TRUE), ref,
+                 tolerance = 1e-8)
   }
+  expect_equal(log_besselI_scaled(nu = 0, x = 0, spline = TRUE), 0)
+  expect_identical(log_besselI_scaled(nu = 5, x = 0, spline = TRUE), -Inf)
 })
 
 test_that("Asymptotic-kappa Bessel approximation", {
@@ -283,8 +295,67 @@ test_that("Edge cases of log_besselI_scaled()", {
   expect_no_error(log_besselI_scaled(nu = 1:3, x = NA, spline = FALSE))
   expect_error(log_besselI_scaled(nu = 1:3, x = 1:2, spline = FALSE))
   expect_error(log_besselI_scaled(nu = c(1, NA), x = 1:2, spline = FALSE))
-  expect_error(log_besselI_scaled(nu = 10, x = 0, spline = TRUE))
-  expect_error(log_besselI_scaled(nu = 1:3, x = 0, spline = TRUE))
+  expect_no_error(log_besselI_scaled(nu = 25, x = 1, spline = TRUE))
+  expect_no_error(log_besselI_scaled(nu = 100, x = 0, spline = TRUE))
+  expect_no_error(log_besselI_scaled(nu = 1:3, x = 0, spline = TRUE))
+})
+
+test_that("spline = FALSE handles large x (nu <= 100) without underflow", {
+  nu <- 5
+  x <- c(1e5, 5e5, 1e6)
+  res <- log_besselI_scaled(nu = nu, x = x, spline = FALSE)
+  expect_true(all(is.finite(res)))
+  expect_spline_agrees(nu, x)
+  expect_equal(res, xasym_ref(nu, x), tolerance = 1e-9)
+})
+
+test_that("nu-asymptotics take priority over x-asymptotics when both large", {
+  nu <- 300
+  x <- 1e4
+  res <- log_besselI_scaled(nu = nu, x = x, spline = FALSE)
+  expect_equal(res, nuasym_ref(nu, x), tolerance = 1e-9)
+  expect_false(isTRUE(all.equal(res, xasym_ref(nu, x), tolerance = 1e-6)))
+})
+
+test_that("Vectorized spline = FALSE spans standard, x-asymp and nu-asymp", {
+  nu <- c(5, 300, 5)
+  x <- c(2, 1e4, 1e5)
+  expect_vectorized(nu, x)
+  ref <- c(besselI_ref(5, 2), nuasym_ref(300, 1e4), xasym_ref(5, 1e5))
+  expect_equal(log_besselI_scaled(nu = nu, x = x, spline = FALSE), ref,
+               tolerance = 1e-9)
+})
+
+test_that("Standard spline = FALSE path matches base besselI (scaled)", {
+  nu <- 3
+  x <- c(1, 5, 50, 500)
+  expect_equal(log_besselI_scaled(nu = nu, x = x, spline = FALSE),
+               besselI_ref(nu, x))
+})
+
+test_that("No discontinuity in spline = FALSE across the x = 1e4 boundary", {
+  nu <- 5
+  x <- seq(1e4 - 5, 1e4 + 5, length.out = 41)
+  res <- log_besselI_scaled(nu = nu, x = x, spline = FALSE)
+  expect_equal(res, xasym_ref(nu, x), tolerance = 1e-9)
+  expect_true(all(diff(res) < 0))
+  expect_lt(max(abs(diff(res, differences = 2))), 1e-6)
+})
+
+test_that("spline = TRUE silently falls back for unsupported nu", {
+  x <- c(1e-6, 1e-2, 1, 50, 1e3, 1e5)
+  for (nu in c(25, 30.5, 200)) {
+    expect_spline_agrees(nu, x)
+  }
+  expect_equal(log_besselI_scaled(nu = 200, x = 1e4, spline = TRUE),
+               nuasym_ref(200, 1e4), tolerance = 1e-9)
+})
+
+test_that("spline = TRUE accepts vectorized nu (silent fallback)", {
+  nu <- c(1, 5.5, 25, 300)
+  x <- c(2, 1e3, 1e5, 1e4)
+  expect_spline_agrees(nu, x)
+  expect_vectorized(nu, x)
 })
 
 ## log_sum_exp()
@@ -293,4 +364,68 @@ test_that("log_sum_exp() is correct", {
   x <- c(1, 2, 3)
   expect_equal(log_sum_exp(logs = x), log(sum(exp(x))))
   expect_equal(log_sum_exp(logs = x, avg = TRUE), log(mean(exp(x))))
+})
+
+## log1m_exp()
+
+test_that("log1m_exp() is correct", {
+  x <- c(1e-5, 10, NA)
+  expect_equal(log1m_exp(x), log(1 - exp(-x)))
+  expect_equal(log1m_exp(x[1]), log(1 - exp(-x[1])))
+  expect_equal(log1m_exp(x[2]), log(1 - exp(-x[2])))
+})
+
+## log_diff_exp()
+
+test_that("log_diff_exp() is correct", {
+  log_p <- c(-5, 1, 5, NA)
+  log_n <- rev(log_p)
+  log_diff <- log_diff_exp(log_p = log_p, log_n = log_n)
+    expect_equal(log_diff$sgn * exp(log_diff$log_abs),
+                 exp(log_p) - exp(log_n))
+  for (i in 1:3) {
+    log_diff <- log_diff_exp(log_p = log_p[i], log_n = log_n[i])
+    expect_equal(log_diff$sgn * exp(log_diff$log_abs),
+                 exp(log_p[i]) - exp(log_n[i]))
+  }
+})
+
+test_that("log_diff_exp() respects the near-zero tolerance", {
+  ld <- log_diff_exp(log_p = c(1, 1 + 1e-16, 2), log_n = c(1, 1, 1))
+  expect_equal(ld$sgn, c(0, 0, 1))
+})
+
+test_that("log_diff_exp() returns a null difference on both sides of zero", {
+
+  log_p <- c(1, 1, 1 + 3e-16)
+  log_n <- c(1, 1 + 3e-16, 1)
+  ld <- expect_no_warning(log_diff_exp(log_p = log_p, log_n = log_n))
+  expect_equal(ld$sgn, c(0, 0, 0))
+  expect_equal(ld$log_abs, rep(-Inf, 3))
+  expect_equal(ld$sgn * exp(ld$log_abs), rep(0, 3))
+
+})
+
+## asinh_log()
+
+test_that("asinh_log() works fine for large positive log_abs arguments", {
+  log_abs <- c(-20, -10, 0, 50, 500, NA)
+  sgn <- c(1, -1, 1, -1, 1, 1)
+  x <- -3:3
+  expect_equal(asinh(sgn * exp(log_abs)),
+               asinh_log(log_abs = log_abs, sgn = sgn))
+  expect_equal(x,
+               sinh(polykde:::asinh_log(log_abs = log(abs(x)), sgn = sign(x))))
+  for (i in 1:3) {
+    expect_equal(asinh(sgn[i] * exp(log_abs[i])),
+                 asinh_log(log_abs = log_abs[i], sgn = sgn[i]))
+  }
+})
+
+test_that("asinh_log() works fine for large negative log_abs arguments", {
+  log_abs <- c(-50, -500, -1000, NA)
+  sgn <- c(1, -1, 1, NA)
+  x <- c(1e-22, -1e-22, 1e-43)
+  expect_equal(asinh(sgn * exp(log_abs)),
+               asinh_log(log_abs = log_abs, sgn = sgn))
 })

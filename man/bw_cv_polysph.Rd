@@ -2,14 +2,33 @@
 % Please edit documentation in R/bwd.R
 \name{bw_cv_polysph}
 \alias{bw_cv_polysph}
-\title{Cross-validation bandwidth selection for polyspherical kernel
-density estimator}
+\title{Cross-validation bandwidth selection for polyspherical kernel density
+estimator}
 \usage{
-bw_cv_polysph(X, d, kernel = 1, kernel_type = 1, k = 10,
-  intrinsic = FALSE, type = c("LCV", "LSCV")[1], M = 10000, bw0 = NULL,
-  na.rm = FALSE, h_min = 0, upscale = FALSE, deriv = 0,
-  imp_mc = TRUE, seed_mc = NULL, exact_vmf = FALSE, common_h = FALSE,
-  spline = FALSE, opt = c("optim", "nlm")[1], ncores = 1, ...)
+bw_cv_polysph(
+  X,
+  d,
+  kernel = 1,
+  kernel_type = 1,
+  k = 10,
+  intrinsic = FALSE,
+  type = c("LCV", "LSCV")[1],
+  M = 10000,
+  bw0 = NULL,
+  na.rm = FALSE,
+  h_min = 0,
+  upscale = FALSE,
+  deriv = 0,
+  imp_mc = TRUE,
+  seed_mc = NULL,
+  exact_vmf = FALSE,
+  common_h = FALSE,
+  spline = FALSE,
+  arcsinh = FALSE,
+  opt = c("optim", "nlm")[1],
+  ncores = 1,
+  ...
+)
 }
 \arguments{
 \item{X}{a matrix of size \code{c(n, sum(d) + r)} with the sample.}
@@ -30,8 +49,8 @@ extrinsic-chordal distance, in the kernel? Defaults to \code{FALSE}.}
 \item{type}{cross-validation type, either \code{"LCV"} (default) or
 \code{"LSCV"}.}
 
-\item{M}{Monte Carlo samples to use for approximating the integral in
-the LSCV loss.}
+\item{M}{number of Monte Carlo samples to use for approximating the integral
+in the LSCV loss. Defaults to \code{1e4}.}
 
 \item{bw0}{initial bandwidth vector for minimizing the CV loss. If
 \code{NULL}, it is computed internally by magnifying the
@@ -48,22 +67,24 @@ estimation? Defaults to \code{FALSE}.}
 
 \item{deriv}{derivative order to perform the upscaling. Defaults to \code{0}.}
 
-\item{imp_mc}{use importance sampling in the Monte Carlo approximation of
-the integral in the LSCV loss? It is more accurate but also more time
-consuming. Defaults to \code{TRUE}.}
+\item{imp_mc}{use importance sampling in the Monte Carlo approximation of the
+integral in the LSCV loss? It is more accurate but also more time consuming.
+Defaults to \code{TRUE}.}
 
 \item{seed_mc}{seed for the Monte Carlo simulations used to estimate the
 integral in the LSCV loss. Defaults to \code{NULL} (no seed is fixed for
 different bandwidths).}
 
-\item{exact_vmf}{use the closed-form for the LSCV loss with the
-von Mises--Fisher kernel? Defaults to \code{FALSE}.}
+\item{exact_vmf}{use the closed-form for the LSCV loss with the von
+Mises--Fisher kernel? Defaults to \code{FALSE}.}
 
 \item{common_h}{use the same bandwidth for all dimensions? Defaults to
 \code{FALSE}.}
 
-\item{spline}{use a faster spline approximation to compute Bessel functions?
-Defaults to \code{FALSE}.}
+\item{spline}{use a faster spline approximation to compute Bessel functions, when available (\code{d} up to 50)?}
+
+\item{arcsinh}{do an \eqn{\operatorname{arcsinh}} transformation of the LSCV
+loss to improve numerical stability? Defaults to \code{FALSE}.}
 
 \item{opt}{optimizer to use; either \code{"\link{optim}"} (default) or
 \code{"\link{nlm}"}.}
@@ -91,6 +112,7 @@ row of bandwidths that is most promising for the optimization, i.e., the
 bandwidths that minimized the CV loss.
 }
 \examples{
+\donttest{
 n <- 20
 d <- 1:2
 kappa <- rep(10, 2)
@@ -98,4 +120,10 @@ X <- r_vmf_polysph(n = n, d = d, mu = r_unif_polysph(n = 1, d = d),
                    kappa = kappa)
 bw_cv_polysph(X = X, d = d, type = "LCV")$bw
 bw_cv_polysph(X = X, d = d, type = "LSCV", exact_vmf = TRUE)$bw
+}
+}
+\references{
+García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+with polyspherical data and its applications. \emph{Journal of the American
+Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
 }

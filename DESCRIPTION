@@ -1,8 +1,8 @@
 Package: polykde
 Type: Package
 Title: Polyspherical Kernel Density Estimation
-Version: 1.1.7
-Date: 2025-07-27
+Version: 1.2.0
+Date: 2026-07-25
 Authors@R: c(person(given = "Eduardo", family = "García-Portugués",
                     role = c("aut", "cre"), email = "edgarcia@est-econ.uc3m.es",
                     comment = c(ORCID = "0000-0002-9224-4111")),
@@ -21,6 +21,7 @@ Depends:
     R (>= 3.5.0)
 Imports:
     abind,
+    Bessel,
     doFuture,
     foreach,
     future,
@@ -33,7 +34,6 @@ Imports:
     sphunif
 Suggests:
     alphashape3d,
-    Bessel,
     DirStats,
     FixedPoint,
     ks,
@@ -50,5 +50,4 @@ LinkingTo: Rcpp, RcppArmadillo, RcppProgress
 URL: https://github.com/egarpor/polykde
 BugReports: https://github.com/egarpor/polykde/issues
 Encoding: UTF-8
-RoxygenNote: 7.3.2
-Roxygen: list(old_usage = TRUE)
+RoxygenNote: 7.3.3

@@ -24,9 +24,9 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
 
 //' @title Euler algorithms for polyspherical density ridge estimation
 //'
-//' @description Functions to perform density ridge estimation on the
-//' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}
-//' through the Euler algorithm in standard, parallel, or block mode.
+//' @description Functions to perform density ridge estimation on the polysphere
+//' \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}} through the
+//' Euler algorithm in standard, parallel, or block mode.
 //'
 //' @param x a matrix of size \code{c(nx, sum(d) + r)} with the starting points
 //' for the Euler algorithm.
@@ -57,53 +57,85 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
 //' points of Euler algorithm defining the estimated ridge.}
 //' \item{lamb_norm_y}{a matrix of size \code{c(nx, sum(d) + r)} with the
 //' Hessian eigenvalues (largest to smallest) evaluated at end points.}
-//' \item{log_dens_y}{a column vector of size \code{c(nx, 1)} with the
+//' \item{log_dens_y}{a column matrix of size \code{c(nx, 1)} with the
 //' logarithm of the density at end points.}
 //' \item{paths}{an array of size \code{c(nx, sum(d) + r, N + 1)} containing
 //' the Euler paths.}
 //' \item{start_x}{a matrix of size \code{c(nx, sum(d) + r)} with the starting
 //' points for the Euler algorithm.}
-//' \item{iter}{a column vector of size \code{c(nx, 1)} counting the iterations
+//' \item{iter}{a column matrix of size \code{c(nx, 1)} counting the iterations
 //' required for each point.}
-//' \item{conv}{a column vector of size \code{c(nx, 1)} with convergence flags.}
+//' \item{conv}{a column matrix of size \code{c(nx, 1)} with convergence flags.}
 //' \item{d}{vector \code{d}.}
 //' \item{h}{bandwidth used for the kernel density estimator.}
-//' \item{error}{a column vector of size \code{c(nx, 1)} indicating if errors
+//' \item{error}{a column matrix of size \code{c(nx, 1)} indicating if errors
 //' were found for each path.}
+//' @references
+//' García-Portugués, E. and Meilán-Vila, A. (2023). Hippocampus shape analysis
+//' via skeletal models and kernel smoothing. In Larriba, Y. (Ed.),
+//' \emph{Statistical Methods at the Forefront of Biomedical Advances},
+//' pp. 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}.
+//' @seealso
+//' \code{\link{clean_euler_ridge}}, \code{\link{index_ridge}},
+//' \code{\link{proj_grad_kde_polysph}}, \code{\link{grad_hess_kde_polysph}}.
 //' @examples
-//' ## Test on S^2 with a small circle trend
+//' \donttest{
+//' if (requireNamespace("scatterplot3d", quietly = TRUE) &&
+//'     requireNamespace("viridis", quietly = TRUE)) {
 //'
-//' # Sample
-//' r <- 1
-//' d <- 2
-//' n <- 50
-//' ind_dj <- comp_ind_dj(d = d)
+//'   ## Test on S^2 with a small circle trend
+//'
+//'   # Sample
+//'   r <- 1
+//'   d <- 2
+//'   n <- 50
+//'   ind_dj <- comp_ind_dj(d = d)
+//'   set.seed(987204452)
+//'   X <- r_path_s2r(n = n, r = r, spiral = FALSE, Theta = cbind(c(1, 0, 0)),
+//'                   sigma = 0.35)[, , 1]
+//'   col_X_alp <- viridis::viridis(n, alpha = 0.25)
+//'   col_X <- viridis::viridis(n)
+//'
+//'   # Euler
+//'   h_rid <- 0.5
+//'   h_eu <- h_rid^2
+//'   N <- 30
+//'   eps <- 1e-6
+//'   Y <- euler_ridge(x = X, X = X, d = d, h = h_rid, h_euler = h_eu,
+//'                    N = N, eps = eps, keep_paths = TRUE)
+//'   Y
+//'
+//'   # Visualization
+//'   i <- N # Between 1 and N
+//'   sc3 <- scatterplot3d::scatterplot3d(Y$paths[, , 1], color = col_X_alp,
+//'                                       pch = 19, xlim = c(-1, 1),
+//'                                       ylim = c(-1, 1), zlim = c(-1, 1),
+//'                                       xlab = "x", ylab = "y", zlab = "z")
+//'   sc3$points3d(rbind(Y$paths[, , i]), col = col_X, pch = 16, cex = 0.75)
+//'   for (k in seq_len(nrow(Y$paths))) {
+//'
+//'     sc3$points3d(t(Y$paths[k, , ]), col = col_X_alp[k], type = "l")
+//'
+//'   }
+//'
+//' }
+//'
+//' ## Parallel and block variants on (S^2)^4
 //' set.seed(987204452)
-//' X <- r_path_s2r(n = n, r = r, spiral = FALSE, Theta = cbind(c(1, 0, 0)),
-//'                 sigma = 0.35)[, , 1]
-//' col_X_alp <- viridis::viridis(n, alpha = 0.25)
-//' col_X <- viridis::viridis(n)
-//'
-//' # Euler
-//' h_rid <- 0.5
+//' r <- 4
+//' d <- rep(2, r)
+//' ind_dj <- comp_ind_dj(d = d)
+//' n <- 30
+//' X <- r_unif_polysph(n = n, d = d)
+//' h_rid <- rep(0.7, r)
 //' h_eu <- h_rid^2
-//' N <- 30
-//' eps <- 1e-6
-//' Y <- euler_ridge(x = X, X = X, d = d, h = h_rid, h_euler = h_eu,
-//'                  N = N, eps = eps, keep_paths = TRUE)
-//' Y
-//'
-//' # Visualization
-//' i <- N # Between 1 and N
-//' sc3 <- scatterplot3d::scatterplot3d(Y$paths[, , 1], color = col_X_alp,
-//'                                     pch = 19, xlim = c(-1, 1),
-//'                                     ylim = c(-1, 1), zlim = c(-1, 1),
-//'                                     xlab = "x", ylab = "y", zlab = "z")
-//' sc3$points3d(rbind(Y$paths[, , i]), col = col_X, pch = 16, cex = 0.75)
-//' for (k in seq_len(nrow(Y$paths))) {
-//'
-//'   sc3$points3d(t(Y$paths[k, , ]), col = col_X_alp[k], type = "l")
-//'
+//' # Parallel: same algorithm as euler_ridge but distributing starting points
+//' Y_par <- parallel_euler_ridge(x = X[1:5, , drop = FALSE], X = X, d = d,
+//'                               h = h_rid, h_euler = h_eu, N = 20, cores = 1)
+//' # Block: marginal Euler over groups of spheres (all d's must be equal)
+//' Y_block <- block_euler_ridge(x = X[1:5, , drop = FALSE], X = X, d = d,
+//'                              h = h_rid, h_euler = h_eu,
+//'                              ind_blocks = c(1, 1, 2, 2), N = 20)
 //' }
 //' @export
 // [[Rcpp::export]]

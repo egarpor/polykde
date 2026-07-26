@@ -4,16 +4,25 @@
 \alias{r_kern_polysph}
 \title{Sample kernel-distributed polyspherical data}
 \usage{
-r_kern_polysph(n, d, mu, h, kernel = 1, kernel_type = 1, k = 10,
-  intrinsic = FALSE, norm_mu = FALSE)
+r_kern_polysph(
+  n,
+  d,
+  mu,
+  h,
+  kernel = 1,
+  kernel_type = 1,
+  k = 10,
+  intrinsic = FALSE,
+  norm_mu = FALSE
+)
 }
 \arguments{
 \item{n}{sample size.}
 
 \item{d}{vector of size \code{r} with dimensions.}
 
-\item{mu}{a vector of size \code{sum(d) + r} with the concatenated means
-that define the center of the kernel.}
+\item{mu}{a vector of size \code{sum(d) + r} with the concatenated means that
+define the center of the kernel.}
 
 \item{h}{vector of size \code{r} with bandwidths.}
 
@@ -35,7 +44,7 @@ A matrix of size \code{c(n, sum(d) + r)} with the sample.
 }
 \description{
 Simulates from the distribution defined by a kernel on the
-polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
+polysphere \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}.
 }
 \details{
 Simulation for non-von Mises--Fisher spherically symmetric kernels
@@ -43,51 +52,57 @@ is done by acceptance-rejection from a von Mises--Fisher proposal
 distribution.
 }
 \examples{
-# Simulate kernels in (S^1)^2
-n <- 1e3
-h <- c(1, 1)
-d <- c(1, 1)
-mu <- rep(DirStats::to_cir(pi), 2)
-samp_ker <- function(kernel, kernel_type, col, main) {
-  data <- r_kern_polysph(n = n, d = d, mu = mu, h = h, kernel = kernel,
-                         kernel_type = kernel_type)
-  ang <- cbind(DirStats::to_rad(data[, 1:2]),
-               DirStats::to_rad(data[, 3:4]))
-  plot(ang, xlim = c(0, 2 * pi), ylim = c(0, 2 * pi), pch = 16, cex = 0.25,
-       col = col, xlab = expression(Theta[1]), ylab = expression(Theta[2]),
-       main = main)
+if (requireNamespace("DirStats", quietly = TRUE)) {
+  # Simulate kernels in (S^1)^2
+  n <- 1e3
+  h <- c(1, 1)
+  d <- c(1, 1)
+  mu <- rep(DirStats::to_cir(pi), 2)
+  samp_ker <- function(kernel, kernel_type, col, main) {
+    data <- r_kern_polysph(n = n, d = d, mu = mu, h = h, kernel = kernel,
+                           kernel_type = kernel_type)
+    ang <- cbind(DirStats::to_rad(data[, 1:2]),
+                 DirStats::to_rad(data[, 3:4]))
+    plot(ang, xlim = c(0, 2 * pi), ylim = c(0, 2 * pi), pch = 16, cex = 0.25,
+         col = col, xlab = expression(Theta[1]),
+         ylab = expression(Theta[2]), main = main)
+  }
+  old_par <- par(mfcol = c(2, 3))
+  samp_ker(kernel = 2, kernel_type = 2, col = 1, main = "Epa sph. symmetric")
+  samp_ker(kernel = 2, kernel_type = 1, col = 2, main = "Epa product")
+  samp_ker(kernel = 3, kernel_type = 2, col = 1, main = "Sfp sph. symmetric")
+  samp_ker(kernel = 3, kernel_type = 1, col = 2, main = "Sfp product")
+  samp_ker(kernel = 1, kernel_type = 2, col = 1, main = "vMF sph. symmetric")
+  samp_ker(kernel = 1, kernel_type = 1, col = 2, main = "vMF product")
+  par(old_par)
 }
-old_par <- par(mfcol = c(2, 3))
-samp_ker(kernel = 2, kernel_type = 2, col = 1, main = "Epa sph. symmetric")
-samp_ker(kernel = 2, kernel_type = 1, col = 2, main = "Epa product")
-samp_ker(kernel = 3, kernel_type = 2, col = 1, main = "Sfp sph. symmetric")
-samp_ker(kernel = 3, kernel_type = 1, col = 2, main = "Sfp product")
-samp_ker(kernel = 1, kernel_type = 2, col = 1, main = "vMF sph. symmetric")
-samp_ker(kernel = 1, kernel_type = 1, col = 2, main = "vMF product")
-par(old_par)
 \donttest{
-# Simulate kernels in (S^2)^2
-n <- 1e3
-h <- c(0.2, 0.6)
-d <- c(2, 2)
-mu <- c(c(0, 0, 1), c(0, -1, 0))
-samp_ker <- function(kernel, kernel_type, main) {
-  data <- r_kern_polysph(n = n, d = d, mu = mu, h = h, kernel = kernel,
-                         kernel_type = kernel_type)
-  scatterplot3d::scatterplot3d(rbind(data[, 1:3], data[, 4:6]),
-                               xlim = c(-1, 1), ylim = c(-1, 1),
-                               zlim = c(-1, 1), pch = 16, xlab = "",
-                               ylab = "", zlab = "", cex.symbols = 0.5,
-       color = rep(viridis::viridis(n)[rank(data[, 3])], 2), main = main)
+if (requireNamespace("scatterplot3d", quietly = TRUE) &&
+    requireNamespace("viridis", quietly = TRUE)) {
+
+  # Simulate kernels in (S^2)^2
+  n <- 1e3
+  h <- c(0.2, 0.6)
+  d <- c(2, 2)
+  mu <- c(c(0, 0, 1), c(0, -1, 0))
+  samp_ker <- function(kernel, kernel_type, main) {
+    data <- r_kern_polysph(n = n, d = d, mu = mu, h = h, kernel = kernel,
+                           kernel_type = kernel_type)
+    scatterplot3d::scatterplot3d(rbind(data[, 1:3], data[, 4:6]),
+                                 xlim = c(-1, 1), ylim = c(-1, 1),
+                                 zlim = c(-1, 1), pch = 16, xlab = "",
+                                 ylab = "", zlab = "", cex.symbols = 0.5,
+         color = rep(viridis::viridis(n)[rank(data[, 3])], 2), main = main)
+  }
+  old_par <- par(mfcol = c(2, 3))
+  samp_ker(kernel = 2, kernel_type = 2, main = "Epa sph. symmetric")
+  samp_ker(kernel = 2, kernel_type = 1, main = "Epa product")
+  samp_ker(kernel = 3, kernel_type = 2, main = "Sfp sph. symmetric")
+  samp_ker(kernel = 3, kernel_type = 1, main = "Sfp product")
+  samp_ker(kernel = 1, kernel_type = 2, main = "vMF sph. symmetric")
+  samp_ker(kernel = 1, kernel_type = 1, main = "vMF product")
+  par(old_par)
 }
-old_par <- par(mfcol = c(2, 3))
-samp_ker(kernel = 2, kernel_type = 2, main = "Epa sph. symmetric")
-samp_ker(kernel = 2, kernel_type = 1, main = "Epa product")
-samp_ker(kernel = 3, kernel_type = 2, main = "Sfp sph. symmetric")
-samp_ker(kernel = 3, kernel_type = 1, main = "Sfp product")
-samp_ker(kernel = 1, kernel_type = 2, main = "vMF sph. symmetric")
-samp_ker(kernel = 1, kernel_type = 1, main = "vMF product")
-par(old_par)
 
 # Plot simulated data
 n <- 1e3

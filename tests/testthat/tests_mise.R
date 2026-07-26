@@ -81,6 +81,15 @@ test_that("mise_vmf_polysph() and mise_vmf() equal on the sphere", {
 
 })
 
+test_that("mise_vmf_polysph() accepts a length-r kappa vector when m = 1", {
+
+  mi <- mise_vmf_polysph(h = cbind(0.5, 0.5), n = 100,
+                         mu = rbind(c(1, 0, 1, 0)), kappa = c(5, 2),
+                         prop = 1, d = c(1, 1), seed_psi = 1)$mise
+  expect_true(is.finite(mi) && mi > 0)
+
+})
+
 test_that("bw_mise_polysph() minimizes the MISE on the sphere", {
 
   # Parameters
@@ -93,7 +102,7 @@ test_that("bw_mise_polysph() minimizes the MISE on the sphere", {
   prop <- prop / sum(prop)
   n <- 5
 
-  # Minimization of ISE
+  # Minimization of MISE
   bw0 <- cbind(10^seq(log10(0.2), log10(5), l = 10))
   log1p_mise_bw0 <- sapply(bw0, function(h) {
     log1p_mise(log_h = log(h), n = n, mu = mu, kappa = kappa, prop = prop,
@@ -158,5 +167,35 @@ test_that("bw_ise_polysph() minimizes the ISE on the sphere", {
        xlim = range(c(bw0, bw_ise$bw)))
   points(bw_ise$bw, bw_ise$opt$minimum, col = "red", pch = 19)
   expect_lte(bw_ise$opt$minimum, min(log1p_ise_bw0))
+
+})
+
+## RNG state restoration
+
+test_that("seed_psi does not alter the RNG state", {
+
+  mu <- rbind(c(1, 0), c(-1, 0))
+  kappa <- c(1, 1)
+  prop <- c(0.5, 0.5)
+  X_rng <- r_unif_polysph(n = 5, d = 1)
+  seeded_calls <- function() {
+    mise_vmf(h = 0.5, n = 5, mu = mu, kappa = kappa, prop = prop, d = 1,
+             M_psi = 10, seed_psi = 1)
+    ise_vmf_polysph(X = X_rng, d = 1, h = 0.5, mu = mu, kappa = cbind(kappa),
+                    prop = prop, M_psi = 10, seed_psi = 1)
+    bw_ise_polysph(X = X_rng, d = 1, bw0 = 1, mu = mu, kappa = cbind(kappa),
+                   prop = prop, M_psi = 10, seed_psi = 1)
+  }
+
+  # An existing .Random.seed is restored
+  set.seed(123)
+  old_seed <- globalenv()$.Random.seed
+  seeded_calls()
+  expect_identical(globalenv()$.Random.seed, old_seed)
+
+  # A nonexistent .Random.seed is not created
+  rm(".Random.seed", envir = globalenv())
+  seeded_calls()
+  expect_null(globalenv()$.Random.seed)
 
 })

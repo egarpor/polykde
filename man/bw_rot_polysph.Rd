@@ -2,11 +2,21 @@
 % Please edit documentation in R/bwd.R
 \name{bw_rot_polysph}
 \alias{bw_rot_polysph}
-\title{Rule-of-thumb bandwidth selection for polyspherical kernel
-density estimator}
+\title{Rule-of-thumb bandwidth selection for polyspherical kernel density
+estimator}
 \usage{
-bw_rot_polysph(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
-  bw0 = NULL, upscale = FALSE, deriv = 0, k = 10, kappa = NULL, ...)
+bw_rot_polysph(
+  X,
+  d,
+  kernel = 1,
+  kernel_type = c("prod", "sph")[1],
+  bw0 = NULL,
+  upscale = FALSE,
+  deriv = 0,
+  k = 10,
+  kappa = NULL,
+  ...
+)
 }
 \arguments{
 \item{X}{a matrix of size \code{c(n, sum(d) + r)} with the sample.}
@@ -16,18 +26,18 @@ bw_rot_polysph(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
 \item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
 \code{2} for Epanechnikov; \code{3} for softplus.}
 
-\item{kernel_type}{type of kernel employed: \code{1} for product kernel
-(default); \code{2} for spherically symmetric kernel.}
+\item{kernel_type}{type of kernel employed: \code{"prod"} for the product
+kernel (default) or \code{"sph"} for the spherically symmetric kernel.}
 
 \item{bw0}{initial bandwidth for minimizing the CV loss. If \code{NULL}, it
 is computed internally by magnifying the \code{\link{bw_mrot_polysph}}
 bandwidths by 50\%. Can be also a matrix of initial bandwidth vectors.}
 
 \item{upscale}{rescale bandwidths to work on
-\eqn{\mathcal{S}^{d_1}\times\cdots\times \mathcal{S}^{d_r}} and for
-derivative estimation?
-Defaults to \code{FALSE}. If \code{upscale = 1}, the order \code{n} is
-upscaled. If \code{upscale = 2}, then also the kernel constant is upscaled.}
+\eqn{\mathbb{S}^{d_1}\times\cdots\times \mathbb{S}^{d_r}} and for derivative
+estimation? Defaults to \code{FALSE}. If \code{upscale = 1}, the order
+\code{n} is upscaled. If \code{upscale = 2}, then also the kernel constant is
+upscaled.}
 
 \item{deriv}{derivative order to perform the upscaling. Defaults to \code{0}.}
 
@@ -66,4 +76,9 @@ kappa <- rep(10, 2)
 X <- r_vmf_polysph(n = n, d = d, mu = r_unif_polysph(n = 1, d = d),
                    kappa = kappa)
 bw_rot_polysph(X = X, d = d)$bw
+}
+\references{
+García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+with polyspherical data and its applications. \emph{Journal of the American
+Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
 }

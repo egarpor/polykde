@@ -11,7 +11,7 @@ hammer_to_sph(y)
 }
 \arguments{
 \item{x}{matrix of size \code{c(n, 3)} with the Cartesian coordinates on
-\eqn{\mathcal{S}^2}. Assumed to be of unit norm in the rows.}
+\eqn{\mathbb{S}^2}. Assumed to be of unit norm in the rows.}
 
 \item{y}{matrix of size \code{c(n, 2)} with the Hammer coordinates.}
 }

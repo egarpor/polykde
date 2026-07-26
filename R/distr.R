@@ -26,8 +26,8 @@ d_vmf_polysph <- function(x, d, mu, kappa, log = FALSE) {
 }
 
 
-#' @title Density of the product of von Mises--Fisher distributions on the
-#' polysphere
+#' @title Density of a mixture of products of von Mises--Fisher distributions on
+#' the polysphere
 #'
 #' @description Computes the density of an \eqn{m}-mixture of product of von
 #' Mises--Fisher densities on the polysphere.
@@ -51,7 +51,7 @@ d_mvmf_polysph <- function(x, d, mu, kappa, prop, log = FALSE) {
   r <- length(d)
   m <- length(prop)
   mu <- rbind(mu)
-  kappa <- cbind(kappa)
+  if (!is.matrix(kappa)) kappa <- matrix(kappa, nrow = m)
   if (nrow(kappa) != m || ncol(kappa) != r) {
 
     stop("kappa size is not c(m, r).")
@@ -124,12 +124,12 @@ d_unif_polysph <- function(x, d, log = FALSE) {
 #' @title Fast evaluation of the von Mises--Fisher normalizing constant
 #'
 #' @description Computes the normalizing constant of the von Mises--Fisher
-#' distribution on the sphere \eqn{\mathcal{S}^{p-1}} as in
+#' distribution on the sphere \eqn{\mathbb{S}^{p-1}} as in
 #' \code{\link[rotasym]{c_vMF}} but using a fast spline approximation for the
 #' logarithm of (a limited number of) Bessel functions.
 #'
 #' @param p positive integer giving the dimension of the ambient space that
-#' contains the sphere \eqn{\mathcal{S}^{p-1}}. Can be a vector only for
+#' contains the sphere \eqn{\mathbb{S}^{p-1}}. Can be a vector only for
 #' \code{spline = FALSE}.
 #' @param kappa concentration parameter of the von Mises--Fisher distribution.
 #' Can be a vector.

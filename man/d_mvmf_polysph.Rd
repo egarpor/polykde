@@ -2,8 +2,8 @@
 % Please edit documentation in R/distr.R
 \name{d_mvmf_polysph}
 \alias{d_mvmf_polysph}
-\title{Density of the product of von Mises--Fisher distributions on the
-polysphere}
+\title{Density of a mixture of products of von Mises--Fisher distributions on
+the polysphere}
 \usage{
 d_mvmf_polysph(x, d, mu, kappa, prop, log = FALSE)
 }
@@ -13,11 +13,11 @@ points.}
 
 \item{d}{vector of size \code{r} with dimensions.}
 
-\item{mu}{a matrix of size \code{c(m, sum(d + 1))} with the means of
-each mixture components in the rows.}
+\item{mu}{a matrix of size \code{c(m, sum(d + 1))} with the means of each
+mixture components in the rows.}
 
-\item{kappa}{a matrix of size \code{c(m, r)} with the concentrations of
-each mixture components in the rows.}
+\item{kappa}{a matrix of size \code{c(m, r)} with the concentrations of each
+mixture components in the rows.}
 
 \item{prop}{a vector of size \code{m} with the proportions of the mixture
 components.}

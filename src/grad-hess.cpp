@@ -28,8 +28,8 @@ const double log_M_PI = std::log(M_PI);
 //' @description Computes the gradient
 //' \eqn{\mathsf{D}\hat{f}(\boldsymbol{x};\boldsymbol{h})} and Hessian matrix
 //' \eqn{\mathsf{H}\hat{f}(\boldsymbol{x};\boldsymbol{h})} of the kernel density
-//' estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the
-//' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
+//' estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the polysphere
+//' \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}.
 //'
 //' @inheritParams kde_polysph
 //' @param projected compute the \emph{projected} gradient and Hessian that
@@ -38,7 +38,7 @@ const double log_M_PI = std::log(M_PI);
 //' @param norm_grad_hess normalize the gradient and Hessian dividing by the
 //' kernel density estimator? Defaults to \code{FALSE}.
 //' @return A list with the following fields:
-//' \item{dens}{a column vector of size \code{c(nx, 1)} with the kernel
+//' \item{dens}{a column matrix of size \code{c(nx, 1)} with the kernel
 //' density estimator evaluated at \code{x}.}
 //' \item{grad}{a matrix of size \code{c(nx, sum(d) + r)} with the gradient of
 //' the kernel density estimator evaluated at \code{x}.}
@@ -109,14 +109,14 @@ Rcpp::List grad_hess_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
   arma::vec dd = arma::conv_to<arma::vec>::from(d);
 
   // Transform NumericVector to arma::vec
-  arma::vec log_weights = Rcpp::as<arma::vec>(Rcpp::wrap(weights));
+  arma::vec log_weights = Rcpp::as<arma::vec>(weights);
 
   // Are weights given?
   if (log_weights.n_elem == 0) {
 
     // Fill with -log(n) sample size
     log_weights.set_size(n);
-    log_weights.fill(-std::log(n));
+    log_weights.fill(-std::log(static_cast<double>(n)));
 
   } else {
 
@@ -187,15 +187,15 @@ Rcpp::List grad_hess_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
     } else if (kernel == 2 && kernel_type == 1) { // Epanechnikov product
 
       Rcpp::Function c("c_kern");
-      Rcpp::NumericVector const_epa = c(h, d, 2, 1, true, false);
+      Rcpp::NumericVector const_epa = c(h, d, 2, 1, 1, true, false, false);
       log_const_h = const_epa;
 
     } else if (kernel == 3 && kernel_type == 1) { // Softplus product
 
       Rcpp::Function c("c_kern");
-      Rcpp::NumericVector const_sfp = c(h, d, 3, k, true, false);
+      Rcpp::NumericVector const_sfp = c(h, d, 3, 1, k, true, false, false);
       log_const_h = const_sfp;
-      // Remove division by sfp(k) in the kernel because then the kernels are
+      // Remove division by sfp(k) in the kernel so the kernels are
       // computed without this normalizing constant to save computations
 
     } else {
@@ -476,9 +476,9 @@ Rcpp::List grad_hess_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
 //' @title Projected gradient of the polyspherical kernel density estimator
 //'
 //' @description Computes the projected gradient
-//' \eqn{\mathsf{D}_{(p-1)}\hat{f}(\boldsymbol{x};\boldsymbol{h})} of the
-//' kernel density estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the
-//' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}},
+//' \eqn{\mathsf{D}_{(p-1)}\hat{f}(\boldsymbol{x};\boldsymbol{h})} of the kernel
+//' density estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the
+//' polysphere \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}},
 //' where \eqn{p=\sum_{j=1}^r d_j+r} is the dimension of the ambient space.
 //'
 //' @inheritParams kde_polysph
@@ -535,9 +535,13 @@ Rcpp::List proj_grad_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
   arma::uword p = X.n_cols;
   arma::mat I = arma::eye(p, p);
 
-  // Eigenvalues and eigenvectors
-  arma::uword n_lamb = sparse ? (r + r/2) : p;
-  n_lamb = std::min(n_lamb, p);
+  // Eigenvalues and eigenvectors. At least r + 2 eigenvalues are requested
+  // in the sparse case since it may be that the first r are numerical zeros
+  // (r + r / 2 is otherwise too small for small r, e.g. r = 1). eigs_sym()
+  // requires strictly fewer eigenvalues than the matrix dimension, hence the
+  // p - 1 cap (as opposed to p for the dense eig_sym() path).
+  arma::uword n_lamb = sparse ? std::max(r + 2, r + r / 2) : p;
+  n_lamb = sparse ? std::min(n_lamb, p - 1) : std::min(n_lamb, p);
   arma::uword nx = x.n_rows;
   arma::mat lambda = arma::zeros(nx, n_lamb);
   arma::mat u1 = arma::zeros(nx, p);
@@ -572,7 +576,7 @@ Rcpp::List proj_grad_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
       if (eigval.n_elem < (r + 1)) {
 
         Rcpp::stop("Sparse eigendecomposition eigs_sym() returned only %d eigenvectors (required: %d)",
-                   eigval.n_elem, r + 1);
+                   static_cast<int>(eigval.n_elem), static_cast<int>(r + 1));
 
       }
 
@@ -617,7 +621,7 @@ Rcpp::List proj_grad_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
       if (n_zero_eigvals != r) {
 
         Rcpp::warning("%d null eigenvalues in projected Hessian (expected: %d): accuracy loss due to small bandwidth?",
-                      n_zero_eigvals, r);
+                      static_cast<int>(n_zero_eigvals), static_cast<int>(r));
 
       }
 

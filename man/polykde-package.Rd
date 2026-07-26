@@ -9,9 +9,9 @@
 Kernel density estimation on the polysphere, (hyper)sphere, and
 circle. Includes functions for density estimation, regression estimation,
 ridge estimation, bandwidth selection, kernels, samplers, and homogeneity
-tests. Companion package to García-Portugués and Meilán-Vila (2025)
-<\doi{10.1080/01621459.2025.2521898}> and García-Portugués and Meilán-Vila
-(2023) <\doi{10.1007/978-3-031-32729-2_4}>.
+tests. Companion package to García-Portugués and Meilán-Vila (2025;
+\doi{10.1080/01621459.2025.2521898}) and García-Portugués and Meilán-Vila
+(2023; \doi{10.1007/978-3-031-32729-2_4}).
 }
 \references{
 García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation

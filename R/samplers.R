@@ -2,7 +2,7 @@
 #' @title Sample uniform polyspherical data
 #'
 #' @description Simulates from a uniform distribution on the polysphere
-#' \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
+#' \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}.
 #'
 #' @param n sample size.
 #' @inheritParams kde_polysph
@@ -23,8 +23,7 @@ r_unif_polysph <- function(n, d) {
 #' @title Sample von Mises--Fisher distributed polyspherical data
 #'
 #' @description Simulates from a product of von Mises--Fisher distributions on
-#' the polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times
-#' \mathcal{S}^{d_r}}.
+#' the polysphere \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}.
 #'
 #' @param mu a vector of size \code{sum(d) + r} with the concatenated von
 #' Mises--Fisher means.
@@ -69,7 +68,7 @@ r_vmf_polysph <- function(n, d, mu, kappa, norm_mu = FALSE) {
   }
 
   # Sample
-  do.call(cbind, as.list(sapply(1:r, function(j) {
+  do.call(cbind, as.list(sapply(seq_len(r), function(j) {
     ind_j <- ind[j]:(ind[j + 1] - 1)
     rotasym::r_vMF(n = n, mu = mu[ind_j], kappa = kappa[j])
   }, simplify = FALSE)))
@@ -79,14 +78,14 @@ r_vmf_polysph <- function(n, d, mu, kappa, norm_mu = FALSE) {
 
 #' @title Sample mixtures of von Mises--Fisher distributed polyspherical data
 #'
-#' @description Simulates from an \eqn{m}-mixture of product of
-#' von Mises--Fisher distributions on the polysphere \eqn{\mathcal{S}^{d_1}
-#' \times \cdots \times \mathcal{S}^{d_r}}.
+#' @description Simulates from an \eqn{m}-mixture of product of von
+#' Mises--Fisher distributions on the polysphere
+#' \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}.
 #'
-#' @param mu a matrix of size \code{c(m, sum(d + 1))} with the means of
-#' each mixture components in the rows.
-#' @param kappa a matrix of size \code{c(m, r)} with the concentrations of
-#' each mixture components in the rows.
+#' @param mu a matrix of size \code{c(m, sum(d + 1))} with the means of each
+#' mixture components in the rows.
+#' @param kappa a matrix of size \code{c(m, r)} with the concentrations of each
+#' mixture components in the rows.
 #' @param prop a vector of size \code{m} with the proportions of the mixture
 #' components.
 #' @inheritParams r_kern_polysph
@@ -105,7 +104,7 @@ r_mvmf_polysph <- function(n, d, mu, kappa, prop, norm_mu = FALSE) {
   r <- length(d)
   m <- length(prop)
   mu <- rbind(mu)
-  kappa <- cbind(kappa)
+  if (!is.matrix(kappa)) kappa <- matrix(kappa, nrow = m)
   if (nrow(kappa) != m || ncol(kappa) != r) {
 
     stop("kappa size is not c(m, r).")
@@ -147,10 +146,10 @@ r_mvmf_polysph <- function(n, d, mu, kappa, prop, norm_mu = FALSE) {
 #' @title Sample kernel-distributed polyspherical data
 #'
 #' @description Simulates from the distribution defined by a kernel on the
-#' polysphere \eqn{\mathcal{S}^{d_1} \times \cdots \times \mathcal{S}^{d_r}}.
+#' polysphere \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}.
 #'
-#' @param mu a vector of size \code{sum(d) + r} with the concatenated means
-#' that define the center of the kernel.
+#' @param mu a vector of size \code{sum(d) + r} with the concatenated means that
+#' define the center of the kernel.
 #' @param norm_mu ensure a normalization of \code{mu}? Defaults to \code{FALSE}.
 #' @inheritParams r_unif_polysph
 #' @inheritParams kde_polysph
@@ -159,51 +158,57 @@ r_mvmf_polysph <- function(n, d, mu, kappa, prop, norm_mu = FALSE) {
 #' distribution.
 #' @return A matrix of size \code{c(n, sum(d) + r)} with the sample.
 #' @examples
-#' # Simulate kernels in (S^1)^2
-#' n <- 1e3
-#' h <- c(1, 1)
-#' d <- c(1, 1)
-#' mu <- rep(DirStats::to_cir(pi), 2)
-#' samp_ker <- function(kernel, kernel_type, col, main) {
-#'   data <- r_kern_polysph(n = n, d = d, mu = mu, h = h, kernel = kernel,
-#'                          kernel_type = kernel_type)
-#'   ang <- cbind(DirStats::to_rad(data[, 1:2]),
-#'                DirStats::to_rad(data[, 3:4]))
-#'   plot(ang, xlim = c(0, 2 * pi), ylim = c(0, 2 * pi), pch = 16, cex = 0.25,
-#'        col = col, xlab = expression(Theta[1]), ylab = expression(Theta[2]),
-#'        main = main)
+#' if (requireNamespace("DirStats", quietly = TRUE)) {
+#'   # Simulate kernels in (S^1)^2
+#'   n <- 1e3
+#'   h <- c(1, 1)
+#'   d <- c(1, 1)
+#'   mu <- rep(DirStats::to_cir(pi), 2)
+#'   samp_ker <- function(kernel, kernel_type, col, main) {
+#'     data <- r_kern_polysph(n = n, d = d, mu = mu, h = h, kernel = kernel,
+#'                            kernel_type = kernel_type)
+#'     ang <- cbind(DirStats::to_rad(data[, 1:2]),
+#'                  DirStats::to_rad(data[, 3:4]))
+#'     plot(ang, xlim = c(0, 2 * pi), ylim = c(0, 2 * pi), pch = 16, cex = 0.25,
+#'          col = col, xlab = expression(Theta[1]),
+#'          ylab = expression(Theta[2]), main = main)
+#'   }
+#'   old_par <- par(mfcol = c(2, 3))
+#'   samp_ker(kernel = 2, kernel_type = 2, col = 1, main = "Epa sph. symmetric")
+#'   samp_ker(kernel = 2, kernel_type = 1, col = 2, main = "Epa product")
+#'   samp_ker(kernel = 3, kernel_type = 2, col = 1, main = "Sfp sph. symmetric")
+#'   samp_ker(kernel = 3, kernel_type = 1, col = 2, main = "Sfp product")
+#'   samp_ker(kernel = 1, kernel_type = 2, col = 1, main = "vMF sph. symmetric")
+#'   samp_ker(kernel = 1, kernel_type = 1, col = 2, main = "vMF product")
+#'   par(old_par)
 #' }
-#' old_par <- par(mfcol = c(2, 3))
-#' samp_ker(kernel = 2, kernel_type = 2, col = 1, main = "Epa sph. symmetric")
-#' samp_ker(kernel = 2, kernel_type = 1, col = 2, main = "Epa product")
-#' samp_ker(kernel = 3, kernel_type = 2, col = 1, main = "Sfp sph. symmetric")
-#' samp_ker(kernel = 3, kernel_type = 1, col = 2, main = "Sfp product")
-#' samp_ker(kernel = 1, kernel_type = 2, col = 1, main = "vMF sph. symmetric")
-#' samp_ker(kernel = 1, kernel_type = 1, col = 2, main = "vMF product")
-#' par(old_par)
 #' \donttest{
-#' # Simulate kernels in (S^2)^2
-#' n <- 1e3
-#' h <- c(0.2, 0.6)
-#' d <- c(2, 2)
-#' mu <- c(c(0, 0, 1), c(0, -1, 0))
-#' samp_ker <- function(kernel, kernel_type, main) {
-#'   data <- r_kern_polysph(n = n, d = d, mu = mu, h = h, kernel = kernel,
-#'                          kernel_type = kernel_type)
-#'   scatterplot3d::scatterplot3d(rbind(data[, 1:3], data[, 4:6]),
-#'                                xlim = c(-1, 1), ylim = c(-1, 1),
-#'                                zlim = c(-1, 1), pch = 16, xlab = "",
-#'                                ylab = "", zlab = "", cex.symbols = 0.5,
-#'        color = rep(viridis::viridis(n)[rank(data[, 3])], 2), main = main)
+#' if (requireNamespace("scatterplot3d", quietly = TRUE) &&
+#'     requireNamespace("viridis", quietly = TRUE)) {
+#'
+#'   # Simulate kernels in (S^2)^2
+#'   n <- 1e3
+#'   h <- c(0.2, 0.6)
+#'   d <- c(2, 2)
+#'   mu <- c(c(0, 0, 1), c(0, -1, 0))
+#'   samp_ker <- function(kernel, kernel_type, main) {
+#'     data <- r_kern_polysph(n = n, d = d, mu = mu, h = h, kernel = kernel,
+#'                            kernel_type = kernel_type)
+#'     scatterplot3d::scatterplot3d(rbind(data[, 1:3], data[, 4:6]),
+#'                                  xlim = c(-1, 1), ylim = c(-1, 1),
+#'                                  zlim = c(-1, 1), pch = 16, xlab = "",
+#'                                  ylab = "", zlab = "", cex.symbols = 0.5,
+#'          color = rep(viridis::viridis(n)[rank(data[, 3])], 2), main = main)
+#'   }
+#'   old_par <- par(mfcol = c(2, 3))
+#'   samp_ker(kernel = 2, kernel_type = 2, main = "Epa sph. symmetric")
+#'   samp_ker(kernel = 2, kernel_type = 1, main = "Epa product")
+#'   samp_ker(kernel = 3, kernel_type = 2, main = "Sfp sph. symmetric")
+#'   samp_ker(kernel = 3, kernel_type = 1, main = "Sfp product")
+#'   samp_ker(kernel = 1, kernel_type = 2, main = "vMF sph. symmetric")
+#'   samp_ker(kernel = 1, kernel_type = 1, main = "vMF product")
+#'   par(old_par)
 #' }
-#' old_par <- par(mfcol = c(2, 3))
-#' samp_ker(kernel = 2, kernel_type = 2, main = "Epa sph. symmetric")
-#' samp_ker(kernel = 2, kernel_type = 1, main = "Epa product")
-#' samp_ker(kernel = 3, kernel_type = 2, main = "Sfp sph. symmetric")
-#' samp_ker(kernel = 3, kernel_type = 1, main = "Sfp product")
-#' samp_ker(kernel = 1, kernel_type = 2, main = "vMF sph. symmetric")
-#' samp_ker(kernel = 1, kernel_type = 1, main = "vMF product")
-#' par(old_par)
 #'
 #' # Plot simulated data
 #' n <- 1e3
@@ -363,8 +368,8 @@ r_kern_polysph <- function(n, d, mu, h, kernel = 1, kernel_type = 1, k = 10,
 #' @title Sample from polyspherical kernel density estimator
 #'
 #' @description Simulates from the distribution defined by a polyspherical
-#' kernel density estimator on \eqn{\mathcal{S}^{d_1} \times \ldots \times
-#' \mathcal{S}^{d_r}}.
+#' kernel density estimator on
+#' \eqn{\mathbb{S}^{d_1} \times \ldots \times \mathbb{S}^{d_r}}.
 #'
 #' @inheritParams kde_polysph
 #' @param norm_X ensure a normalization of the data?
@@ -373,27 +378,31 @@ r_kern_polysph <- function(n, d, mu, h, kernel = 1, kernel_type = 1, k = 10,
 #' considered kernel.
 #' @return A matrix of size \code{c(n, sum(d) + r)} with the sample.
 #' @examples
-#' # Simulated data on (S^1)^2
-#' n <- 50
-#' samp <- r_path_s1r(n = n, r = 2, k = c(1, 2), angles = TRUE)
-#' plot(samp, xlim = c(-pi, pi), ylim = c(-pi, pi), col = rainbow(n),
-#'      axes = FALSE, xlab = "", ylab = "", pch = 16, cex = 0.75)
-#' points(torus_to_angles(r_kde_polysph(n = 10 * n, X = angles_to_torus(samp),
-#'                                      d = c(1, 1), h = c(0.1, 0.1))),
-#'        col = "black", pch = 16, cex = 0.2)
-#' sdetorus::torusAxis()
+#' if (requireNamespace("sdetorus", quietly = TRUE)) {
+#'   # Simulated data on (S^1)^2
+#'   n <- 50
+#'   samp <- r_path_s1r(n = n, r = 2, k = c(1, 2), angles = TRUE)
+#'   plot(samp, xlim = c(-pi, pi), ylim = c(-pi, pi), col = rainbow(n),
+#'        axes = FALSE, xlab = "", ylab = "", pch = 16, cex = 0.75)
+#'   points(torus_to_angles(r_kde_polysph(n = 10 * n, X = angles_to_torus(samp),
+#'                                        d = c(1, 1), h = c(0.1, 0.1))),
+#'          col = "black", pch = 16, cex = 0.2)
+#'   sdetorus::torusAxis()
+#' }
 #'
-#' # Simulated data on S^2
-#' n <- 50
-#' samp <- r_path_s2r(n = n, r = 1, sigma = 0.1, kappa = 5,
-#'                    spiral = TRUE)[, , 1]
-#' sc3d <- scatterplot3d::scatterplot3d(
-#'   samp, xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
-#'   xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
-#' )
-#' xyz <- r_kde_polysph(n = 10 * n, X = samp, d = 2, h = 0.1)
-#' sc3d$points3d(xyz[, 1], xyz[, 2], xyz[, 3], col = "black", pch = 16,
-#'               cex = 0.2)
+#' if (requireNamespace("scatterplot3d", quietly = TRUE)) {
+#'   # Simulated data on S^2
+#'   n <- 50
+#'   samp <- r_path_s2r(n = n, r = 1, sigma = 0.1, kappa = 5,
+#'                      spiral = TRUE)[, , 1]
+#'   sc3d <- scatterplot3d::scatterplot3d(
+#'     samp, xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
+#'     xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
+#'   )
+#'   xyz <- r_kde_polysph(n = 10 * n, X = samp, d = 2, h = 0.1)
+#'   sc3d$points3d(xyz[, 1], xyz[, 2], xyz[, 3], col = "black", pch = 16,
+#'                 cex = 0.2)
+#' }
 #' @export
 r_kde_polysph <- function(n, X, d, h, kernel = 1, kernel_type = 1, k = 10,
                           intrinsic = FALSE, norm_X = FALSE) {
@@ -446,80 +455,93 @@ r_kde_polysph <- function(n, X, d, h, kernel = 1, kernel_type = 1, k = 10,
 
 #' @title Samplers of one-dimensional modes of variation for polyspherical data
 #'
-#' @description Functions for sampling data on \eqn{(\mathcal{S}^d)^r}, for
+#' @description Functions for sampling data on \eqn{(\mathbb{S}^d)^r}, for
 #' \eqn{d=1,2}, using one-dimensional modes of variation.
 #'
 #' @param n sample size.
-#' @param r number of spheres in the polysphere \eqn{(\mathcal{S}^d)^r}.
-#' @param alpha a vector of size \code{r} valued in \eqn{[-\pi,\pi)} with the
-#' initial angles for the linear trend. Chosen at random by default.
+#' @param r number of spheres in the polysphere \eqn{(\mathbb{S}^d)^r}.
+#' @param alpha a vector of size \code{r} valued in \eqn{\mathbb{T}=[-\pi,\pi)}
+#' with the initial angles for the linear trend. Chosen at random by default.
 #' @param k a vector of size \code{r} with the \bold{integer} slopes defining
 #' the angular linear trend. Chosen at random by default.
 #' @param sigma standard deviation of the noise about the one-dimensional mode
 #' of variation. Defaults to \code{0.25}.
-#' @param angles return angles in \eqn{[-\pi, \pi)}? Defaults to \code{FALSE}.
-#' @param c \href{https://en.wikipedia.org/wiki/Clélie}{Clélie curve}
-#' parameter, changing the spiral wrappings. Defaults to \code{1}.
+#' @param angles return angles in \eqn{\mathbb{T}=[-\pi, \pi)}? Defaults to
+#' \code{FALSE}.
+#' @param c \href{https://en.wikipedia.org/wiki/Clélie}{Clélie curve} parameter,
+#' changing the spiral wrappings. Defaults to \code{1}.
 #' @param t latitude, with respect to \code{Theta}, of the small circle.
 #' Defaults to \code{0} (equator).
 #' @param Theta a matrix of size \code{c(3, r)} giving the north poles for
-#' \eqn{\mathcal{S}^2}. Useful for rotating the sample. Chosen at random by
+#' \eqn{\mathbb{S}^2}. Useful for rotating the sample. Chosen at random by
 #' default.
 #' @param kappa concentration von Mises--Fisher parameter for longitudes in
 #' small circles. Defaults to \code{0} (uniform).
 #' @param spiral consider a spiral (or, more precisely, a
-#' \href{https://en.wikipedia.org/wiki/Clélie}{Clélie curve}) instead of
-#' a small circle? Defaults to \code{FALSE}.
+#' \href{https://en.wikipedia.org/wiki/Clélie}{Clélie curve}) instead of a small
+#' circle? Defaults to \code{FALSE}.
 #' @return
-#' An array of size \code{c(n, d, r)} with samples on \eqn{(\mathcal{S}^d)^r}.
+#' An array of size \code{c(n, d, r)} with samples on \eqn{(\mathbb{S}^d)^r}.
 #' If \code{angles = TRUE} for \code{r_path_s1r}, then a matrix of size
 #' \code{c(n ,r)} with angles is returned.
+#' @seealso \code{\link{r_unif_polysph}}, \code{\link{r_vmf_polysph}},
+#' \code{\link{r_mvmf_polysph}}, \code{\link{r_kern_polysph}},
+#' \code{\link{r_kde_polysph}}.
 #' @examples
-#' # Straight trends on (S^1)^2
-#' n <- 100
-#' samp_1 <- r_path_s1r(n = n, r = 2, k = c(1, 2), angles = TRUE)
-#' plot(samp_1, xlim = c(-pi, pi), ylim = c(-pi, pi), col = rainbow(n),
-#'      axes = FALSE, xlab = "", ylab = "", pch = 16)
-#' sdetorus::torusAxis()
+#' if (requireNamespace("sdetorus", quietly = TRUE)) {
+#'   # Straight trends on (S^1)^2
+#'   n <- 100
+#'   samp_1 <- r_path_s1r(n = n, r = 2, k = c(1, 2), angles = TRUE)
+#'   plot(samp_1, xlim = c(-pi, pi), ylim = c(-pi, pi), col = rainbow(n),
+#'        axes = FALSE, xlab = "", ylab = "", pch = 16)
+#'   sdetorus::torusAxis()
+#' }
 #'
-#' # Straight trends on (S^1)^3
-#' n <- 100
-#' samp_2 <- r_path_s1r(n = n, r = 3, angles = TRUE)
-#' pairs(samp_2, xlim = c(-pi, pi), ylim = c(-pi, pi), col = rainbow(n),
-#'       pch = 16)
-#' sdetorus::torusAxis()
-#' scatterplot3d::scatterplot3d(
-#'   samp_2, xlim = c(-pi, pi), ylim = c(-pi, pi), zlim = c(-pi, pi),
-#'   xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
-#' )
+#' \donttest{
+#' if (requireNamespace("sdetorus", quietly = TRUE) &&
+#'     requireNamespace("scatterplot3d", quietly = TRUE)) {
 #'
-#' # Small-circle trends on (S^2)^2
-#' n <- 100
-#' samp_3 <- r_path_s2r(n = n, r = 2, sigma = 0.1, kappa = 5)
-#' old_par <- par(mfrow = c(1, 2))
-#' scatterplot3d::scatterplot3d(
-#'   samp_3[, , 1], xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
-#'   xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
-#' )
-#' scatterplot3d::scatterplot3d(
-#'   samp_3[, , 2], xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
-#'   xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
-#' )
-#' par(old_par)
+#'   # Straight trends on (S^1)^3
+#'   n <- 100
+#'   samp_2 <- r_path_s1r(n = n, r = 3, angles = TRUE)
+#'   pairs(samp_2, xlim = c(-pi, pi), ylim = c(-pi, pi), col = rainbow(n),
+#'         pch = 16)
+#'   sdetorus::torusAxis()
+#'   scatterplot3d::scatterplot3d(
+#'     samp_2, xlim = c(-pi, pi), ylim = c(-pi, pi), zlim = c(-pi, pi),
+#'     xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
+#'   )
 #'
-#' # Spiral trends on (S^2)^2
-#' n <- 100
-#' samp_4 <- r_path_s2r(n = n, r = 2, c = 3, spiral = TRUE, sigma = 0.01)
-#' old_par <- par(mfrow = c(1, 2))
-#' scatterplot3d::scatterplot3d(
-#'   samp_4[, , 1], xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
-#'   xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
-#' )
-#' scatterplot3d::scatterplot3d(
-#'   samp_4[, , 2], xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
-#'   xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
-#' )
-#' par(old_par)
+#'   # Small-circle trends on (S^2)^2
+#'   n <- 100
+#'   samp_3 <- r_path_s2r(n = n, r = 2, sigma = 0.1, kappa = 5)
+#'   old_par <- par(mfrow = c(1, 2))
+#'   scatterplot3d::scatterplot3d(
+#'     samp_3[, , 1], xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
+#'     xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
+#'   )
+#'   scatterplot3d::scatterplot3d(
+#'     samp_3[, , 2], xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
+#'     xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
+#'   )
+#'   par(old_par)
+#'
+#'   # Spiral trends on (S^2)^2
+#'   n <- 100
+#'   samp_4 <- r_path_s2r(n = n, r = 2, c = 3, spiral = TRUE, sigma = 0.01)
+#'   old_par <- par(mfrow = c(1, 2))
+#'   scatterplot3d::scatterplot3d(
+#'     samp_4[, , 1], xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
+#'     xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
+#'   )
+#'   scatterplot3d::scatterplot3d(
+#'     samp_4[, , 2], xlim = c(-1, 1), ylim = c(-1, 1), zlim = c(-1, 1),
+#'     xlab = "", ylab = "", zlab = "", color = rainbow(n), pch = 16
+#'   )
+#'   par(old_par)
+#'
+#' }
+#' }
 #' @export
 r_path_s1r <- function(n, r, alpha = runif(r, -pi, pi),
                        k = sample(-2:2, size = r, replace = TRUE),
@@ -560,7 +582,7 @@ r_path_s2r <- function(n, r, t = 0, c = 1,
     ph <- sort(runif(n, min = 0, max = pi))
 
     # Loop on the S^2's
-    for (j in 1:r) {
+    for (j in seq_len(r)) {
 
       # Unrotated sample
       eps <- rnorm(n, sd = sigma)
@@ -580,7 +602,7 @@ r_path_s2r <- function(n, r, t = 0, c = 1,
     U <- DirStats::to_cir(th = th)
 
     # Loop on the S^2's
-    for (j in 1:r) {
+    for (j in seq_len(r)) {
 
       # Use the moment estimators of a Beta(shape1, shape2) to get the
       # parameters yielding

@@ -6,8 +6,16 @@
 \alias{v_d}
 \title{Polyspherical kernel moments and efficiencies}
 \usage{
-eff_kern(d, r, k = 10, kernel, kernel_type = c("prod", "sph")[1],
-  kernel_ref = "2", kernel_ref_type = c("prod", "sph")[2], ...)
+eff_kern(
+  d,
+  r,
+  k = 10,
+  kernel,
+  kernel_type = c("prod", "sph")[1],
+  kernel_ref = "2",
+  kernel_ref_type = c("prod", "sph")[2],
+  ...
+)
 
 b_d(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...)
 
@@ -15,7 +23,7 @@ v_d(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...)
 }
 \arguments{
 \item{d}{a scalar with the common dimension of each sphere
-\eqn{\mathcal{S}^d}.}
+\eqn{\mathbb{S}^d}.}
 
 \item{r}{a scalar with the number of polyspheres of the same dimension.}
 
@@ -24,15 +32,14 @@ v_d(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...)
 \item{kernel}{kernel employed: \code{1} for von Mises--Fisher (default);
 \code{2} for Epanechnikov; \code{3} for softplus.}
 
-\item{kernel_type}{type of kernel. Must be either \code{"prod"} (product
-kernel, default) or \code{"sph"} (spherically symmetric kernel).}
+\item{kernel_type}{type of kernel employed: \code{"prod"} for the product
+kernel (default) or \code{"sph"} for the spherically symmetric kernel.}
 
 \item{kernel_ref}{reference kernel to which compare the efficiency. Uses the
 same codification as the \code{kernel}. Defaults to \code{"2"}.}
 
-\item{kernel_ref_type}{type of the reference kernel. Must be either
-\code{"prod"} (product kernel) or \code{"sph"} (spherically symmetric kernel,
-default).}
+\item{kernel_ref_type}{type of the reference kernel. Uses the same
+codification as \code{kernel_type}. Defaults to \code{"sph"}.}
 
 \item{...}{further arguments passed to \code{\link{integrate}}, such as
 \code{upper}, \code{abs.tol}, \code{rel.tol}, etc.}
@@ -47,9 +54,9 @@ default).}
 }
 }
 \description{
-Computes moments of kernels on \eqn{\mathcal{S}^{d_1} \times
-\cdots \times \mathcal{S}^{d_r}} and efficiencies of kernels on
-\eqn{(\mathcal{S}^d)^r}.
+Computes moments of kernels on
+\eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}} and efficiencies
+of kernels on \eqn{(\mathbb{S}^d)^r}.
 }
 \examples{
 # Kernel moments
@@ -62,4 +69,7 @@ v_d(kernel = 2, d = c(2, 3), kernel_type = "sph")
 eff_kern(d = 2, r = 1, kernel = "1")
 eff_kern(d = 2, r = 1, kernel = "2")
 eff_kern(d = 2, r = 1, k = 10, kernel = "3")
+}
+\seealso{
+\code{\link{kde_polysph}}, \code{\link{bw_rot_polysph}}.
 }
