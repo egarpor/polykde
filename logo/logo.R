@@ -153,7 +153,7 @@ dev.off()
 # Assemble the hex sticker
 
 # Dark-viridis palette.
-hex_fill <- "#241436" # deep viridis-purple
+hex_fill <- "#5B4A87" # lighter viridis-violet
 hex_border_col <- "#48C16E" # bright viridis green
 txt_col <- "#FFFFFF"
 url_col <- "#B9A9D6"
