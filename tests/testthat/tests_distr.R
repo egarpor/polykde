@@ -3,7 +3,8 @@
 
 test_that("Check d_vmf_polysph by inverse weighted sampling", {
 
-  M <- 1e3
+  set.seed(1)
+  M <- 1e4
   d <- c(1, 2)
   mu <- c(0, 1, 0, 1, 0)
   kappa <- c(1, 1)
@@ -25,7 +26,8 @@ test_that("fast_log_c_vMF() works properly with spline = TRUE / FALSE", {
 
 test_that("Check d_mvmf_polysph by inverse weighted sampling", {
 
-  M <- 1e3
+  set.seed(2)
+  M <- 1e4
   d <- c(1, 2)
   mu <- rbind(c(0, 1, 0, 1, 0), c(0, -1, 0, -1, 0))
   kappa <- rbind(c(1, 1), c(2, 1))
@@ -41,6 +43,7 @@ test_that("Check d_mvmf_polysph by inverse weighted sampling", {
 
 test_that("Check d_unif_polysph by inverse weighted sampling", {
 
+  set.seed(3)
   M <- 1e3
   d <- c(1, 2)
   x <- r_unif_polysph(n = M, d = d)

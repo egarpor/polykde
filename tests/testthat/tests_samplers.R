@@ -1,5 +1,6 @@
 
 # Randomize testing
+set.seed(987654321)
 r <- 2 # sample(1:3, size = 1)
 d <- rep(2, 2) # rpois(r, 2) + 1
 h <- runif(r, 0.25, 0.50)
@@ -9,6 +10,7 @@ n <- 300
 
 test_that("Check r_unif_polysph", {
 
+  set.seed(1)
   ind <- cumsum(c(1, d + 1))
   for (j in seq_len(r)) {
     ind_j <- ind[j]:(ind[j + 1] - 1)
@@ -21,6 +23,7 @@ test_that("Check r_unif_polysph", {
 
 test_that("Check r_kern_polysph", {
 
+  set.seed(2)
   ind <- cumsum(c(1, d + 1))
   for (kernel in 1:2) {
     data <- r_kern_polysph(n = n, d = d, mu = mu, h = h, kernel = kernel)
@@ -36,6 +39,9 @@ test_that("Check r_kern_polysph", {
 
 test_that("Check r_kern_polysph by inverse weighted sampling", {
 
+  set.seed(3)
+  # Larger n to shrink the Monte Carlo variance of the inverse-density estimator
+  n <- 1500
   h <- c(2, 2)
   for (kernel in 1:3) {
 
@@ -54,6 +60,8 @@ test_that("Check r_kern_polysph by inverse weighted sampling", {
 
 test_that("Check r_kern_polysph by inverse weighted sampling", {
 
+  set.seed(5)
+  n <- 1500
   h <- c(2, 2)
   for (kernel in 1:3) {
 
@@ -72,6 +80,7 @@ test_that("Check r_kern_polysph by inverse weighted sampling", {
 
 test_that("Check coherency between kde_polysph(), c_kern(), and L()", {
 
+  set.seed(4)
   for (kernel in 1:3) {
 
     data <- r_kern_polysph(n = n, d = d, mu = mu, h = h, kernel = 1)
@@ -95,6 +104,7 @@ test_that("Check coherency between kde_polysph(), c_kern(), and L()", {
 
 test_that("Check r_mvmf_polysph with small proportions and sample size", {
 
+  set.seed(6)
   expect_no_error(r_mvmf_polysph(n = 10, d = 1, mu = diag(c(1, 1)),
                                  kappa = c(2, 2), prop = c(0, 1)))
 

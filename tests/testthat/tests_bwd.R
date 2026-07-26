@@ -1,6 +1,7 @@
 
 ## Constants kernel
 
+set.seed(1)
 d <- sample(1:4, size = 1, replace = TRUE)
 
 test_that("b_d(L) equals definition for kernel = 1, 2", {

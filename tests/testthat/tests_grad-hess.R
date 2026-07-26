@@ -1,6 +1,7 @@
 
 # Randomize testing
 
+set.seed(1)
 r <- sample(2:3, size = 1)
 d <- rpois(r, lambda = 2) + 1
 n <- 100

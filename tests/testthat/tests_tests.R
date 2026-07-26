@@ -1,6 +1,7 @@
 
 ## Well-computed JSD for k = 2
 
+set.seed(2)
 r <- 3
 d <- rep(2, r)
 h1 <- rep(0.25, r)
@@ -128,6 +129,7 @@ test_that("Jensen--Shannon distance with cv_jsd = 2 and k = 2", {
 
 ## Well-computed JSD for k = 3
 
+set.seed(1)
 r <- 3
 d <- rep(2, r)
 h1 <- rep(0.25, r)
@@ -215,6 +217,7 @@ test_that("Jensen--Shannon distance with cv_jsd = 2 and k = 3", {
 
 test_that("Tests do not reject H_0 when it is true", {
 
+  set.seed(2)
   d <- 2
   n <- 50
   h <- 0.5
@@ -245,6 +248,7 @@ test_that("Tests do not reject H_0 when it is true", {
 
 test_that("Tests reject H_0 when it is false", {
 
+  set.seed(1)
   d <- 1
   n <- 50
   h <- 0.5
