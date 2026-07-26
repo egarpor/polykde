@@ -45,14 +45,6 @@ test_that("LL interpolates for very small bandwidth", {
     1e-2)
 })
 
-test_that("LL becomes the unconditional mean for very large bandwidth", {
-  skip("Unstable")
-  expect_lt(max(dist_polysph(x = kre_polysph(x = X, X = X, Y = Y,
-                                             d = d, h = 100, p = 1),
-                             y = Y_avg, ind_dj = ind_dj, std = FALSE)),
-            1e-2)
-})
-
 # Visualize interpolation curve -- LL extrapolates, NW stops
 x_grid <- seq(0, 1, l = 200)
 x_grid2 <- seq(-1, 2, l = 200)

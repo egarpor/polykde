@@ -190,7 +190,6 @@ H_0_cv <- -mean(c(log(p[1] * exp(log_cv_kde_polysph(X = X1, d = d, h = h1)) +
                         p[3] * exp(log_cv_kde_polysph(X = X3, d = d, h = h3)))))
 
 test_that("Jensen--Shannon distance with Monte Carlo and k = 3", {
-  skip("Unstable")
   expect_equal(unname(hom_test_polysph(X = X, d = d, labels = labels,
                                        type = "jsd", h = h1, B = 1, M = M,
                                        cv_jsd = 123)$statistic),

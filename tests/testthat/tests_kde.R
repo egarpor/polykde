@@ -163,7 +163,6 @@ test_that("Unnormalized product and spherically symmetric kernels coincide
 })
 
 test_that("Integration for spherically symmetric Epa kernel", {
-  skip("Unstable")
   h_small <- rep(0.5, r)
   expect_equal(prod(rotasym::w_p(p = d + 1)) *
                  mean(kde_polysph(x = x_int, X = X, d = d, h = h_small,
