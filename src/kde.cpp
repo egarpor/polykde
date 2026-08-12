@@ -54,9 +54,10 @@ const double log_M_PI = std::log(M_PI);
 //' @return A column matrix of size \code{c(nx, 1)} with the evaluation of the
 //' kernel density estimator.
 //' @references
-//' García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+//' García-Portugués, E. and Meilán-Vila, A. (2026). Kernel density estimation
 //' with polyspherical data and its applications. \emph{Journal of the American
-//' Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+//' Statistical Association}, 121(553):427--439.
+//' \doi{10.1080/01621459.2025.2521898}.
 //' @seealso \code{\link{log_cv_kde_polysph}},
 //' \code{\link{grad_hess_kde_polysph}}, \code{\link{r_kde_polysph}},
 //' \code{\link{bw_rot_polysph}}, \code{\link{bw_cv_polysph}},

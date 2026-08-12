@@ -78,7 +78,8 @@ X <- r_vmf_polysph(n = n, d = d, mu = r_unif_polysph(n = 1, d = d),
 bw_rot_polysph(X = X, d = d)$bw
 }
 \references{
-García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+García-Portugués, E. and Meilán-Vila, A. (2026). Kernel density estimation
 with polyspherical data and its applications. \emph{Journal of the American
-Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+Statistical Association}, 121(553):427--439.
+\doi{10.1080/01621459.2025.2521898}.
 }

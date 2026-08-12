@@ -17,7 +17,8 @@ hom_test_polysph(
   M = 10000,
   plot_boot = FALSE,
   seed_jsd = NULL,
-  cv_jsd = TRUE
+  cv_jsd = TRUE,
+  show_prog = TRUE
 )
 }
 \arguments{
@@ -58,6 +59,9 @@ statistics. Defaults to \code{NULL} (no seed is fixed).}
 
 \item{cv_jsd}{use cross-validation to approximate the Jensen--Shannon
 distance? Does not require Monte Carlo. Defaults to \code{TRUE}.}
+
+\item{show_prog}{display a progress bar for the permutations? Defaults to
+\code{TRUE}.}
 }
 \value{
 An object of class \code{"htest"} with the following fields:
@@ -123,9 +127,10 @@ hom_test_polysph(X = rbind(X1, X2, X3), labels = rep(1:3, times = n),
 }
 }
 \references{
-García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+García-Portugués, E. and Meilán-Vila, A. (2026). Kernel density estimation
 with polyspherical data and its applications. \emph{Journal of the American
-Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+Statistical Association}, 121(553):427--439.
+\doi{10.1080/01621459.2025.2521898}.
 }
 \seealso{
 \code{\link{kde_polysph}}, \code{\link{bw_rot_polysph}},

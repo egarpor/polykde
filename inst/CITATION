@@ -23,15 +23,15 @@ bibentry(
   author       = c(person(given = "Eduardo", family = "García-Portugués"),
                    person(given = "Andrea", family = "Meilán-Vila")),
   journal      = "Journal of the American Statistical Association",
-  year         = "2025",
-  volume       = "to appear",
-  number       = "",
-  pages        = "",
+  year         = "2026",
+  volume       = "121",
+  number       = "553",
+  pages        = "427--439",
   url          = "https://doi.org/10.1080/01621459.2025.2521898",
   textVersion  =
-  paste("García-Portugués, E. and Meilán-Vila, A. (2025).",
+  paste("García-Portugués, E. and Meilán-Vila, A. (2026).",
         "Kernel density estimation with polyspherical data and its applications.",
-        "Journal of the American Statistical Association, to appear.",
+        "Journal of the American Statistical Association, 121(553):427-439.",
         "https://doi.org/10.1080/01621459.2025.2521898")
 )
 

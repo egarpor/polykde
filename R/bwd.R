@@ -48,9 +48,10 @@
 #' the latter containing the output of \code{\link[stats]{nlm}},
 #' \code{\link[stats]{optim}}, or \code{\link[optimParallel]{optimParallel}}.
 #' @references
-#' García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+#' García-Portugués, E. and Meilán-Vila, A. (2026). Kernel density estimation
 #' with polyspherical data and its applications. \emph{Journal of the American
-#' Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+#' Statistical Association}, 121(553):427--439.
+#' \doi{10.1080/01621459.2025.2521898}.
 #' @examples
 #' \donttest{
 #' n <- 20
@@ -648,9 +649,10 @@ curv_vmf_polysph <- function(kappa, d, log = FALSE) {
 #' @return A list with entries \code{bw} (optimal bandwidth) and \code{opt},
 #' the latter containing the output of \code{\link[stats]{nlm}}.
 #' @references
-#' García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+#' García-Portugués, E. and Meilán-Vila, A. (2026). Kernel density estimation
 #' with polyspherical data and its applications. \emph{Journal of the American
-#' Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+#' Statistical Association}, 121(553):427--439.
+#' \doi{10.1080/01621459.2025.2521898}.
 #' @examples
 #' n <- 100
 #' d <- 1:2
@@ -819,9 +821,10 @@ bw_rot_polysph <- function(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
 #' @inheritParams bw_rot_polysph
 #' @return A vector of size \code{r} with the marginal optimal bandwidths.
 #' @references
-#' García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+#' García-Portugués, E. and Meilán-Vila, A. (2026). Kernel density estimation
 #' with polyspherical data and its applications. \emph{Journal of the American
-#' Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+#' Statistical Association}, 121(553):427--439.
+#' \doi{10.1080/01621459.2025.2521898}.
 #' @examples
 #' n <- 100
 #' d <- 1:2

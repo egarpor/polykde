@@ -107,7 +107,8 @@ H_0_cv3 - (p[1] * H_1_cv3 + p[2] * H_2_cv3) - sum(log(p) * p)
 test_that("Jensen--Shannon distance with Monte Carlo and k = 2", {
   expect_equal(unname(hom_test_polysph(X = X, d = d, labels = labels,
                                        type = "jsd", h = h1, B = 1, M = M,
-                                       cv_jsd = 123)$statistic),
+                                       cv_jsd = 123,
+                                       show_prog = FALSE)$statistic),
                H_0 - (p[1] * H_1 + p[2] * H_2),
                tolerance = 5e-2)
 })
@@ -116,14 +117,16 @@ test_that("Jensen--Shannon distance with cv_jsd = 1 and k = 2", {
   skip("Unstable")
   expect_equal(unname(hom_test_polysph(X = X, d = d, labels = labels,
                                        type = "jsd", h = h1, B = 1, M = M,
-                                       cv_jsd = 1)$statistic),
+                                       cv_jsd = 1,
+                                       show_prog = FALSE)$statistic),
                H_0_cv - (p[1] * H_1_cv + p[2] * H_2_cv))
 })
 
 test_that("Jensen--Shannon distance with cv_jsd = 2 and k = 2", {
   expect_equal(unname(hom_test_polysph(X = X, d = d, labels = labels,
                                        type = "jsd", h = h1, B = 1, M = M,
-                                       cv_jsd = 2)$statistic),
+                                       cv_jsd = 2,
+                                       show_prog = FALSE)$statistic),
                H_0_n - (p[1] * H_1_n + p[2] * H_2_n))
 })
 
@@ -192,7 +195,8 @@ H_0_cv <- -mean(c(log(p[1] * exp(log_cv_kde_polysph(X = X1, d = d, h = h1)) +
 test_that("Jensen--Shannon distance with Monte Carlo and k = 3", {
   expect_equal(unname(hom_test_polysph(X = X, d = d, labels = labels,
                                        type = "jsd", h = h1, B = 1, M = M,
-                                       cv_jsd = 123)$statistic),
+                                       cv_jsd = 123,
+                                       show_prog = FALSE)$statistic),
                H_0 - (p[1] * H_1 + p[2] * H_2 + p[3] * H_3),
                tolerance = 1e-2)
 })
@@ -201,14 +205,16 @@ test_that("Jensen--Shannon distance with cv_jsd = 1 and k = 3", {
   skip("Unstable")
   expect_equal(unname(hom_test_polysph(X = X, d = d, labels = labels,
                                        type = "jsd", h = h1, B = 1, M = M,
-                                       cv_jsd = 1)$statistic),
+                                       cv_jsd = 1,
+                                       show_prog = FALSE)$statistic),
                H_0_cv - (p[1] * H_1_cv + p[2] * H_2_cv + p[3] * H_3_cv))
 })
 
 test_that("Jensen--Shannon distance with cv_jsd = 2 and k = 3", {
   expect_equal(unname(hom_test_polysph(X = X, d = d, labels = labels,
                                        type = "jsd", h = h1, B = 1, M = M,
-                                       cv_jsd = 2)$statistic),
+                                       cv_jsd = 2,
+                                       show_prog = FALSE)$statistic),
                H_0_n - (p[1] * H_1_n + p[2] * H_2_n + p[3] * H_3_n))
 })
 
@@ -227,16 +233,17 @@ test_that("Tests do not reject H_0 when it is true", {
   X_2 <- r_vmf_polysph(n = n, mu = mu, d = d, kappa = kappa)
   pval_jsd <- hom_test_polysph(X = rbind(X_1, X_2), d = d,
                                labels = rep(1:2, each = n), type = "jsd",
-                               h = h, B = B, seed_jsd = 1)$p.value
+                               h = h, B = B, seed_jsd = 1,
+                               show_prog = FALSE)$p.value
   pval_mea <- hom_test_polysph(X = rbind(X_1, X_2), d = d,
                                labels = rep(1:2, each = n), type = "mean",
-                               B = B)$p.value
+                               B = B, show_prog = FALSE)$p.value
   pval_sca <- hom_test_polysph(X = rbind(X_1, X_2), d = d,
                                labels = rep(1:2, each = n), type = "scatter",
-                               B = B)$p.value
+                               B = B, show_prog = FALSE)$p.value
   pval_hel <- hom_test_polysph(X = rbind(X_1, X_2), d = d,
                                labels = rep(1:2, each = n), type = "hd",
-                               h = h, B = B)$p.value
+                               h = h, B = B, show_prog = FALSE)$p.value
 
   expect_gt(pval_jsd, 0.05)
   expect_gt(pval_mea, 0.05)
@@ -260,16 +267,17 @@ test_that("Tests reject H_0 when it is false", {
   X_2 <- r_vmf_polysph(n = n, mu = mu2, d = d, kappa = kappa2)
   pval_jsd <- hom_test_polysph(X = rbind(X_1, X_2), d = d,
                                labels = rep(1:2, each = n), type = "jsd",
-                               h = h, B = B, seed_jsd = 1)$p.value
+                               h = h, B = B, seed_jsd = 1,
+                               show_prog = FALSE)$p.value
   pval_mea <- hom_test_polysph(X = rbind(X_1, X_2), d = d,
                                labels = rep(1:2, each = n), type = "mean",
-                               B = B)$p.value
+                               B = B, show_prog = FALSE)$p.value
   pval_sca <- hom_test_polysph(X = rbind(X_1, X_2), d = d,
                                labels = rep(1:2, each = n), type = "scatter",
-                               B = B)$p.value
+                               B = B, show_prog = FALSE)$p.value
   pval_hel <- hom_test_polysph(X = rbind(X_1, X_2), d = d,
                                labels = rep(1:2, each = n), type = "hd",
-                               h = h, B = B)$p.value
+                               h = h, B = B, show_prog = FALSE)$p.value
 
   expect_lt(pval_jsd, 0.05)
   expect_lt(pval_mea, 0.05)
@@ -284,14 +292,17 @@ test_that("Edge cases hom_test_polysph()", {
 
   expect_no_error(hom_test_polysph(X = X, d = d, labels = labels,
                                    type = "jsd", B = 10, M = M,
-                                   plot_boot = TRUE))
+                                   plot_boot = TRUE, show_prog = FALSE))
   expect_error(hom_test_polysph(X = X, d = d, labels = labels,
-                                type = "wrong", B = 1, M = M))
+                                type = "wrong", B = 1, M = M,
+                                show_prog = FALSE))
   expect_error(hom_test_polysph(X = X, d = d, labels = labels,
-                                type = "jsd", h = 0 * d, B = 1, M = M))
+                                type = "jsd", h = 0 * d, B = 1, M = M,
+                                show_prog = FALSE))
   expect_error(hom_test_polysph(X = rbind(c(1, 0), c(-1, 0), c(1, 0), c(-1, 0)),
                                 d = 1, labels = rep(1:2, each = 2),
-                                type = "mean", B = 1, M = M))
+                                type = "mean", B = 1, M = M,
+                                show_prog = FALSE))
 
 })
 
@@ -306,13 +317,15 @@ test_that("hom_test_polysph() with seed_jsd does not alter the RNG state", {
   set.seed(123)
   old_seed <- globalenv()$.Random.seed
   hom_test_polysph(X = X_rng, d = 1, labels = labels_rng, type = "jsd",
-                   h = 0.5, B = 1, M = 100, seed_jsd = 1)
+                   h = 0.5, B = 1, M = 100, seed_jsd = 1,
+                   show_prog = FALSE)
   expect_identical(globalenv()$.Random.seed, old_seed)
 
   # A nonexistent .Random.seed is not created
   rm(".Random.seed", envir = globalenv())
   hom_test_polysph(X = X_rng, d = 1, labels = labels_rng, type = "jsd",
-                   h = 0.5, B = 1, M = 100, seed_jsd = 1)
+                   h = 0.5, B = 1, M = 100, seed_jsd = 1,
+                   show_prog = FALSE)
   expect_null(globalenv()$.Random.seed)
 
 })

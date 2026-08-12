@@ -27,6 +27,8 @@
 #' @param seed_jsd seed for the Monte Carlo simulations used to estimate the
 #' integrals in the Jensen--Shannon distance in the original and bootstrapped
 #' statistics. Defaults to \code{NULL} (no seed is fixed).
+#' @param show_prog display a progress bar for the permutations? Defaults to
+#' \code{TRUE}.
 #' @details Only \code{type = "jsd"} is able to deal with \eqn{k > 2}.
 #'
 #' The \code{"jsd"} statistic is the Jensen--Shannon divergence. This statistic
@@ -47,9 +49,10 @@
 #' \item{method}{the kind of test performed.}
 #' \item{data.name}{a character string giving the name of the data.}
 #' @references
-#' García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+#' García-Portugués, E. and Meilán-Vila, A. (2026). Kernel density estimation
 #' with polyspherical data and its applications. \emph{Journal of the American
-#' Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+#' Statistical Association}, 121(553):427--439.
+#' \doi{10.1080/01621459.2025.2521898}.
 #' @seealso \code{\link{kde_polysph}}, \code{\link{bw_rot_polysph}},
 #' \code{\link{bw_cv_polysph}}.
 #' @examples
@@ -87,7 +90,8 @@ hom_test_polysph <- function(X, d, labels,
                              type = c("jsd", "mean", "scatter", "hd")[1],
                              h = NULL, kernel = 1, kernel_type = 1, k = 10,
                              B = 1e3, M = 1e4, plot_boot = FALSE,
-                             seed_jsd = NULL, cv_jsd = TRUE) {
+                             seed_jsd = NULL, cv_jsd = TRUE,
+                             show_prog = TRUE) {
 
   # Dimensions and sample sizes
   r <- length(d)
@@ -440,7 +444,11 @@ hom_test_polysph <- function(X, d, labels,
   perms <- t(replicate(B, sample(N)))
 
   # Perform permutations
-  pb <- txtProgressBar(style = 3)
+  if (show_prog) {
+
+    pb <- txtProgressBar(style = 3)
+
+  }
   Tn_star <- rep(NA, B)
   for (b in seq_len(B)) {
 
@@ -451,7 +459,11 @@ hom_test_polysph <- function(X, d, labels,
 
     }
     Tn_star[b] <- Tn(perm_index = perms[b, ])
-    setTxtProgressBar(pb = pb, value = b / B)
+    if (show_prog) {
+
+      setTxtProgressBar(pb = pb, value = b / B)
+
+    }
 
     # Plot the position of the original statistic with respect to the
     # permutation replicates? Do it one out of ten replicates

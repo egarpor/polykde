@@ -83,9 +83,10 @@ kde_polysph(x = rbind(mu), X = X, d = d, h = h)
 d_vmf_polysph(x = rbind(mu), d = d, mu = mu, kappa = kappa)
 }
 \references{
-García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+García-Portugués, E. and Meilán-Vila, A. (2026). Kernel density estimation
 with polyspherical data and its applications. \emph{Journal of the American
-Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+Statistical Association}, 121(553):427--439.
+\doi{10.1080/01621459.2025.2521898}.
 }
 \seealso{
 \code{\link{log_cv_kde_polysph}},
