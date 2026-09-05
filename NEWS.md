@@ -40,3 +40,13 @@
 # polykde 1.2.1
 
 * Unrandomize the tests in `tests_bwd.R`, `tests_distr.R`, `tests_grad_hess.R`, `tests_kde.R`, `tests_samplers.R`, and `tests_tests.R` to avoid spurious failures on some platforms.
+
+# polykde 1.3.0
+
+* Add the vignette.
+* Add usage examples to the README.
+* Add `show_prog` to `hom_test_polysph()` to silence the permutation progress bar.
+* Update publication.
+* Remove the internal `log_besselI_scaled()` and `fast_log_c_vMF()`, in favor of `DirStats::log_besselI_scaled()` and `DirStats::log_c_vmf()`.
+* Move DirStats from Suggests to Imports, with a minimum version 1.0.0, and Bessel from Imports to Suggests.
+* Update the default of `spline` in `bw_cv_polysph()` to `TRUE` and extend its validity from `d` up to 50 to `d` up to 101.

@@ -26,7 +26,7 @@
 #' \code{1e4}.
 #' @param seed_psi seed for approximating the matrices \eqn{\boldsymbol{\Psi_1}}
 #' and \eqn{\boldsymbol{\Psi_2}}. Defaults to \code{NULL} (no seed is fixed).
-#' @inheritParams log_besselI_scaled
+#' @inheritParams bw_cv_polysph
 #' @return For \code{mise_vmf*}, a list with the following components:
 #' \item{mise}{vector of size \code{k} with the evaluated MISEs.}
 #' \item{Psi_0}{matrix \eqn{\boldsymbol{\Psi_0}}.}
@@ -56,7 +56,7 @@
 #' @noRd
 #' @rdname mise
 mise_vmf_polysph <- function(h, n, mu, kappa, prop, d, M_psi = 1e4,
-                             seed_psi = NULL, spline = FALSE) {
+                             seed_psi = NULL, spline = TRUE) {
 
   # Check mixture inputs
   r <- length(d)
@@ -124,7 +124,7 @@ mise_vmf_polysph <- function(h, n, mu, kappa, prop, d, M_psi = 1e4,
 #' @noRd
 #' @rdname mise
 mise_vmf <- function(h, n, mu, kappa, prop, d, M_psi = 1e4, seed_psi = NULL,
-                     spline = FALSE) {
+                     spline = TRUE) {
 
   # Check mixture inputs
   m <- length(prop)
@@ -154,11 +154,11 @@ mise_vmf <- function(h, n, mu, kappa, prop, d, M_psi = 1e4, seed_psi = NULL,
   # Psi_0
   # ||kappa_i mu_i + kappa_j mu_j||^2 = kappa_i^2 + kappa_j^2
   #                                    + 2 * kappa_i * kappa_j * mu_i'mu_j
-  log_C_kappa <- fast_log_c_vMF(p = d + 1, kappa = kappa, spline = spline)
+  log_C_kappa <- DirStats::log_c_vmf(q = d, kappa = kappa, spline = spline)
   kappa_mu_i_kappa_mu_j <-
     sqrt(outer(kappa^2, kappa^2, "+") + 2 * tcrossprod(mu_kappa))
   log_C_kappa_mu_i_kappa_mu_j <-
-    fast_log_c_vMF(p = d + 1, kappa = kappa_mu_i_kappa_mu_j, spline = spline)
+    DirStats::log_c_vmf(q = d, kappa = kappa_mu_i_kappa_mu_j, spline = spline)
   Psi_0 <- exp(outer(log_C_kappa, log_C_kappa, "+") -
                  log_C_kappa_mu_i_kappa_mu_j)
 
@@ -182,7 +182,7 @@ mise_vmf <- function(h, n, mu, kappa, prop, d, M_psi = 1e4, seed_psi = NULL,
 
   # Psi_1 and Psi_2 using importance-sampling Monte Carlo
   Psi_1 <- Psi_2 <- array(NA, dim  = c(length(h), m, m))
-  log_C_h <- fast_log_c_vMF(p = d + 1, kappa = 1 / h^2, spline = spline)
+  log_C_h <- DirStats::log_c_vmf(q = d, kappa = 1 / h^2, spline = spline)
   for (j in seq_len(m)) {
 
     # Sample vMF(mu[j], kappa[j])
@@ -212,10 +212,10 @@ mise_vmf <- function(h, n, mu, kappa, prop, d, M_psi = 1e4, seed_psi = NULL,
                                                kappa[j] * mu[j, ])^2))
 
       }
-      log_C_h_x_kappa_mu_i <- fast_log_c_vMF(p = d + 1, kappa = h_x_kappa_mu_i,
-                                             spline = spline)
-      log_C_h_x_kappa_mu_j <- fast_log_c_vMF(p = d + 1, kappa = h_x_kappa_mu_j,
-                                             spline = spline)
+      log_C_h_x_kappa_mu_i <- DirStats::log_c_vmf(q = d, kappa = h_x_kappa_mu_i,
+                                                  spline = spline)
+      log_C_h_x_kappa_mu_j <- DirStats::log_c_vmf(q = d, kappa = h_x_kappa_mu_j,
+                                                  spline = spline)
 
       # Common terms to Psi_1 and Psi_2
       pre_Psi_12 <- log_C_h + log_C_kappa[i] + log_C_kappa[j] -
@@ -240,9 +240,9 @@ mise_vmf <- function(h, n, mu, kappa, prop, d, M_psi = 1e4, seed_psi = NULL,
   }
 
   # Dq constant (careful: it is the inverse of what is reported in the paper!)
-  log_C_h <- fast_log_c_vMF(p = d + 1, kappa = 1 / h^2, spline = spline)
+  log_C_h <- DirStats::log_c_vmf(q = d, kappa = 1 / h^2, spline = spline)
   log_Dq_h <- -2 * log_C_h +
-    fast_log_c_vMF(p = d + 1, kappa = 2 / h^2, spline = spline)
+    DirStats::log_c_vmf(q = d, kappa = 2 / h^2, spline = spline)
 
   # MISE in Proposition 4 of "Kernel density estimation for
   # directional-linear data" (https://doi.org/10.1016/j.jmva.2013.06.009)
@@ -263,7 +263,7 @@ mise_vmf <- function(h, n, mu, kappa, prop, d, M_psi = 1e4, seed_psi = NULL,
 #' @noRd
 #' @rdname mise
 log1p_mise <- function(log_h, n, d, mu, kappa, prop, M_psi = 1e4,
-                       seed_psi = NULL, spline = FALSE) {
+                       seed_psi = NULL, spline = TRUE) {
 
   log1p(mise_vmf_polysph(h = exp(log_h), n = n, mu = mu, kappa = kappa,
                          prop = prop, d = d, M_psi = M_psi,
@@ -289,7 +289,6 @@ log1p_mise <- function(log_h, n, d, mu, kappa, prop, M_psi = 1e4,
 #' @param bw0 initial bandwidth vector for minimizing the MISE loss. Can be also
 #' a matrix of initial bandwidth vectors.
 #' @inheritParams bw_rot_polysph
-#' @inheritParams log_besselI_scaled
 #' @param ... further arguments passed to \code{\link{nlm}}.
 #' @return A list with entries \code{bw} (optimal bandwidth) and \code{opt},
 #' the latter containing the output of \code{\link[stats]{nlm}}.
@@ -302,7 +301,7 @@ log1p_mise <- function(log_h, n, d, mu, kappa, prop, M_psi = 1e4,
 #'                           prop = 1, seed_psi = 1)
 #' @noRd
 bw_mise_polysph <- function(n, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
-                            seed_psi = NULL, spline = FALSE, ...) {
+                            seed_psi = NULL, spline = TRUE, ...) {
 
   # Get r
   r <- length(d)
@@ -404,7 +403,7 @@ bw_mise_polysph <- function(n, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
 #' @noRd
 ise_vmf_polysph <- function(X, d, h, mu, kappa, prop, M_psi = 1e4,
                             x_mvmf = NULL, f_mvmf = NULL, seed_psi = NULL,
-                            spline = FALSE, exact = FALSE, p = 2) {
+                            spline = TRUE, exact = FALSE, p = 2) {
 
   # Check mixture inputs
   h <- cbind(h)
@@ -445,11 +444,11 @@ ise_vmf_polysph <- function(X, d, h, mu, kappa, prop, M_psi = 1e4,
     # ||kappa_i mu_i + kappa_j mu_j||^2 = kappa_i^2 + kappa_j^2
     #                                    + 2 * kappa_i * kappa_j * mu_i'mu_j
     log_C_kappa_prop <- log(prop) +
-      fast_log_c_vMF(p = d + 1, kappa = kappa, spline = spline)
+      DirStats::log_c_vmf(q = d, kappa = kappa, spline = spline)
     kappa_mu_i_kappa_mu_j <- sqrt(outer(kappa^2, kappa^2, "+") +
                                     2 * tcrossprod(mu_kappa))
     log_C_kappa_mu_i_kappa_mu_j <-
-      fast_log_c_vMF(p = d + 1, kappa = kappa_mu_i_kappa_mu_j, spline = spline)
+      DirStats::log_c_vmf(q = d, kappa = kappa_mu_i_kappa_mu_j, spline = spline)
     Psi_02 <- sum(exp(outer(log_C_kappa_prop, log_C_kappa_prop, "+") -
                         log_C_kappa_mu_i_kappa_mu_j))
 
@@ -460,9 +459,9 @@ ise_vmf_polysph <- function(X, d, h, mu, kappa, prop, M_psi = 1e4,
 
       # ||h^{-2} X_i + h^{-2} X_j||^2 = 2 * h^{-4} * (1 - X_i'X_j)
       h2_X_i_X_j <- sqrt_cross_X / h_k^2
-      log_C_h_X_i_h_X_j <- fast_log_c_vMF(p = d + 1, kappa = h2_X_i_X_j,
-                                          spline = spline)
-      log_C_h2 <- fast_log_c_vMF(p = d + 1, kappa = 1 / h_k^2, spline = spline)
+      log_C_h_X_i_h_X_j <- DirStats::log_c_vmf(q = d, kappa = h2_X_i_X_j,
+                                               spline = spline)
+      log_C_h2 <- DirStats::log_c_vmf(q = d, kappa = 1 / h_k^2, spline = spline)
       return(sum(exp(2 * log_C_h2 - log_C_h_X_i_h_X_j)))
 
     }
@@ -477,10 +476,10 @@ ise_vmf_polysph <- function(X, d, h, mu, kappa, prop, M_psi = 1e4,
       #                                  + 2 * h^{-2} * kappa_j * X_i'mu_j
       h2_X_i_kappa_j_mu_j <- sqrt(1 / h_k^4 + kappa^2 + cross_mu_X / h_k^2)
       log_C_h_X_i_kappa_mu_j <-
-        fast_log_c_vMF(p = d + 1, kappa = h2_X_i_kappa_j_mu_j, spline = spline)
-      log_C_h2_kappa_prop <- fast_log_c_vMF(p = d + 1, kappa = 1 / h_k^2,
-                                            spline = spline) +
-        log(prop) + fast_log_c_vMF(p = d + 1, kappa = kappa, spline = spline)
+        DirStats::log_c_vmf(q = d, kappa = h2_X_i_kappa_j_mu_j, spline = spline)
+      log_C_h2_kappa_prop <- DirStats::log_c_vmf(q = d, kappa = 1 / h_k^2,
+                                                 spline = spline) +
+        log(prop) + DirStats::log_c_vmf(q = d, kappa = kappa, spline = spline)
       return(sum(exp(log_C_h2_kappa_prop - log_C_h_X_i_kappa_mu_j)))
 
     }
@@ -538,7 +537,7 @@ ise_vmf_polysph <- function(X, d, h, mu, kappa, prop, M_psi = 1e4,
 #' @rdname ise
 log1p_ise <- function(log_h, X, d, mu, kappa, prop, M_psi = 1e4,
                       x_mvmf = NULL, f_mvmf = NULL, seed_psi = NULL,
-                      spline = FALSE, exact = FALSE, p = 2) {
+                      spline = TRUE, exact = FALSE, p = 2) {
 
   log1p(ise_vmf_polysph(X = X, d = d, h = exp(log_h), mu = mu, kappa = kappa,
                         prop = prop, M_psi = M_psi, x_mvmf = x_mvmf,
@@ -580,7 +579,7 @@ log1p_ise <- function(log_h, X, d, mu, kappa, prop, M_psi = 1e4,
 #' @noRd
 bw_ise_polysph <- function(X, d, bw0 = NULL, mu, kappa, prop, M_psi = 1e4,
                            x_mvmf = NULL, f_mvmf = NULL, seed_psi = NULL,
-                           spline = FALSE, exact = FALSE, p = 2, ...) {
+                           spline = TRUE, exact = FALSE, p = 2, ...) {
 
   # Set seeds for the Monte Carlo, restoring the user's RNG state on exit
   if (!is.null(seed_psi)) {

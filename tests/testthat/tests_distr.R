@@ -15,17 +15,6 @@ test_that("Check d_vmf_polysph by inverse weighted sampling", {
 
 })
 
-test_that("fast_log_c_vMF() works properly with spline = TRUE / FALSE", {
-
-  expect_equal(fast_log_c_vMF(p = 5, kappa = 0:10, spline = TRUE),
-               fast_log_c_vMF(p = 5, kappa = 0:10, spline = FALSE))
-})
-
-test_that("fast_log_c_vMF(spline = TRUE) works for high p (off-grid nu)", {
-  expect_no_error(fast_log_c_vMF(p = 60, kappa = 1:5, spline = TRUE))
-  expect_equal(fast_log_c_vMF(p = 60, kappa = 1:5, spline = TRUE),
-               fast_log_c_vMF(p = 60, kappa = 1:5, spline = FALSE))
-})
 
 ## Mixture of von Mises--Fisher densities
 

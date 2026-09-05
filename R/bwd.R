@@ -31,7 +31,9 @@
 #' Mises--Fisher kernel? Defaults to \code{FALSE}.
 #' @param common_h use the same bandwidth for all dimensions? Defaults to
 #' \code{FALSE}.
-#' @param spline use a faster spline approximation to compute Bessel functions, when available (\code{d} up to 50)?
+#' @param spline use a fast spline approximation to evaluate the Bessel
+#' functions, as implemented in \code{\link[DirStats]{log_c_vmf}}?
+#' Defaults to \code{TRUE}.
 #' @param arcsinh do an \eqn{\operatorname{arcsinh}} transformation of the LSCV
 #' loss to improve numerical stability? Defaults to \code{FALSE}.
 #' @param opt optimizer to use; either \code{"\link{optim}"} (default) or
@@ -68,7 +70,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
                           M = 1e4, bw0 = NULL, na.rm = FALSE, h_min = 0,
                           upscale = FALSE, deriv = 0, imp_mc = TRUE,
                           seed_mc = NULL, exact_vmf = FALSE, common_h = FALSE,
-                          spline = FALSE, arcsinh = FALSE,
+                          spline = TRUE, arcsinh = FALSE,
                           opt = c("optim", "nlm")[1], ncores = 1, ...) {
 
   # Check dimensions
@@ -198,10 +200,10 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
           # Log-constants
           h_pos2 <- 1 / h_pos^2
-          log_c_h2 <- sum(fast_log_c_vMF(p = d + 1, kappa = h_pos2,
-                                         spline = spline))
-          log_c_2h2 <- sum(fast_log_c_vMF(p = d + 1, kappa = 2 * h_pos2,
-                                          spline = spline))
+          log_c_h2 <- sum(DirStats::log_c_vmf(q = d, kappa = h_pos2,
+                                              spline = spline))
+          log_c_2h2 <- sum(DirStats::log_c_vmf(q = d, kappa = 2 * h_pos2,
+                                               spline = spline))
 
           # Compute X_{il}'X_{jl} / h_l^2 and
           # \sum_l \log(c_vMF(||X_{il}'X_{jl}|| / h_l^2))
@@ -210,8 +212,8 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
           for (l in seq_len(r)) {
 
             log_c_norm_Xi_Xj_l_h <- log_c_norm_Xi_Xj_l_h +
-              fast_log_c_vMF(p = d[l] + 1, kappa = norm_Xi_Xj_l[l, ] *
-                               h_pos2[l], spline = spline)
+              DirStats::log_c_vmf(q = d[l], kappa = norm_Xi_Xj_l[l, ] *
+                                    h_pos2[l], spline = spline)
 
           }
 

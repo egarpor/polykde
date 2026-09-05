@@ -21,7 +21,7 @@ Depends:
     R (>= 3.5.0)
 Imports:
     abind,
-    Bessel,
+    DirStats (>= 1.0.0),
     doFuture,
     foreach,
     future,
@@ -34,7 +34,7 @@ Imports:
     sphunif
 Suggests:
     alphashape3d,
-    DirStats,
+    Bessel,
     FixedPoint,
     knitr,
     ks,
