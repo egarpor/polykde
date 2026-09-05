@@ -25,9 +25,9 @@
 #' L\left(\frac{1 - \boldsymbol{x}'\boldsymbol{y}}{h^2}\right)}.
 #' @return
 #' \itemize{
-#' \item{\code{L}: a vector with the kernel evaluated at \code{t}.}
-#' \item{\code{grad_L}: a vector with the gradient evaluated at \code{x}.}
-#' \item{\code{hess_L}: a matrix with the Hessian evaluated at \code{x}.}
+#'   \item \code{L}: a vector with the kernel evaluated at \code{t}.
+#'   \item \code{grad_L}: a vector with the gradient evaluated at \code{x}.
+#'   \item \code{hess_L}: a matrix with the Hessian evaluated at \code{x}.
 #' }
 #' @examples
 #' # Constants in terms of h
@@ -443,11 +443,11 @@ r_g_kern <- function(n, d, h, kernel = "1", k = 10) {
 #' @seealso \code{\link{kde_polysph}}, \code{\link{bw_rot_polysph}}.
 #' @return
 #' \itemize{
-#' \item{\code{b_d}: a vector with the first kernel moment on each sphere
-#' (common if \code{kernel_type = "sph"}).}
-#' \item{\code{v_d}: a vector with the second kernel moment if
-#' \code{kernel_type = "prod"}, or a scalar if \code{kernel_type = "sph"}.}
-#' \item{\code{eff_kern}: a scalar with the kernel efficiency.}
+#'   \item \code{b_d}: a vector with the first kernel moment on each sphere
+#'   (common if \code{kernel_type = "sph"}).
+#'   \item \code{v_d}: a vector with the second kernel moment if
+#'   \code{kernel_type = "prod"}, or a scalar if \code{kernel_type = "sph"}.
+#'   \item \code{eff_kern}: a scalar with the kernel efficiency.
 #' }
 #' @examples
 #' # Kernel moments

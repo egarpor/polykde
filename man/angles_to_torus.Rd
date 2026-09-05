@@ -18,8 +18,8 @@ the rows.}
 }
 \value{
 \itemize{
-\item{\code{angles_to_torus}: the matrix \code{x}.}
-\item{\code{torus_to_angles}: the matrix \code{theta}.}
+  \item \code{angles_to_torus}: the matrix \code{x}.
+  \item \code{torus_to_angles}: the matrix \code{theta}.
 }
 }
 \description{

@@ -104,12 +104,12 @@ arma::mat proj_polysph(arma::mat x, arma::uvec ind_dj) {
 //' distance is \eqn{\sqrt{r}\pi}. Defaults to \code{TRUE}.
 //' @return
 //' \itemize{
-//' \item{\code{dist_polysph}: a vector of size \code{n} with the distances
-//' between \code{x} and \code{y}.}
-//' \item{\code{dist_polysph_matrix}: a matrix of size \code{c(n, n)} with the
-//' pairwise distances of \code{x}.}
-//' \item{\code{dist_polysph_cross}: a matrix of distances of size
-//' \code{c(n, m)} with the cross distances between \code{x} and \code{y}.}
+//'   \item \code{dist_polysph}: a vector of size \code{n} with the distances
+//'   between \code{x} and \code{y}.
+//'   \item \code{dist_polysph_matrix}: a matrix of size \code{c(n, n)} with the
+//'   pairwise distances of \code{x}.
+//'   \item \code{dist_polysph_cross}: a matrix of distances of size
+//'   \code{c(n, m)} with the cross distances between \code{x} and \code{y}.
 //' }
 //' @examples
 //' # Example on S^2 x S^3 x S^1
@@ -270,22 +270,22 @@ arma::mat dist_polysph_cross(arma::mat x, arma::mat y, arma::uvec ind_dj,
 //' polysphere \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}
 //' \subset \mathbb{R}^p,}:
 //' \itemize{
-//' \item{\code{diamond_crossprod} computes the \eqn{n\times p\times p} cube
-//' whose rows are \eqn{\boldsymbol{X}_i \diamond \boldsymbol{X}_i'},
-//' \eqn{i = 1, \ldots, n}, and \eqn{\diamond} is a block-by-block product.}
-//' \item{\code{diamond_rcrossprod} computes the \eqn{n\times n\times r} cube
-//' formed by \eqn{(\boldsymbol{X}_{ik}' \boldsymbol{X}_{jk})_{ijk}},
-//' \eqn{k = 1, \ldots, r}.}
+//'   \item \code{diamond_crossprod} computes the \eqn{n\times p\times p} cube
+//'   whose rows are \eqn{\boldsymbol{X}_i \diamond \boldsymbol{X}_i'},
+//'   \eqn{i = 1, \ldots, n}, and \eqn{\diamond} is a block-by-block product.
+//'   \item \code{diamond_rcrossprod} computes the \eqn{n\times n\times r} cube
+//'   formed by \eqn{(\boldsymbol{X}_{ik}' \boldsymbol{X}_{jk})_{ijk}},
+//'   \eqn{k = 1, \ldots, r}.
 //' }
 //'
 //' @inheritParams kde_polysph
 //' @inheritParams proj_polysph
 //' @return
 //' \itemize{
-//' \item{\code{diamond_crossprod}: an array of size \code{c(nrow(X), ncol(X),
-//'  ncol(X))}.}
-//' \item{\code{diamond_rcrossprod}: an array of size \code{c(nrow(X), nrow(X),
-//' r)}.}
+//'   \item \code{diamond_crossprod}: an array of size \code{c(nrow(X), ncol(X),
+//'   ncol(X))}.
+//'   \item \code{diamond_rcrossprod}: an array of size \code{c(nrow(X),
+//'   nrow(X), r)}.
 //' }
 //' @examples
 //' d <- c(1, 2)

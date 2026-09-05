@@ -60,9 +60,9 @@ points.}
 }
 \value{
 \itemize{
-\item{\code{L}: a vector with the kernel evaluated at \code{t}.}
-\item{\code{grad_L}: a vector with the gradient evaluated at \code{x}.}
-\item{\code{hess_L}: a matrix with the Hessian evaluated at \code{x}.}
+  \item \code{L}: a vector with the kernel evaluated at \code{t}.
+  \item \code{grad_L}: a vector with the gradient evaluated at \code{x}.
+  \item \code{hess_L}: a matrix with the Hessian evaluated at \code{x}.
 }
 }
 \description{

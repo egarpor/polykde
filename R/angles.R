@@ -12,8 +12,8 @@
 #' the rows.
 #' @return
 #' \itemize{
-#' \item{\code{angles_to_torus}: the matrix \code{x}.}
-#' \item{\code{torus_to_angles}: the matrix \code{theta}.}
+#'   \item \code{angles_to_torus}: the matrix \code{x}.
+#'   \item \code{torus_to_angles}: the matrix \code{theta}.
 #' }
 #' @examples
 #' # Check changes of coordinates
@@ -82,8 +82,8 @@ torus_to_angles <- function(x) {
 #' \eqn{\mathbb{S}^{d}}. Assumed to be of unit norm by rows.
 #' @return
 #' \itemize{
-#' \item{\code{angles_to_sph}: the matrix \code{x}.}
-#' \item{\code{sph_to_angles}: the matrix \code{theta}.}
+#'   \item \code{angles_to_sph}: the matrix \code{x}.
+#'   \item \code{sph_to_angles}: the matrix \code{theta}.
 #' }
 #' @examples
 #' # Check changes of coordinates
@@ -164,8 +164,8 @@ sph_to_angles <- function(x) {
 #' @param d vector with the dimensions of the polysphere.
 #' @return
 #' \itemize{
-#' \item{\code{angles_to_polysph}: the matrix \code{x}.}
-#' \item{\code{polysph_to_angles}: the matrix \code{theta}.}
+#'   \item \code{angles_to_polysph}: the matrix \code{x}.
+#'   \item \code{polysph_to_angles}: the matrix \code{theta}.
 #' }
 #' @examples
 #' # Check changes of coordinates
@@ -270,8 +270,8 @@ fib_latt <- function(n) {
 #' @param y matrix of size \code{c(n, 2)} with the Hammer coordinates.
 #' @return
 #' \itemize{
-#' \item{\code{sph_to_hammer}: the matrix \code{y}.}
-#' \item{\code{hammer_to_sph}: the matrix \code{x}.}
+#'   \item \code{sph_to_hammer}: the matrix \code{y}.
+#'   \item \code{hammer_to_sph}: the matrix \code{x}.
 #' }
 #' @examples
 #' # Plot Fibonacci lattice
