@@ -44,7 +44,7 @@ plus the vector `d` of dimensions.
 ### Density estimation on the sphere
 
 ``` r
-set.seed(423432)
+set.seed(42)
 
 # A two-component von Mises--Fisher mixture on S^2
 d <- 2
@@ -53,10 +53,10 @@ X <- r_mvmf_polysph(n = 500, d = d, mu = rbind(c(0, 0, 1), c(1, 1, 0) / sqrt(2))
 
 # Bandwidth selection: rule of thumb and likelihood cross-validation
 bw_rot_polysph(X = X, d = d)$bw
-#> [1] 0.2122832
+#> [1] 0.2122153
 h <- bw_cv_polysph(X = X, d = d, type = "LCV")$bw
 h
-#> [1] 0.1344959
+#> [1] 0.1275119
 
 # Evaluate the kernel density estimator on a grid of spherical angles, with
 # theta_1 the polar angle and theta_2 the azimuth

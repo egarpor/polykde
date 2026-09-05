@@ -1,0 +1,330 @@
+---
+title: "`polykde`: Kernel Density Estimation with Polyspherical Data"
+author: "Eduardo García-Portugués and Andrea Meilán-Vila"
+date: "`r Sys.Date()`, v`r packageVersion('polykde')`"
+bibliography: polykde.bib
+biblio-style: apalike-custom
+output:
+  rmarkdown::html_vignette:
+    fig_caption: yes
+    toc: yes
+vignette: >
+  %\VignetteIndexEntry{polykde: Kernel Density Estimation with Polyspherical Data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+options(rmarkdown.html_vignette.check_title = FALSE)
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center",
+  comment = "#>"
+)
+```
+
+The polysphere $\mathbb{S}^{d_1,\ldots,d_r} := \mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}$ is the Cartesian product of $r$ spheres $\mathbb{S}^{d_j} := \{\boldsymbol{x} \in \mathbb{R}^{d_j + 1} : \|\boldsymbol{x}\| = 1\}$, and it hosts multivariate directional data such as sets of angles or unit 3D vectors, like the spokes of a skeletal shape representation. The `polykde` package implements the kernel density estimator on the polysphere, together with the bandwidth selectors, samplers, regression estimators, ridge estimators, and homogeneity tests studied in @Garcia-Portugues2026 and @Garcia-Portugues2023. This vignette showcases this functionality.
+
+```{r load}
+library(polykde)
+```
+
+## Polyspherical data
+
+A sample of $n$ points on $\mathbb{S}^{d_1,\ldots,d_r}$ is simply stored as a **matrix of size `c(n, sum(d) + r)`** whose rows are the $r$ unit-norm blocks concatenated by columns. The dimensions are given by the vector `d` of length `r`, so a point on $\mathbb{S}^1 \times \mathbb{S}^2$ occupies $(1 + 1) + (2 + 1) = 5$ columns.
+
+```{r data-layout}
+d <- c(1, 2)
+r <- length(d)
+X <- r_unif_polysph(n = 4, d = d)
+X
+dim(X)
+
+# The 0-based indexes delimiting the blocks: columns 1:2 and 3:5
+comp_ind_dj(d = d)
+
+# Each block has unit norm
+rowSums(X[, 1:2]^2)
+rowSums(X[, 3:5]^2)
+```
+
+Cartesian coordinates can be converted to and from angles. The generic pair is `angles_to_polysph()` / `polysph_to_angles()`; the shortcuts `angles_to_sph()` / `sph_to_angles()` handle a single sphere and `angles_to_torus()` / `torus_to_angles()` the torus $(\mathbb{S}^1)^r$.
+
+On $\mathbb{S}^2$ the first angle is the polar angle measured from $(1, 0, 0)^\top$ and the second is the azimuth, so that $(\cos\theta_1, \sin\theta_1\cos\theta_2, \sin\theta_1\sin\theta_2)^\top$.
+
+```{r data-angles}
+theta <- rbind(c(pi / 2, pi / 4), c(pi / 3, -pi / 2))
+x <- angles_to_sph(theta = theta)
+x
+sph_to_angles(x = x)
+```
+
+## Simulating polyspherical data
+
+The `r_*_polysph()` samplers draw from the uniform distribution, a product of von Mises--Fisher (vMF) distributions, and mixtures of the latter. Their `d_*` counterparts evaluate the corresponding densities with respect to the Lebesgue measure on the polysphere.
+
+```{r sim-vmf}
+set.seed(42)
+d <- c(2, 2)
+mu <- c(0, 0, 1, 1, 0, 0)
+kappa <- c(5, 10)
+X <- r_vmf_polysph(n = 500, d = d, mu = mu, kappa = kappa)
+
+# Densities at the modal point
+d_vmf_polysph(x = rbind(mu), d = d, mu = mu, kappa = kappa)
+d_unif_polysph(x = rbind(mu), d = d)
+```
+
+Mixtures take a matrix `mu` of modes (one per row), a matrix `kappa` of concentrations, and the vector `prop` of mixing proportions.
+
+```{r sim-mixture}
+mu_mix <- rbind(c(0, 0, 1, 1, 0, 0), c(1, 0, 0, 0, 0, 1))
+kappa_mix <- rbind(c(10, 10), c(20, 5))
+prop <- c(0.7, 0.3)
+X_mix <- r_mvmf_polysph(n = 500, d = d, mu = mu_mix, kappa = kappa_mix,
+                        prop = prop)
+head(d_mvmf_polysph(x = X_mix, d = d, mu = mu_mix, kappa = kappa_mix,
+                    prop = prop))
+```
+
+`r_path_s1r()` and `r_path_s2r()` generate samples concentrated about one-dimensional paths on $(\mathbb{S}^1)^r$ and $(\mathbb{S}^2)^r$, which is convenient for illustrating ridge and regression estimation.
+
+```{r sim-path}
+Y <- r_path_s2r(n = 200, r = 1, sigma = 0.1, spiral = TRUE)[, , 1]
+dim(Y)
+```
+
+## Kernels
+
+Three kernels are available through the `kernel` argument: `1` for von Mises--Fisher, `2` for Epanechnikov, and `3` for softplus (with shape parameter `k`). Each can be used as a *product* kernel over the $r$ blocks (`kernel_type = 1` or `"prod"`) or as a *spherically symmetric* kernel on the whole polysphere (`kernel_type = 2` or `"sph"`). The function `L()` evaluates the kernel profile and `c_kern()` its normalizing constant.
+
+```{r kern-plot, fig.asp = 0.7, fig.width = 6}
+t_grid <- seq(0, 2, l = 200)
+plot(t_grid, L(t = t_grid, kernel = "1"), type = "l", ylim = c(0, 1), lwd = 2,
+     xlab = "t", ylab = "L(t)")
+lines(t_grid, L(t = t_grid, kernel = "2"), col = 2, lwd = 2)
+lines(t_grid, L(t = t_grid, kernel = "3", k = 10), col = 3, lwd = 2)
+legend("topright", legend = c("von Mises-Fisher", "Epanechnikov", "softplus"),
+       lwd = 2, col = 1:3)
+
+# Normalizing constant of the product vMF kernel on (S^2)^2
+c_kern(h = c(0.2, 0.2), d = c(2, 2), kernel = 1, kernel_type = 1)
+```
+
+The efficiency of a kernel relative to a reference (the spherically symmetric Epanechnikov kernel by default) follows from the moments `b_d()` and `v_d()`.
+
+```{r kern-eff}
+eff_kern(d = 2, r = 2, kernel = "1", kernel_type = "sph")
+eff_kern(d = 2, r = 2, kernel = "3", k = 10, kernel_type = "sph")
+```
+
+## Kernel density estimation
+
+`kde_polysph()` evaluates $\hat{f}(\boldsymbol{x};\boldsymbol{h}) = \sum_{i=1}^n L_{\boldsymbol{h}}(\boldsymbol{x}, \boldsymbol{X}_i)$ at the rows of `x`. The sample `X`, the dimensions `d`, and the bandwidths `h` (one per sphere) are the only required inputs. Setting `log = TRUE` returns the log-density and `wrt_unif = TRUE` expresses it with respect to the uniform measure instead of the Lebesgue measure.
+
+```{r kde-sphere, fig.asp = 0.55, fig.width = 7}
+set.seed(42)
+d <- 2
+X <- r_mvmf_polysph(n = 500, d = d, mu = rbind(c(0, 0, 1), c(1, 1, 0) / sqrt(2)),
+                    kappa = rbind(10, 25), prop = c(0.6, 0.4))
+h <- bw_rot_polysph(X = X, d = d)$bw
+
+# Evaluation on a regular grid of spherical angles, with theta_1 the polar
+# angle and theta_2 the azimuth (see sph_to_angles())
+th_1 <- seq(0, pi, l = 100)
+th_2 <- seq(-pi, pi, l = 200)
+grid <- angles_to_sph(theta = as.matrix(expand.grid(th_1, th_2)))
+kde <- matrix(kde_polysph(x = grid, X = X, d = d, h = h), nrow = length(th_1))
+image(th_1, th_2, kde, col = hcl.colors(50, "Viridis"), useRaster = TRUE,
+      xlab = expression(theta[1]), ylab = expression(theta[2]))
+contour(th_1, th_2, kde, add = TRUE, col = "white", drawlabels = FALSE)
+points(sph_to_angles(x = X), pch = 16, cex = 0.4)
+```
+
+Two companions of the estimator are `r_kde_polysph()`, which samples from the fitted density, and `log_cv_kde_polysph()`, which returns the *leave-one-out* log-density at each sample point. The latter is a useful notion of depth: large values flag central observations and small ones flag outliers.
+
+```{r kde-cv}
+head(r_kde_polysph(n = 3, X = X, d = d, h = h))
+log_dens <- log_cv_kde_polysph(X = X, d = d, h = h)
+summary(drop(log_dens))
+```
+
+## Bandwidth selection
+
+Four selectors are available, in increasing order of computational cost:
+
+* `bw_mrot_polysph()`: a marginal rule of thumb, one sphere at a time.
+* `bw_rot_polysph()`: a rule of thumb minimizing the AMISE under a product of vMF reference densities.
+* `bw_cv_polysph(type = "LCV")`: likelihood cross-validation.
+* `bw_cv_polysph(type = "LSCV")`: least squares cross-validation.
+
+```{r bw-compare}
+set.seed(423432)
+d <- c(1, 2)
+mu <- c(0, 1, 0, 0, 1)
+kappa <- c(5, 10)
+X <- r_vmf_polysph(n = 200, d = d, mu = mu, kappa = kappa)
+
+bw_mrot_polysph(X = X, d = d)
+bw_rot_polysph(X = X, d = d)$bw
+bw_cv_polysph(X = X, d = d, type = "LCV")$bw
+```
+
+The LSCV loss is a Monte Carlo approximation by default, but a closed form is available for the vMF kernel through `exact_vmf = TRUE`. `common_h = TRUE` forces a single bandwidth across all spheres, which is the sensible choice when `r` is large and the spheres play symmetric roles, and `arcsinh = TRUE` stabilizes the loss numerically in high dimensions.
+
+```{r bw-lscv}
+bw_cv_polysph(X = X, d = d, type = "LSCV", exact_vmf = TRUE)$bw
+bw_cv_polysph(X = X, d = d, type = "LSCV", exact_vmf = TRUE,
+              common_h = TRUE)$bw
+```
+
+## Kernel regression
+
+`kre_polysph()` regresses a polyspherical response `Y` on a real covariate `X` by local constant (`p = 0`, Nadaraya--Watson) or local linear (`p = 1`) fitting, projecting the fit back onto the polysphere. `bw_cv_kre_polysph()` selects the bandwidth by cross-validation, returning both the minimizer `h_min` and the more conservative one-standard-error rule `h_1se`.
+
+```{r kre, fig.asp = 1, fig.width = 5, eval = requireNamespace("scatterplot3d", quietly = TRUE)}
+set.seed(423432)
+n <- 100
+x <- seq(0, 1, l = n)
+Y <- r_path_s2r(n = n, r = 1, sigma = 0.1, spiral = TRUE)[, , 1]
+h_kre <- bw_cv_kre_polysph(X = x, Y = Y, d = 2, p = 0, plot_cv = FALSE)$h_1se
+h_kre
+
+x_grid <- seq(-0.25, 1.25, l = 200)
+sc3 <- scatterplot3d::scatterplot3d(Y, pch = 16, xlim = c(-1, 1),
+                                    ylim = c(-1, 1), zlim = c(-1, 1),
+                                    xlab = "", ylab = "", zlab = "",
+                                    color = gray(0.5))
+sc3$points3d(kre_polysph(x = x_grid, X = x, Y = Y, d = 2, h = h_kre, p = 0),
+             type = "l", col = 2, lwd = 2)
+sc3$points3d(kre_polysph(x = x_grid, X = x, Y = Y, d = 2, h = h_kre, p = 1),
+             type = "l", col = 3, lwd = 2, lty = 2)
+legend("topleft", legend = c("Local constant", "Local linear"), lwd = 2,
+       lty = 1:2, col = 2:3)
+```
+
+## Density ridges
+
+The density ridge is the one-dimensional set of points where the density is at a local maximum in the direction of least curvature [@Ozertem2011; @Genovese2014]. `euler_ridge()` runs the Euler algorithm of @Garcia-Portugues2023 from a set of starting points `x`, using the ridge bandwidth `h` and the step size `h_euler`. The gradient and Hessian it relies upon are exported as `grad_hess_kde_polysph()` and `proj_grad_kde_polysph()`.
+
+```{r ridge, fig.asp = 1, fig.width = 5, eval = requireNamespace("scatterplot3d", quietly = TRUE)}
+set.seed(987204452)
+n <- 100
+X <- r_path_s2r(n = n, r = 1, spiral = FALSE, Theta = cbind(c(1, 0, 0)),
+                sigma = 0.35)[, , 1]
+rid <- euler_ridge(x = X, X = X, d = 2, h = 0.5, h_euler = 0.25, N = 30,
+                   keep_paths = TRUE, show_prog = FALSE)
+
+# The ridge points, the iterations spent, and the convergence flags
+head(rid$ridge_y)
+table(rid$iter)
+table(rid$conv)
+
+# Starting points, ridge points, and the paths joining them
+sc3 <- scatterplot3d::scatterplot3d(X, pch = 16, xlim = c(-1, 1),
+                                    ylim = c(-1, 1), zlim = c(-1, 1),
+                                    xlab = "x", ylab = "y", zlab = "z",
+                                    color = gray(0.5))
+for (k in seq_len(nrow(rid$paths))) {
+
+  sc3$points3d(t(rid$paths[k, , ]), type = "l", col = gray(0.75))
+
+}
+sc3$points3d(rid$ridge_y, pch = 16, cex = 0.75, col = 2)
+```
+
+`clean_euler_ridge()` removes non-convergent or spurious endpoints, and `index_ridge()` parameterizes the resulting curve, delivering scores that play the role of a first principal component along the ridge.
+
+```{r ridge-index}
+rid_clean <- clean_euler_ridge(e = rid, X = X)
+ind <- index_ridge(endpoints = rid_clean$ridge_y, X = X, d = 2,
+                   probs_scores = seq(0, 1, l = 50))
+summary(ind$scores_X)
+```
+
+For a polysphere with many spheres, `parallel_euler_ridge()` distributes the starting points across cores and `block_euler_ridge()` runs the Euler algorithm marginally on groups of spheres.
+
+## Homogeneity tests
+
+`hom_test_polysph()` performs permutation tests for the equality of the distributions of $k$ polyspherical samples. The omnibus statistic is the Jensen--Shannon distance between the $k$ kernel density estimators (`type = "jsd"`, the only one supporting $k > 2$); `"hd"` uses the Hellinger distance, while `"mean"` and `"scatter"` compare only the group means and scatter matrices.
+
+```{r hom-test}
+set.seed(423432)
+n <- c(100, 100)
+X1 <- r_vmf_polysph(n = n[1], d = 2, mu = c(0, 0, 1), kappa = 5)
+X2 <- r_vmf_polysph(n = n[2], d = 2, mu = c(0, 0, 1), kappa = 5)
+
+# Homogeneity holds
+hom_test_polysph(X = rbind(X1, X2), d = 2, labels = rep(1:2, times = n),
+                 type = "jsd", h = 0.5, B = 500, show_prog = FALSE)
+
+# It does not: the second sample is more concentrated
+X2 <- r_vmf_polysph(n = n[2], d = 2, mu = c(0, 0, 1), kappa = 20)
+hom_test_polysph(X = rbind(X1, X2), d = 2, labels = rep(1:2, times = n),
+                 type = "jsd", h = 0.5, B = 500, show_prog = FALSE)
+
+# The mean-based test is blind to this alternative
+hom_test_polysph(X = rbind(X1, X2), d = 2, labels = rep(1:2, times = n),
+                 type = "mean", B = 500, show_prog = FALSE)
+```
+
+## Hippocampus shapes
+
+The `hippocampus` dataset contains skeletal representations (s-reps) of the hippocampi of $177$ 6-month-old infants, $34$ of whom later developed autism [@Liu2021]. Each s-rep has $168$ spokes, so the spoke *directions* of a subject form a point on $(\mathbb{S}^2)^{168}$. Converting the `dirs` array into the `c(n, sum(d) + r)` layout is a one-liner.
+
+```{r hippo-data}
+data("hippocampus")
+dirs <- hippocampus$dirs
+r <- ncol(dirs)
+d <- rep(2, r)
+X <- do.call(cbind, args = lapply(1:r, function(i) dirs[, i, ]))
+dim(X)
+```
+
+Following @Garcia-Portugues2026, we use the spherically symmetric softplus kernel and a rule-of-thumb bandwidth, and then rank the subjects by their leave-one-out log-density. The extremes are the most representative and the most outlying hippocampi.
+
+```{r hippo-depth}
+h_mrot <- bw_mrot_polysph(X = X, d = d, kernel = 3, k = 100)
+h_rot <- bw_rot_polysph(X = X, d = d, bw0 = 2^(-1:2) %o% h_mrot,
+                        kernel = 3, kernel_type = 2, k = 100)$bw
+log_dens <- log_cv_kde_polysph(X = X, d = d, h = h_rot, wrt_unif = TRUE,
+                               kernel = 3, kernel_type = 2, k = 100)
+deep <- which.max(log_dens)
+outly <- which.min(log_dens)
+c("deepest" = deep, "most outlying" = outly)
+```
+
+`view_srep()` displays an s-rep, statically via `scatterplot3d` or interactively via `rgl`.
+
+```{r hippo-srep, fig.asp = 0.5, fig.width = 7, eval = requireNamespace("scatterplot3d", quietly = TRUE)}
+par(mfrow = c(1, 2))
+titles <- c("Deepest", "Most outlying")
+for (j in 1:2) {
+
+  i <- c(deep, outly)[j]
+  view_srep(base = hippocampus$base[i, , ], dirs = dirs[i, , ],
+            bdry = hippocampus$bdry[i, , ], static = TRUE, main = titles[j])
+
+}
+```
+
+Finally, a homogeneity test compares the spoke directions of the two diagnostic groups. A small number of permutations is used here to keep the vignette light; @Garcia-Portugues2026 uses `B = 5e3`.
+
+```{r hippo-test}
+set.seed(423432)
+hom_test_polysph(X = X, d = d, labels = hippocampus$ids_labs, type = "jsd",
+                 h = 4 * h_rot, kernel = 3, kernel_type = 2, k = 100,
+                 B = 100, show_prog = FALSE)
+```
+
+The scripts in the `/replication` folder of the [GitHub repository](https://github.com/egarpor/polykde) reproduce the complete numerical experiments and data applications of @Garcia-Portugues2026 and its Supplementary Material.
+
+## Citation
+
+```{r citation, eval = FALSE}
+citation("polykde")
+```
+
+## References
