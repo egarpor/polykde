@@ -17,8 +17,8 @@ stopifnot(packageVersion("DirStats") >= "1.0.0")
 R <- 100
 nruns <- 25
 
-# Fork-based workers over the repeated splits
-n_cores <- min(12, detectCores())
+# Cores for parallelization
+n_cores <- 12
 
 # K grid: dense up to 10, then every third K up to the dataset's frontier
 # K_top = 0.7 * (largest class) / 3, the EM-feasibility limit of a class fit
@@ -52,8 +52,8 @@ sqrt_map <- function(X) {
 
 }
 
-# L2 map of features to S^{p-1}: columns centered/scaled with the training
-# statistics ctr and scl to avoid leakage
+# L2 normalization: columns centered/scaled with the training statistics
+# ctr and scl to avoid leakage
 l2_map <- function(X, ctr, scl) {
 
   X <- sweep(sweep(as.matrix(X), 2, ctr, "-"), 2, scl, "/")
@@ -63,26 +63,46 @@ l2_map <- function(X, ctr, scl) {
 
 }
 
-## Classifiers
+## Bandwidth selectors
 {
 
-# CV (LSCV, the selector analyzed in the paper) and ROT bandwidths; X is the
-# pooled training set (com) or one class (cls)
+# CV selector with vMF kernel and arcsinh trick
 bw_cv <- function(X, d) {
 
-  # suppressWarnings: optim()'s generic advisory against 1-d Nelder-Mead,
-  # emitted by bw_cv_polysph() on every call; constant chatter, no signal
+  # suppressWarnings to silence the 1-d Nelder-Mead warning
   suppressWarnings(
     bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV", exact_vmf = TRUE,
                   arcsinh = TRUE, spline = TRUE)$bw)
 
 }
 
+# ROT selector
 bw_rot <- function(X, d) {
 
   bw_rot_polysph(X = X, d = d, kernel = 1)$bw
 
 }
+
+# EMI selector (depends on Monte Carlo, so seed is fixed)
+bw_emi <- function(X, fit, seed) {
+
+  set.seed(seed)
+  bw_dir_emi(data = X, fit_mix = fit_to_mix(fit), optim = TRUE,
+             plot_it = FALSE)$h_opt
+
+}
+
+# AMI selector
+bw_ami <- function(X, fit) {
+
+  bw_dir_ami(data = X, fit_mix = fit_to_mix(fit))
+
+}
+
+}
+
+## Mixture fitting
+{
 
 # Convert a movMF fit (theta = kappa * mu, alpha) to the DirStats fit_mix format
 fit_to_mix <- function(fit) {
@@ -93,21 +113,6 @@ fit_to_mix <- function(fit) {
 
 }
 
-# EMI and AMI plug-in bandwidths from a fitted vMF mixture as reference
-# (DirStats). EMI is Monte Carlo (seeded); AMI is closed-form.
-bw_emi <- function(X, fit, seed) {
-
-  set.seed(seed)
-  bw_dir_emi(data = X, fit_mix = fit_to_mix(fit), optim = TRUE,
-             plot_it = FALSE)$h_opt
-
-}
-
-bw_ami <- function(X, fit) {
-
-  bw_dir_ami(data = X, fit_mix = fit_to_mix(fit))
-
-}
 
 # movMF fit with k components; the single place where an EM failure is
 # absorbed, into NULL (counted downstream)
@@ -116,6 +121,11 @@ fit_movmf <- function(X, k) {
   tryCatch(movMF(X, k = k, nruns = nruns), error = function(e) NULL)
 
 }
+
+}
+
+## Classifiers
+{
 
 # kde log-density matrix (n_new x n_class): one common bandwidth h, or
 # per-class selection via bwfun
@@ -137,6 +147,11 @@ classify <- function(ld, logprior, cls) {
   cls[max.col(sweep(ld, 2, logprior, "+"), ties.method = "first")]
 
 }
+
+}
+
+## Data splitting and embedding
+{
 
 # Remove coincident points before splitting: ties make the CV loss unbounded
 # below (the leave-one-out density diverges as h -> 0). Only LetterRecognition
@@ -387,7 +402,7 @@ for (z in res) {
 
 }
 
-## Figure: accuracy vs K
+## Final figure
 {
 
 # One row per (dataset, K, method) with the mean and sd over splits; the
