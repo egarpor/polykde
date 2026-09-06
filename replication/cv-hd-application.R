@@ -10,6 +10,7 @@ stopifnot(packageVersion("polykde") >= "1.2.1")
 stopifnot(packageVersion("DirStats") >= "1.0.0")
 
 ## Settings
+{
 
 # Output paths
 paper_dir <- "/Users/Eduardo/GitHub/polykde/polykde/paper"
@@ -36,7 +37,10 @@ fam <- c(CV = "kde-CV", EMI = "kde-EMI", AMI = "kde-AMI", ROT = "kde-ROT",
          movMF_BIC = "movMF-BIC", movMF_AIC = "movMF-AIC")
 meth <- paste(rep(names(fam), each = 2), c("com", "cls"), sep = "_")
 
+}
+
 ## Sphere embeddings
+{
 
 # Square-root map of a composition to the sphere positive orthant
 sqrt_map <- function(X) {
@@ -55,7 +59,10 @@ l2_map <- function(X, ctr, scl) {
 
 }
 
+}
+
 ## Density-based classification
+{
 
 # CV (LSCV, the selector analyzed in the paper) and ROT bandwidths. X is
 # whatever sample the bandwidth is selected on: the pooled training set (com)
@@ -121,18 +128,16 @@ kda_logdens <- function(Ztr, ytr, Znew, d, h = NULL, bwfun = NULL,
 
 }
 
-# Fit the movMF path k = 1, ..., Kc on X; returns the successful fits and their
-# component counts. Kc caps the components at one parameter per observation: a
-# vMF component on S^d costs d + 2 parameters (mu, kappa, weight) and
-# ncol(X) = d + 1, so Kc = n / (d + 2). This cap binds before Kmax on the
-# per-class fits.
+# Fit the movMF path k = 1, ..., Kc on X. Kc caps the components at one
+# parameter per observation: a vMF component on S^d costs d + 2 parameters
+# (mu, kappa, weight) and ncol(X) = d + 1, so Kc = n / (d + 2). This cap binds
+# before Kmax on the per-class fits. An EM failure at any k errors the split,
+# which repeated_error() drops and reports.
 mvmf_path <- function(X) {
 
   Kc <- max(1L, min(Kmax, floor(nrow(X) / (ncol(X) + 1))))
-  fits <- lapply(seq_len(Kc), function(k)
-    tryCatch(movMF(X, k = k, nruns = nruns), error = function(e) NULL))
-  ok <- which(!sapply(fits, is.null))
-  list(fits = fits[ok], k = ok)
+  list(fits = lapply(seq_len(Kc), function(k)
+    movMF(X, k = k, nruns = nruns)), k = seq_len(Kc))
 
 }
 
@@ -159,9 +164,7 @@ mvmf_logdens <- function(Ztr, ytr, Znew, common) {
 
         Xl <- Ztr[ytr == cls[j], , drop = FALSE]
         k <- max(1L, min(K, floor(nrow(Xl) / (ncol(Xl) + 1))))
-        f <- tryCatch(movMF(Xl, k = k, nruns = nruns), error = function(e)
-          tryCatch(movMF(Xl, k = 1, nruns = nruns), error = function(e) NULL))
-        m[, j] <- dens(f)
+        m[, j] <- dens(movMF(Xl, k = k, nruns = nruns))
 
       }
       m
@@ -199,7 +202,7 @@ mvmf_logdens <- function(Ztr, ytr, Znew, common) {
 # Assign each row to the class maximizing log-density plus log-prior.
 classify <- function(ld, logprior, cls) {
 
-  cls[max.col(sweep(ld, 2, logprior, "+"))]
+  cls[max.col(sweep(ld, 2, logprior, "+"), ties.method = "first")]
 
 }
 
@@ -228,7 +231,7 @@ one_split <- function(ds, seed, prop = 0.7) {
   tr <- unlist(lapply(cls, function(l) {
 
     i <- which(y == l)
-    sample(i, max(2L, round(prop * length(i))))
+    sample(i, round(prop * length(i)))
 
   }))
   ytr <- droplevels(y[tr])
@@ -307,7 +310,10 @@ repeated_error <- function(ds, R = 100) {
 
 }
 
+}
+
 ## Datasets
+{
 
 # Llobregat-basin river hydrochemistry (compositions::Hydrochem). The first p of
 # the 14 chemical parts form a composition mapped to S^{p-1} by the sqrt map.
@@ -365,7 +371,10 @@ subset_ds <- function(ds, ord, p) {
 
 }
 
+}
+
 ## Experiments
+{
 
 # Repeated-split errors for each dataset over a grid of dimensions (Hydrochem
 # via nested subcompositions; Vowel and LetterRecognition via nested feature
@@ -401,7 +410,10 @@ if (!file.exists(results_file)) {
 
 }
 
+}
+
 ## Table
+{
 
 load(results_file)
 acc_mean <- function(err) colMeans(1 - err, na.rm = TRUE)[meth]
@@ -446,3 +458,5 @@ for (z in info) {
 }
 tex <- c(tex, "\\bottomrule", "\\end{tabular}")
 writeLines(tex, file.path(paper_dir, "tab_realdata.tex"))
+
+}

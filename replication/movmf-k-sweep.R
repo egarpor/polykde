@@ -1,13 +1,8 @@
 
-# Oracle-K sweep for the movMF competitor in the real-data application
-# (Section 5): test accuracy of the movMF classifier at EVERY admissible
-# number of components K, over the same R stratified splits as the main
-# pipeline. "Admissible" means one parameter per observation within each
-# class, K <= n_c / (d + 2), the entire range where the mixture is not
-# overparameterized; each class uses min(K, its own cap) components. The sweep
-# shows the accuracy-optimal K is interior to the explored range, so the
-# ceilings of cv-hd-application.R do not bind for the comparison with the kde.
-# Writes movmf-k-sweep.RData (cache) and paper/img/movmf_k_sweep.pdf.
+# Oracle-K sweep for the movMF competitor in Section 5: test accuracy at every
+# admissible number of components K (one parameter per observation, so
+# K <= n_c / (d + 2) within each class), over the same R stratified splits as
+# cv-hd-application.R. Writes movmf-k-sweep.RData and img/movmf_k_sweep.pdf.
 
 # The main pipeline's cache must exist: sourcing the script below would
 # otherwise trigger its full recompute inside this process
@@ -50,9 +45,8 @@ split_embed <- function(ds, seed, prop = 0.7) {
 
 }
 
-# One split: accuracy of the movMF classifier at every shared K = 1, ..., K_top
-# (each class truncated at its own parameter cap), plus the accuracy at the
-# per-class BIC selection (the cls variant of the main pipeline)
+# One split: movMF accuracy at every shared K = 1, ..., K_top (each class
+# truncated at its own cap), plus the per-class BIC selection
 sweep_split <- function(ds, seed, K_top) {
 
   sp <- split_embed(ds, seed)
@@ -60,7 +54,7 @@ sweep_split <- function(ds, seed, K_top) {
   logprior <- log(as.numeric(table(sp$ytr)) / length(sp$ytr))
   err <- function(ld) mean(classify(ld, logprior, cls) != sp$yte)
 
-  # Full path and test log-densities for each class, up to its own cap
+  # Path and test log-densities per class, up to its own cap
   paths <- lapply(cls, function(l) {
 
     p <- mvmf_path(sp$Ztr[sp$ytr == l, , drop = FALSE])
@@ -70,8 +64,7 @@ sweep_split <- function(ds, seed, K_top) {
 
   })
 
-  # Assemble the classifier at each shared K by indexing the stored densities:
-  # each class uses its largest fitted k not exceeding K
+  # Each class uses its largest fitted k not exceeding K
   acc_K <- sapply(seq_len(K_top), function(K) {
 
     ld <- sapply(paths, function(p) p$ld[, which.max(p$k * (p$k <= K))])
@@ -100,8 +93,14 @@ if (!file.exists(sweep_file)) {
     cat(ds$name, "K_top =", K_top, "\n", file = stderr())
     acc <- mclapply(seq_len(R), function(s)
       tryCatch(sweep_split(ds, seed = s, K_top = K_top),
-               error = function(e) rep(NA_real_, K_top + 1)),
-      mc.cores = n_cores)
+               error = function(e) NULL), mc.cores = n_cores)
+    bad <- !sapply(acc, is.numeric)
+    if (any(bad)) {
+
+      acc[bad] <- list(rep(NA_real_, K_top + 1))
+      warning(sum(bad), " of ", R, " splits failed for ", ds$name, ".")
+
+    }
     list(name = ds$name, d = ds$d, K_top = K_top, acc = do.call(rbind, acc))
 
   })
