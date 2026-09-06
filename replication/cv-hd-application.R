@@ -2,44 +2,11 @@
 # Required libraries
 library(polykde)
 library(movMF)
-library(DirStats)
 library(mlbench)
 library(compositions)
 library(parallel)
 library(ggplot2)
-stopifnot(packageVersion("polykde") >= "1.2.1")
-stopifnot(packageVersion("DirStats") >= "1.0.0")
-
-## Settings
-{
-
-# Number of stratified train/test splits and movMF random starts per fit
-R <- 100
-nruns <- 25
-
-# Cores for parallelization
-n_cores <- 12
-
-# K grid: dense up to 10, then every third K up to the dataset's frontier
-# K_top = 0.7 * (largest class) / 3, the EM-feasibility limit of a class fit
-# (a component needs a few observations). The stricter one-parameter-per-
-# observation cap n / (d + 2) truncates movMF below its accuracy optimum, so
-# it is not used.
-k_grid <- function(K_top) {
-
-  if (K_top > 10) {
-
-    sort(unique(c(1:10, seq(13, K_top, by = 3), K_top)))
-
-  } else {
-
-    seq_len(K_top)
-
-  }
-
-}
-
-}
+stopifnot(packageVersion("polykde") >= "1.3.0")
 
 ## Sphere embeddings
 {
@@ -63,7 +30,47 @@ l2_map <- function(X, ctr, scl) {
 
 }
 
-## Bandwidth selectors
+## Datasets
+{
+
+# Llobregat-basin river hydrochemistry (compositions::Hydrochem): 14 chemical
+# parts mapped to S^13 by the sqrt map, 4 river classes
+load_hydrochem <- function() {
+
+  data("Hydrochem", package = "compositions")
+  parts <- c("H", "Na", "K", "Mg", "Ca", "Sr", "Ba", "NH4", "Cl", "NO3",
+             "PO4", "SO4", "HCO3", "TOC")
+  list(X = as.matrix(Hydrochem[, parts]), y = factor(Hydrochem$River),
+       d = length(parts) - 1, embed = "sqrt", name = "Hydrochem")
+
+}
+
+# Deterding vowel recognition (mlbench::Vowel): the 9 LPC features V2:V10 (V1 is
+# a speaker indicator) map to S^8, with 11 vowel classes
+load_vowel <- function() {
+
+  data("Vowel", package = "mlbench")
+  feat <- paste0("V", 2:10)
+  list(X = as.matrix(Vowel[, feat]), y = factor(Vowel$Class),
+       d = length(feat) - 1, embed = "l2", name = "Vowel")
+
+}
+
+# Letter recognition (mlbench::LetterRecognition): 16 features map to S^15, with
+# 26 classes
+load_letter <- function() {
+
+  data("LetterRecognition", package = "mlbench")
+  feat <- setdiff(names(LetterRecognition), "lettr")
+  list(X = as.matrix(LetterRecognition[, feat]),
+       y = factor(LetterRecognition$lettr),
+       d = length(feat) - 1, embed = "l2", name = "LetterRecognition")
+
+}
+
+}
+
+## Bandwidth selectors and movMF fits
 {
 
 # CV selector with vMF kernel and arcsinh trick
@@ -83,39 +90,7 @@ bw_rot <- function(X, d) {
 
 }
 
-# EMI selector (depends on Monte Carlo, so seed is fixed)
-bw_emi <- function(X, fit, seed) {
-
-  set.seed(seed)
-  bw_dir_emi(data = X, fit_mix = fit_to_mix(fit), optim = TRUE,
-             plot_it = FALSE)$h_opt
-
-}
-
-# AMI selector
-bw_ami <- function(X, fit) {
-
-  bw_dir_ami(data = X, fit_mix = fit_to_mix(fit))
-
-}
-
-}
-
-## Mixture fitting
-{
-
-# Convert a movMF fit (theta = kappa * mu, alpha) to the DirStats fit_mix format
-fit_to_mix <- function(fit) {
-
-  kap <- sqrt(rowSums(fit$theta^2))
-  list(best_fit = list(mu_hat = fit$theta / kap, kappa_hat = kap,
-                       p_hat = fit$alpha))
-
-}
-
-
-# movMF fit with k components; the single place where an EM failure is
-# absorbed, into NULL (counted downstream)
+# movMF fit with k components, with error catching
 fit_movmf <- function(X, k) {
 
   tryCatch(movMF(X, k = k, nruns = nruns), error = function(e) NULL)
@@ -153,9 +128,7 @@ classify <- function(ld, logprior, cls) {
 ## Data splitting and embedding
 {
 
-# Remove coincident points before splitting: ties make the CV loss unbounded
-# below (the leave-one-out density diverges as h -> 0). Only LetterRecognition
-# is affected, via its integer features.
+# Remove coincident points before splitting
 dedup_ds <- function(ds) {
 
   keep <- !duplicated(round(ds$X, 10))
@@ -195,11 +168,11 @@ split_embed <- function(ds, seed, prop = 0.7) {
 
 }
 
-# One split: test accuracy of kde-CV (common and per-class bandwidth) and
-# kde-ROT and, for each K in K_grid, of kde-EMI/kde-AMI with the pooled
-# K-component mixture as reference and of the movMF classifier with per-class
-# K-component fits (each class capped at its frontier). Every quantity is
-# caught individually: a failure yields NA for it only, counted by run_ds().
+# One split: test accuracy of kde-CV and kde-ROT (pooled and per-class
+# bandwidth), of the movMF classifier at each K in K_grid (per-class
+# K-component fits, each class capped at its frontier), and of movMF with K
+# chosen by BIC (shared across classes or per class). Every quantity is caught
+# individually: a failure yields NA for it only, counted by run_ds().
 sweep_split <- function(ds, seed, K_grid) {
 
   sp <- split_embed(ds, seed)
@@ -208,29 +181,19 @@ sweep_split <- function(ds, seed, K_grid) {
   logprior <- log(as.numeric(table(sp$ytr)) / length(sp$ytr))
   acc <- function(ld) mean(classify(ld, logprior, cls) == sp$yte)
   acc_h <- function(h) acc(kda_logdens(sp$Ztr, sp$ytr, sp$Zte, d, h = h))
+  acc_cls <- function(bwfun) acc(kda_logdens(sp$Ztr, sp$ytr, sp$Zte, d,
+                                             bwfun = bwfun))
   safe <- function(expr) tryCatch(expr, error = function(e) NA_real_)
 
-  # Mixture-free kdes: bandwidths (kept for later analysis) and accuracies
+  # kdes: bandwidths (kept for later analysis) and accuracies
   h_cv <- safe(bw_cv(sp$Ztr, d))
   h_rot <- safe(bw_rot(sp$Ztr, d))
-  flat <- c(CV_com = safe(acc_h(h_cv)),
-            CV_cls = safe(acc(kda_logdens(sp$Ztr, sp$ytr, sp$Zte, d,
-                                          bwfun = bw_cv))),
-            ROT_com = safe(acc_h(h_rot)),
-            ROT_cls = safe(acc(kda_logdens(sp$Ztr, sp$ytr, sp$Zte, d,
-                                           bwfun = bw_rot))))
+  kde <- c(CV_com = safe(acc_h(h_cv)), CV_cls = safe(acc_cls(bw_cv)),
+           ROT_com = safe(acc_h(h_rot)), ROT_cls = safe(acc_cls(bw_rot)))
 
-  # Pooled K-component mixtures, passed directly to EMI and AMI
-  pooled <- lapply(K_grid, function(K) fit_movmf(sp$Ztr, k = K))
-  h_emi <- sapply(seq_along(K_grid), function(i)
-    safe(bw_emi(sp$Ztr, pooled[[i]], seed = seed * 1000L + K_grid[i])))
-  h_ami <- sapply(pooled, function(f) safe(bw_ami(sp$Ztr, f)))
-  emi <- sapply(h_emi, function(h) safe(acc_h(h)))
-  ami <- sapply(h_ami, function(h) safe(acc_h(h)))
-
-  # movMF classifier: per-class fits at the grid k's up to min(K, class
-  # frontier), each distinct k fitted once per class; a class whose fit at
-  # some k fails uses its largest successful k below it (dropped fits counted)
+  # movMF: per-class fits at the grid k's up to min(K, class frontier), each
+  # distinct k fitted once per class; a class whose fit at some k fails uses
+  # its largest successful k below it (dropped fits counted)
   Xc <- lapply(cls, function(l) sp$Ztr[sp$ytr == l, , drop = FALSE])
   cap <- sapply(Xc, function(X) max(1L, floor(nrow(X) / 3)))
   class_fits <- Map(function(X, kc) {
@@ -238,84 +201,56 @@ sweep_split <- function(ds, seed, K_grid) {
     ks <- unique(pmin(K_grid, kc))
     fits <- lapply(ks, function(k) fit_movmf(X, k = k))
     ok <- !sapply(fits, is.null)
-    list(fits = fits[ok], k = ks[ok], n_fail = sum(!ok))
+    list(fits = fits[ok], k = ks[ok], bic = sapply(fits[ok], BIC),
+         n_fail = sum(!ok))
 
   }, Xc, cap)
-  mv_acc <- function(k_of) safe(acc(sapply(class_fits, function(cf) {
 
-    f <- cf$fits[[k_of(cf)]]
+  # Classifier from one fit index per class; at a shared K, each class uses
+  # its largest fitted k <= K
+  mv_acc <- function(idx) safe(acc(sapply(class_fits, function(cf) {
+
+    f <- cf$fits[[idx(cf)]]
     dmovMF(sp$Zte, theta = f$theta, alpha = f$alpha, log = TRUE)
 
   })))
-  mv <- sapply(K_grid, function(K)
-    mv_acc(function(cf) which.max(cf$k * (cf$k <= K))))
+  at_K <- function(K) function(cf) which.max(cf$k * (cf$k <= K))
+  mv <- sapply(K_grid, function(K) mv_acc(at_K(K)))
 
-  # movMF with K chosen by BIC (text-only, for the pooled vs per-class
-  # comparison): once on the pooled fits, then per-class fits at that K, or
-  # on each class's own fits
-  ok <- !sapply(pooled, is.null)
-  K_bic <- safe(K_grid[ok][which.min(sapply(pooled[ok], BIC))])
-  mv_bic <- c(
-    mv_bic_com = mv_acc(function(cf) which.max(cf$k * (cf$k <= K_bic))),
-    mv_bic_cls = mv_acc(function(cf) which.min(sapply(cf$fits, BIC))))
+  # movMF with K chosen by BIC (text-only): one K shared across classes (BIC
+  # of the class-conditional model, the sum of the class BICs at K) or per
+  # class
+  bic_K <- safe(sapply(K_grid, function(K)
+    sum(sapply(class_fits, function(cf) cf$bic[at_K(K)(cf)]))))
+  mv_bic <- c(mv_bic_com = mv_acc(at_K(K_grid[which.min(bic_K)])),
+              mv_bic_cls = mv_acc(function(cf) which.min(cf$bic)))
 
-  # Result: named accuracies, the selected bandwidths, and the number of
-  # failed EM fits
-  c(flat, setNames(emi, paste0("emi", K_grid)),
-    setNames(ami, paste0("ami", K_grid)), setNames(mv, paste0("mv", K_grid)),
-    mv_bic, h_CV = h_cv, h_ROT = h_rot,
-    setNames(h_emi, paste0("hemi", K_grid)),
-    setNames(h_ami, paste0("hami", K_grid)),
-    n_fail = sum(!ok) + sum(sapply(class_fits, `[[`, "n_fail")))
+  # Result: named accuracies, the kde bandwidths, and the failed-fit count
+  c(kde, setNames(mv, paste0("mv", K_grid)), mv_bic, h_CV = h_cv,
+    h_ROT = h_rot, n_fail = sum(sapply(class_fits, `[[`, "n_fail")))
 
 }
 
 }
 
-## Datasets
-{
-
-# Llobregat-basin river hydrochemistry (compositions::Hydrochem): 14 chemical
-# parts mapped to S^13 by the sqrt map, 4 river classes
-load_hydrochem <- function() {
-
-  data("Hydrochem", package = "compositions")
-  parts <- c("H", "Na", "K", "Mg", "Ca", "Sr", "Ba", "NH4", "Cl", "NO3",
-             "PO4", "SO4", "HCO3", "TOC")
-  list(X = as.matrix(Hydrochem[, parts]), y = factor(Hydrochem$River),
-       d = length(parts) - 1, embed = "sqrt", name = "Hydrochem")
-
-}
-
-# Deterding vowel recognition (mlbench::Vowel): the 9 LPC features V2:V10 (V1 is
-# a speaker indicator) map to S^8, with 11 vowel classes
-load_vowel <- function() {
-
-  data("Vowel", package = "mlbench")
-  feat <- paste0("V", 2:10)
-  list(X = as.matrix(Vowel[, feat]), y = factor(Vowel$Class),
-       d = length(feat) - 1, embed = "l2", name = "Vowel")
-
-}
-
-# Letter recognition (mlbench::LetterRecognition): 16 features map to S^15, with
-# 26 classes; subsampled to n_sub rows for tractable repeated splits
-load_letter <- function(n_sub = 5000, seed = 1) {
-
-  data("LetterRecognition", package = "mlbench")
-  set.seed(seed)
-  i <- sample(nrow(LetterRecognition), min(n_sub, nrow(LetterRecognition)))
-  feat <- setdiff(names(LetterRecognition), "lettr")
-  list(X = as.matrix(LetterRecognition[i, feat]),
-       y = droplevels(LetterRecognition$lettr[i]),
-       d = length(feat) - 1, embed = "l2", name = "LetterRecognition")
-
-}
-
-}
 
 ## Experiments
 {
+
+# Number of stratified train/test splits and movMF random starts per fit
+R <- 100
+nruns <- 25
+
+# Cores for parallelization
+n_cores <- 12
+
+# K grid dense up to 10, then geometrically spaced
+k_grid <- function(K_top) {
+
+  geo <- round(10 * 1.25^(1:40))
+  sort(unique(c(seq_len(min(10, K_top)), geo[geo < K_top], K_top)))
+
+}
 
 # Run one dataset: de-duplicate, set the K grid from the largest class, sweep
 # the splits in parallel, report the failure counts
@@ -373,14 +308,13 @@ res <- lapply(datasets, function(ds) {
 
 }
 
-## Summary
+## Paper numbers and figure
 {
 
 # Mean over the splits, NA unless at least half of them are available
 mean_ok <- function(v) if (sum(!is.na(v)) >= R / 2) mean(v, na.rm = TRUE) else NA
 
-# Numbers quoted in the text: mean (sd) accuracy, in %, of the mixture-free
-# kdes and the maximum over K of each mixture curve
+# Numbers quoted in the text
 ms <- function(v) sprintf("%.1f (%.1f)", mean(v, na.rm = TRUE),
                           sd(v, na.rm = TRUE))
 for (z in res) {
@@ -390,23 +324,13 @@ for (z in res) {
       " kde-ROT", ms(A[, "ROT_com"]), " cls", ms(A[, "ROT_cls"]),
       " movMF-BIC", ms(A[, "mv_bic_com"]), " cls", ms(A[, "mv_bic_cls"]),
       "\n")
-  for (pre in c("emi", "ami", "mv")) {
-
-    m <- apply(A[, paste0(pre, z$K_grid), drop = FALSE], 2, mean_ok)
-    cat("  ", pre, ": max ", sprintf("%.1f", max(m, na.rm = TRUE)), " at K = ",
-        z$K_grid[which.max(m)], "\n", sep = "")
-
-  }
+  m <- apply(A[, paste0("mv", z$K_grid), drop = FALSE], 2, mean_ok)
+  cat("  movMF: max ", sprintf("%.1f", max(m, na.rm = TRUE)), " at K = ",
+      z$K_grid[which.max(m)], "\n", sep = "")
 
 }
 
-}
-
-## Final figure
-{
-
-# One row per (dataset, K, method) with the mean and sd over splits; the
-# mixture-free methods are replicated along K
+# Figure
 df <- do.call(rbind, lapply(res, function(z) {
 
   stat <- function(cols, method) {
@@ -437,7 +361,7 @@ gg <- ggplot(df, aes(x = K, y = acc, color = method, linetype = method)) +
   scale_fill_manual(values = col) +
   scale_linetype_manual(values = lty) +
   scale_x_continuous(transform = "log10",
-                     breaks = c(1, 2, 3, 5, 10, 20, 30, 50)) +
+                     breaks = c(1, 2, 3, 5, 10, 20, 50, 100, 200)) +
   coord_cartesian(ylim = c(0, 1)) +
   labs(x = expression("Number of mixture components" ~ K),
        y = "Test accuracy", color = "", linetype = "") +
