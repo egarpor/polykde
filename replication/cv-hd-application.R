@@ -6,36 +6,38 @@ library(DirStats)
 library(mlbench)
 library(compositions)
 library(parallel)
+library(ggplot2)
 stopifnot(packageVersion("polykde") >= "1.2.1")
 stopifnot(packageVersion("DirStats") >= "1.0.0")
 
 ## Settings
 {
 
-# Output paths
-paper_dir <- "/Users/Eduardo/GitHub/polykde/polykde/paper"
-cache_dir <- file.path(Sys.getenv("HOME"), ".cvapp-cache")
-dir.create(cache_dir, showWarnings = FALSE, recursive = TRUE)
-
-# Number of stratified train/test splits and movMF fits
+# Number of stratified train/test splits and movMF random starts per fit
 R <- 100
-
-# Ceiling of the pooled movMF path. BIC still decreases at k = 12 on the pooled
-# samples (a ceiling, not a selected value), but doubling it to 25 left the
-# movMF accuracies unchanged or worse (checked on seeds 1-3), so it does not
-# bind for the classification comparison. Per-class fits are capped tighter by
-# mvmf_path().
-Kmax <- 12
 nruns <- 25
 
-# Number of fork-based workers spread over the repeated splits
+# Fork-based workers over the repeated splits
 n_cores <- min(12, detectCores())
 
-# Twelve methods: MISE-targeting selectors (CV, EMI), AMISE-targeting selectors
-# (AMI, ROT), and the parametric movMF competitor, each in com/cls variants
-fam <- c(CV = "kde-CV", EMI = "kde-EMI", AMI = "kde-AMI", ROT = "kde-ROT",
-         movMF_BIC = "movMF-BIC", movMF_AIC = "movMF-AIC")
-meth <- paste(rep(names(fam), each = 2), c("com", "cls"), sep = "_")
+# K grid: dense up to 10, then every third K up to the dataset's frontier
+# K_top = 0.7 * (largest class) / 3, the EM-feasibility limit of a class fit
+# (a component needs a few observations). The stricter one-parameter-per-
+# observation cap n / (d + 2) truncates movMF below its accuracy optimum, so
+# it is not used.
+k_grid <- function(K_top) {
+
+  if (K_top > 10) {
+
+    sort(unique(c(1:10, seq(13, K_top, by = 3), K_top)))
+
+  } else {
+
+    seq_len(K_top)
+
+  }
+
+}
 
 }
 
@@ -50,8 +52,8 @@ sqrt_map <- function(X) {
 
 }
 
-# L2 map of general features to S^{P-1}. Columns are centered/scaled with the
-# training statistics ctr and scl (passed in) to avoid leakage.
+# L2 map of features to S^{p-1}: columns centered/scaled with the training
+# statistics ctr and scl to avoid leakage
 l2_map <- function(X, ctr, scl) {
 
   X <- sweep(sweep(as.matrix(X), 2, ctr, "-"), 2, scl, "/")
@@ -61,13 +63,11 @@ l2_map <- function(X, ctr, scl) {
 
 }
 
-## Density-based classification
+## Classifiers
 {
 
-# CV (LSCV, the selector analyzed in the paper) and ROT bandwidths. X is
-# whatever sample the bandwidth is selected on: the pooled training set (com)
-# or a single class (cls). A selector failure errors its split, which
-# repeated_error() drops and reports.
+# CV (LSCV, the selector analyzed in the paper) and ROT bandwidths; X is the
+# pooled training set (com) or one class (cls)
 bw_cv <- function(X, d) {
 
   # suppressWarnings: optim()'s generic advisory against 1-d Nelder-Mead,
@@ -93,10 +93,8 @@ fit_to_mix <- function(fit) {
 
 }
 
-# EMI (exact MISE) and AMI (asymptotic MISE) plug-in bandwidths from a fitted
-# vMF mixture reused as the reference density (DirStats). EMI integrates the
-# exact MISE by importance sampling from the reference mixture (a seed fixes
-# the Monte Carlo); AMI is closed-form and deterministic.
+# EMI and AMI plug-in bandwidths from a fitted vMF mixture as reference
+# (DirStats). EMI is Monte Carlo (seeded); AMI is closed-form.
 bw_emi <- function(X, fit, seed) {
 
   set.seed(seed)
@@ -111,105 +109,38 @@ bw_ami <- function(X, fit) {
 
 }
 
-# kde log-density matrix (n_new x n_class). When h is supplied, all classes
-# share that single common bandwidth; hvec gives one bandwidth per class;
-# otherwise each class gets its own bandwidth from bwfun on that class's data.
-kda_logdens <- function(Ztr, ytr, Znew, d, h = NULL, bwfun = NULL,
-                        hvec = NULL) {
+# movMF fit with k components; the single place where an EM failure is
+# absorbed, into NULL (counted downstream)
+fit_movmf <- function(X, k) {
 
-  cls <- levels(ytr)
-  sapply(cls, function(l) {
+  tryCatch(movMF(X, k = k, nruns = nruns), error = function(e) NULL)
+
+}
+
+# kde log-density matrix (n_new x n_class): one common bandwidth h, or
+# per-class selection via bwfun
+kda_logdens <- function(Ztr, ytr, Znew, d, h = NULL, bwfun = NULL) {
+
+  sapply(levels(ytr), function(l) {
 
     Xl <- Ztr[ytr == l, , drop = FALSE]
-    hl <- if (!is.null(hvec)) hvec[[l]] else if (is.null(h)) bwfun(Xl, d) else h
+    hl <- if (is.null(h)) bwfun(Xl, d) else h
     kde_polysph(x = Znew, X = Xl, d = d, h = hl, kernel = 1, log = TRUE)
 
   })
 
 }
 
-# Fit the movMF path k = 1, ..., Kc on X. Kc caps the components at one
-# parameter per observation: a vMF component on S^d costs d + 2 parameters
-# (mu, kappa, weight) and ncol(X) = d + 1, so Kc = n / (d + 2). This cap binds
-# before Kmax on the per-class fits. An EM failure at any k errors the split,
-# which repeated_error() drops and reports.
-mvmf_path <- function(X) {
-
-  Kc <- max(1L, min(Kmax, floor(nrow(X) / (ncol(X) + 1))))
-  list(fits = lapply(seq_len(Kc), function(k)
-    movMF(X, k = k, nruns = nruns)), k = seq_len(Kc))
-
-}
-
-# movMF log-densities with the number of components chosen by BIC and by AIC,
-# either once on the pooled training sample (common = TRUE, then a K-component
-# refit per class, K capped at one parameter per observation) or on each
-# class's own path
-# (common = FALSE). Returns the BIC/AIC n_new x n_class matrices and the BIC
-# mixture(s) reused by the EMI/AMI selectors.
-mvmf_logdens <- function(Ztr, ytr, Znew, common) {
-
-  cls <- levels(ytr)
-  dens <- function(f) dmovMF(Znew, theta = f$theta, alpha = f$alpha, log = TRUE)
-  new_m <- function() matrix(NA_real_, nrow(Znew), length(cls),
-                             dimnames = list(NULL, cls))
-  if (common) {
-
-    pp <- mvmf_path(Ztr)
-    i_bic <- which.min(sapply(pp$fits, BIC))
-    per_class <- function(K) {
-
-      m <- new_m()
-      for (j in seq_along(cls)) {
-
-        Xl <- Ztr[ytr == cls[j], , drop = FALSE]
-        k <- max(1L, min(K, floor(nrow(Xl) / (ncol(Xl) + 1))))
-        m[, j] <- dens(movMF(Xl, k = k, nruns = nruns))
-
-      }
-      m
-
-    }
-    # Reuse the BIC refit when AIC picks the same K: movMF is unseeded, so a
-    # second call would return a different fit for an identical K
-    k_bic <- pp$k[i_bic]
-    k_aic <- pp$k[which.min(sapply(pp$fits, AIC))]
-    m_bic <- per_class(k_bic)
-    list(BIC = m_bic,
-         AIC = switch((k_aic == k_bic) + 1, per_class(k_aic), m_bic),
-         mix = pp$fits[[i_bic]][c("theta", "alpha")])
-
-  } else {
-
-    lb <- new_m()
-    la <- new_m()
-    mix <- setNames(vector("list", length(cls)), cls)
-    for (j in seq_along(cls)) {
-
-      p <- mvmf_path(Ztr[ytr == cls[j], , drop = FALSE])
-      fb <- p$fits[[which.min(sapply(p$fits, BIC))]]
-      lb[, j] <- dens(fb)
-      la[, j] <- dens(p$fits[[which.min(sapply(p$fits, AIC))]])
-      mix[[j]] <- fb[c("theta", "alpha")]
-
-    }
-    list(BIC = lb, AIC = la, mix = mix)
-
-  }
-
-}
-
-# Assign each row to the class maximizing log-density plus log-prior.
+# Assign each row to the class maximizing log-density plus log-prior
 classify <- function(ld, logprior, cls) {
 
   cls[max.col(sweep(ld, 2, logprior, "+"), ties.method = "first")]
 
 }
 
-# Remove coincident points (identical rows, rounded to 10 digits) before
-# splitting: duplicates make the CV loss unbounded below (the leave-one-out
-# density diverges as h -> 0). A no-op except for LetterRecognition, whose
-# integer features produce exact ties after normalization.
+# Remove coincident points before splitting: ties make the CV loss unbounded
+# below (the leave-one-out density diverges as h -> 0). Only LetterRecognition
+# is affected, via its integer features.
 dedup_ds <- function(ds) {
 
   keep <- !duplicated(round(ds$X, 10))
@@ -219,25 +150,19 @@ dedup_ds <- function(ds) {
 
 }
 
-# One stratified split: misclassification error of each of the twelve methods
-# on the test set.
-one_split <- function(ds, seed, prop = 0.7) {
+# Stratified 70/30 split and leak-free embedding (l2 uses the training
+# center/scale)
+split_embed <- function(ds, seed, prop = 0.7) {
 
   X <- ds$X
   y <- ds$y
-  d <- ds$d
-  cls <- levels(y)
   set.seed(seed)
-  tr <- unlist(lapply(cls, function(l) {
+  tr <- unlist(lapply(levels(y), function(l) {
 
     i <- which(y == l)
     sample(i, round(prop * length(i)))
 
   }))
-  ytr <- droplevels(y[tr])
-  yte <- y[-tr]
-
-  # Embed (leak-free): sqrt is row-wise; l2 uses the training center/scale
   if (ds$embed == "sqrt") {
 
     Ztr <- sqrt_map(X[tr, , drop = FALSE])
@@ -251,62 +176,82 @@ one_split <- function(ds, seed, prop = 0.7) {
     Zte <- l2_map(X[-tr, , drop = FALSE], ctr, scl)
 
   }
-
-  logprior <- log(as.numeric(table(ytr)) / length(ytr))
-  err <- function(ld) mean(classify(ld, logprior, levels(ytr)) != yte)
-
-  # movMF classifiers (component count pooled/com or per-class/cls); their BIC
-  # mixtures are reused as reference densities by the EMI and AMI selectors
-  mv_com <- mvmf_logdens(Ztr, ytr, Zte, common = TRUE)
-  mv_cls <- mvmf_logdens(Ztr, ytr, Zte, common = FALSE)
-
-  # Plug-in bandwidths: pooled mixture -> one common bandwidth; per-class
-  # mixtures -> a bandwidth per class
-  cls_tr <- levels(ytr)
-  h_emi_com <- bw_emi(Ztr, mv_com$mix, seed = seed * 1000L)
-  h_emi_cls <- sapply(cls_tr, function(l)
-    bw_emi(Ztr[ytr == l, , drop = FALSE], mv_cls$mix[[l]],
-           seed = seed * 1000L + match(l, cls_tr)))
-  h_ami_com <- bw_ami(Ztr, mv_com$mix)
-  h_ami_cls <- sapply(cls_tr, function(l)
-    bw_ami(Ztr[ytr == l, , drop = FALSE], mv_cls$mix[[l]]))
-
-  # Result: errors in the meth order
-  c(CV_com = err(kda_logdens(Ztr, ytr, Zte, d, h = bw_cv(Ztr, d))),
-    CV_cls = err(kda_logdens(Ztr, ytr, Zte, d, bwfun = bw_cv)),
-    EMI_com = err(kda_logdens(Ztr, ytr, Zte, d, h = h_emi_com)),
-    EMI_cls = err(kda_logdens(Ztr, ytr, Zte, d, hvec = h_emi_cls)),
-    AMI_com = err(kda_logdens(Ztr, ytr, Zte, d, h = h_ami_com)),
-    AMI_cls = err(kda_logdens(Ztr, ytr, Zte, d, hvec = h_ami_cls)),
-    ROT_com = err(kda_logdens(Ztr, ytr, Zte, d, h = bw_rot(Ztr, d))),
-    ROT_cls = err(kda_logdens(Ztr, ytr, Zte, d, bwfun = bw_rot)),
-    movMF_BIC_com = err(mv_com$BIC), movMF_BIC_cls = err(mv_cls$BIC),
-    movMF_AIC_com = err(mv_com$AIC), movMF_AIC_cls = err(mv_cls$AIC))
+  list(Ztr = Ztr, ytr = droplevels(y[tr]), Zte = Zte, yte = y[-tr])
 
 }
 
-# Repeated stratified splits in parallel over the seeds; returns an R x 12
-# matrix of test errors (rows are splits, columns are methods).
-repeated_error <- function(ds, R = 100) {
+# One split: test accuracy of kde-CV (common and per-class bandwidth) and
+# kde-ROT and, for each K in K_grid, of kde-EMI/kde-AMI with the pooled
+# K-component mixture as reference and of the movMF classifier with per-class
+# K-component fits (each class capped at its frontier). Every quantity is
+# caught individually: a failure yields NA for it only, counted by run_ds().
+sweep_split <- function(ds, seed, K_grid) {
 
-  na <- setNames(rep(NA_real_, length(meth)), meth)
-  res <- mclapply(seq_len(R), function(s) {
+  sp <- split_embed(ds, seed)
+  d <- ds$d
+  cls <- levels(sp$ytr)
+  logprior <- log(as.numeric(table(sp$ytr)) / length(sp$ytr))
+  acc <- function(ld) mean(classify(ld, logprior, cls) == sp$yte)
+  acc_h <- function(h) acc(kda_logdens(sp$Ztr, sp$ytr, sp$Zte, d, h = h))
+  safe <- function(expr) tryCatch(expr, error = function(e) NA_real_)
 
-    tryCatch(one_split(ds, seed = s), error = function(e) na)
+  # Mixture-free kdes: bandwidths (kept for later analysis) and accuracies
+  h_cv <- safe(bw_cv(sp$Ztr, d))
+  h_rot <- safe(bw_rot(sp$Ztr, d))
+  flat <- c(CV_com = safe(acc_h(h_cv)),
+            CV_cls = safe(acc(kda_logdens(sp$Ztr, sp$ytr, sp$Zte, d,
+                                          bwfun = bw_cv))),
+            ROT_com = safe(acc_h(h_rot)),
+            ROT_cls = safe(acc(kda_logdens(sp$Ztr, sp$ytr, sp$Zte, d,
+                                           bwfun = bw_rot))))
 
-  }, mc.cores = n_cores)
+  # Pooled K-component mixtures, passed directly to EMI and AMI
+  pooled <- lapply(K_grid, function(K) fit_movmf(sp$Ztr, k = K))
+  h_emi <- sapply(seq_along(K_grid), function(i)
+    safe(bw_emi(sp$Ztr, pooled[[i]], seed = seed * 1000L + K_grid[i])))
+  h_ami <- sapply(pooled, function(f) safe(bw_ami(sp$Ztr, f)))
+  emi <- sapply(h_emi, function(h) safe(acc_h(h)))
+  ami <- sapply(h_ami, function(h) safe(acc_h(h)))
 
-  # mclapply returns a "try-error" if a worker dies, which rbind would splice
-  # into the matrix as garbage
-  bad <- !sapply(res, is.numeric)
-  if (any(bad)) {
+  # movMF classifier: per-class fits at the grid k's up to min(K, class
+  # frontier), each distinct k fitted once per class; a class whose fit at
+  # some k fails uses its largest successful k below it (dropped fits counted)
+  Xc <- lapply(cls, function(l) sp$Ztr[sp$ytr == l, , drop = FALSE])
+  cap <- sapply(Xc, function(X) max(1L, floor(nrow(X) / 3)))
+  class_fits <- Map(function(X, kc) {
 
-    res[bad] <- list(na)
-    warning(sum(bad), " of ", R, " splits failed for ", ds$name, " (d = ",
-            ds$d, ").")
+    ks <- unique(pmin(K_grid, kc))
+    fits <- lapply(ks, function(k) fit_movmf(X, k = k))
+    ok <- !sapply(fits, is.null)
+    list(fits = fits[ok], k = ks[ok], n_fail = sum(!ok))
 
-  }
-  do.call(rbind, res)
+  }, Xc, cap)
+  mv_acc <- function(k_of) safe(acc(sapply(class_fits, function(cf) {
+
+    f <- cf$fits[[k_of(cf)]]
+    dmovMF(sp$Zte, theta = f$theta, alpha = f$alpha, log = TRUE)
+
+  })))
+  mv <- sapply(K_grid, function(K)
+    mv_acc(function(cf) which.max(cf$k * (cf$k <= K))))
+
+  # movMF with K chosen by BIC (text-only, for the pooled vs per-class
+  # comparison): once on the pooled fits, then per-class fits at that K, or
+  # on each class's own fits
+  ok <- !sapply(pooled, is.null)
+  K_bic <- safe(K_grid[ok][which.min(sapply(pooled[ok], BIC))])
+  mv_bic <- c(
+    mv_bic_com = mv_acc(function(cf) which.max(cf$k * (cf$k <= K_bic))),
+    mv_bic_cls = mv_acc(function(cf) which.min(sapply(cf$fits, BIC))))
+
+  # Result: named accuracies, the selected bandwidths, and the number of
+  # failed EM fits
+  c(flat, setNames(emi, paste0("emi", K_grid)),
+    setNames(ami, paste0("ami", K_grid)), setNames(mv, paste0("mv", K_grid)),
+    mv_bic, h_CV = h_cv, h_ROT = h_rot,
+    setNames(h_emi, paste0("hemi", K_grid)),
+    setNames(h_ami, paste0("hami", K_grid)),
+    n_fail = sum(!ok) + sum(sapply(class_fits, `[[`, "n_fail")))
 
 }
 
@@ -315,20 +260,20 @@ repeated_error <- function(ds, R = 100) {
 ## Datasets
 {
 
-# Llobregat-basin river hydrochemistry (compositions::Hydrochem). The first p of
-# the 14 chemical parts form a composition mapped to S^{p-1} by the sqrt map.
-load_hydrochem <- function(p = 14) {
+# Llobregat-basin river hydrochemistry (compositions::Hydrochem): 14 chemical
+# parts mapped to S^13 by the sqrt map, 4 river classes
+load_hydrochem <- function() {
 
   data("Hydrochem", package = "compositions")
   parts <- c("H", "Na", "K", "Mg", "Ca", "Sr", "Ba", "NH4", "Cl", "NO3",
-             "PO4", "SO4", "HCO3", "TOC")[seq_len(p)]
+             "PO4", "SO4", "HCO3", "TOC")
   list(X = as.matrix(Hydrochem[, parts]), y = factor(Hydrochem$River),
-       d = p - 1, embed = "sqrt", name = "Hydrochem")
+       d = length(parts) - 1, embed = "sqrt", name = "Hydrochem")
 
 }
 
 # Deterding vowel recognition (mlbench::Vowel): the 9 LPC features V2:V10 (V1 is
-# a speaker indicator) map to S^8, with 11 vowel classes.
+# a speaker indicator) map to S^8, with 11 vowel classes
 load_vowel <- function() {
 
   data("Vowel", package = "mlbench")
@@ -339,7 +284,7 @@ load_vowel <- function() {
 }
 
 # Letter recognition (mlbench::LetterRecognition): 16 features map to S^15, with
-# 26 classes; subsampled to n_sub rows for tractable repeated splits.
+# 26 classes; subsampled to n_sub rows for tractable repeated splits
 load_letter <- function(n_sub = 5000, seed = 1) {
 
   data("LetterRecognition", package = "mlbench")
@@ -352,111 +297,139 @@ load_letter <- function(n_sub = 5000, seed = 1) {
 
 }
 
-# Order the columns of X by decreasing between-class dispersion, so that nested
-# prefixes give an informative sequence of dimensions for the L2 datasets.
-feat_order <- function(X, y) {
-
-  disp <- apply(X, 2, function(x) var(tapply(x, y, mean)))
-  order(disp, decreasing = TRUE)
-
-}
-
-# Restrict a loaded L2 dataset to its first p features (ord order), yielding a
-# lower-dimensional version with d = p - 1.
-subset_ds <- function(ds, ord, p) {
-
-  ds$X <- ds$X[, ord[seq_len(p)], drop = FALSE]
-  ds$d <- p - 1
-  ds
-
-}
-
 }
 
 ## Experiments
 {
 
-# Repeated-split errors for each dataset over a grid of dimensions (Hydrochem
-# via nested subcompositions; Vowel and LetterRecognition via nested feature
-# subsets), saved to a single RData that drives the table below
-results_file <- file.path(cache_dir, "cv-hd.RData")
-if (!file.exists(results_file)) {
+# Run one dataset: de-duplicate, set the K grid from the largest class, sweep
+# the splits in parallel, report the failure counts
+run_ds <- function(ds) {
 
-  # Run one dataset config: de-duplicate before splitting, then repeated splits
-  run_ds <- function(ds) {
+  ds <- dedup_ds(ds)
+  K_grid <- k_grid(floor(0.7 * max(table(ds$y)) / 3))
+  cat(ds$name, "n =", nrow(ds$X), " K_top =", max(K_grid), "\n",
+      file = stderr())
+  res <- mclapply(seq_len(R), function(s)
+    tryCatch(sweep_split(ds, seed = s, K_grid = K_grid),
+             error = function(e) NULL), mc.cores = n_cores)
 
-    ds <- dedup_ds(ds)
-    cat(ds$name, "d =", ds$d, " n =", nrow(ds$X), "\n", file = stderr())
-    list(d = ds$d, n = nrow(ds$X), cl = nlevels(ds$y),
-         err = repeated_error(ds, R = R))
+  # A dead worker gives a non-numeric entry: keep it as an all-NA split
+  bad <- !sapply(res, is.numeric)
+  if (any(bad)) {
 
-  }
-
-  # Hydrochem: first p parts (d = p - 1)
-  hydro <- lapply(c(8, 11, 14), function(p) run_ds(load_hydrochem(p = p)))
-
-  # Vowel and LetterRecognition: nested feature subsets (d = p - 1), ordered by
-  # between-class dispersion (computed once on the full data before de-dup)
-  sweep_l2 <- function(ds, ps) {
-
-    ord <- feat_order(ds$X, ds$y)
-    lapply(ps, function(p) run_ds(subset_ds(ds, ord, p)))
+    stopifnot(!all(bad))
+    res[bad] <- list(res[[which(!bad)[1]]] * NA)
+    warning(sum(bad), " of ", R, " splits failed for ", ds$name, ".")
 
   }
-  vowel <- sweep_l2(load_vowel(), c(5, 7, 9))
-  letter <- sweep_l2(load_letter(), c(4, 7, 10, 13, 16))
+  A <- do.call(rbind, res)
+  nf <- colSums(is.na(A[, colnames(A) != "n_fail", drop = FALSE]))
+  if (any(nf > 0)) {
 
-  save(hydro, vowel, letter, R, nruns, file = results_file)
+    cat("  NA/", R, ": ", paste(names(nf)[nf > 0], nf[nf > 0], sep = "=",
+                                collapse = ", "), "\n", sep = "",
+        file = stderr())
+
+  }
+  cat("  dropped EM fits:", sum(A[, "n_fail"], na.rm = TRUE), "\n",
+      file = stderr())
+  list(name = ds$name, n = nrow(ds$X), d = ds$d, cl = nlevels(ds$y),
+       K_grid = K_grid, acc = A)
 
 }
 
+# Each dataset is cached as soon as it finishes (cv-hd-<dataset>-R<R>.RData),
+# so an interrupted run resumes and earlier R's stay reloadable
+datasets <- list(load_hydrochem(), load_vowel(), load_letter())
+res <- lapply(datasets, function(ds) {
+
+  f <- sprintf("cv-hd-%s-R%d.RData", ds$name, R)
+  if (!file.exists(f)) {
+
+    z <- run_ds(ds)
+    save(z, nruns, file = f)
+
+  }
+  load(f)
+  z
+
+})
+
 }
 
-## Table
+## Summary
 {
 
-load(results_file)
-acc_mean <- function(err) colMeans(1 - err, na.rm = TRUE)[meth]
-acc_sd <- function(err) apply(1 - err, 2, sd, na.rm = TRUE)[meth]
+# Mean over the splits, NA unless at least half of them are available
+mean_ok <- function(v) if (sum(!is.na(v)) >= R / 2) mean(v, na.rm = TRUE) else NA
 
-# Pick a sweep entry (d, n, cl, err) at a given dimension
-at_d <- function(sw, d) sw[[which(sapply(sw, `[[`, "d") == d)]]
+# Numbers quoted in the text: mean (sd) accuracy, in %, of the mixture-free
+# kdes and the maximum over K of each mixture curve
+ms <- function(v) sprintf("%.1f (%.1f)", mean(v, na.rm = TRUE),
+                          sd(v, na.rm = TRUE))
+for (z in res) {
 
-# One entry per dataset at its full dimension
-info <- Map(function(nm, sw, dd) c(list(name = nm), at_d(sw, dd)),
-            c("Hydrochem", "Vowel", "LetterRecognition"),
-            list(hydro, vowel, letter), c(13, 8, 15))
+  A <- 100 * z$acc
+  cat(z$name, ": kde-CV", ms(A[, "CV_com"]), " cls", ms(A[, "CV_cls"]),
+      " kde-ROT", ms(A[, "ROT_com"]), " cls", ms(A[, "ROT_cls"]),
+      " movMF-BIC", ms(A[, "mv_bic_com"]), " cls", ms(A[, "mv_bic_cls"]),
+      "\n")
+  for (pre in c("emi", "ami", "mv")) {
 
-# Only the pooled (com) variants are reported in the table; the per-class (cls)
-# results stay in the cache and are summarized in the text
-meth_com <- paste0(names(fam), "_com")
+    m <- apply(A[, paste0(pre, z$K_grid), drop = FALSE], 2, mean_ok)
+    cat("  ", pre, ": max ", sprintf("%.1f", max(m, na.rm = TRUE)), " at K = ",
+        z$K_grid[which.max(m)], "\n", sep = "")
 
-# LaTeX table: accuracy mean (sd) x 100, grouped kde/movMF header, best method
-# per dataset (and its ties at the displayed precision) in bold
-tex <- c(paste0("\\begin{tabular}{lccc", strrep("c", length(fam)), "}"),
-         "\\toprule",
-         " & & & & \\multicolumn{4}{c}{kde} & \\multicolumn{2}{c}{movMF} \\\\",
-         "\\cmidrule(lr){5-8} \\cmidrule(lr){9-10}",
-         paste0("Dataset & $n$ & $d$ & Classes & ",
-                paste(sub("^(kde|movMF)-", "", fam), collapse = " & "),
-                " \\\\"),
-         "\\midrule")
-for (z in info) {
-
-  m <- acc_mean(z$err)[meth_com]
-  s <- acc_sd(z$err)[meth_com]
-  cell <- sapply(seq_along(meth_com), function(k) {
-
-    v <- sprintf("%.1f\\,(%.1f)", 100 * m[k], 100 * s[k])
-    best <- round(100 * m[k], 1) == round(100 * max(m), 1)
-    if (best) paste0("\\textbf{", v, "}") else v
-
-  })
-  tex <- c(tex, sprintf("%s & %d & %d & %d & %s \\\\", z$name, z$n, z$d, z$cl,
-                        paste(cell, collapse = " & ")))
+  }
 
 }
-tex <- c(tex, "\\bottomrule", "\\end{tabular}")
-writeLines(tex, file.path(paper_dir, "tab_realdata.tex"))
+
+}
+
+## Figure: accuracy vs K
+{
+
+# One row per (dataset, K, method) with the mean and sd over splits; the
+# mixture-free methods are replicated along K
+df <- do.call(rbind, lapply(res, function(z) {
+
+  stat <- function(cols, method) {
+
+    A <- z$acc[, cols, drop = FALSE]
+    acc <- apply(A, 2, mean_ok)
+    data.frame(dataset = z$name, K = z$K_grid, method = method, acc = acc,
+               sd = ifelse(is.na(acc), NA, apply(A, 2, sd, na.rm = TRUE)),
+               row.names = NULL)
+
+  }
+  nK <- length(z$K_grid)
+  rbind(stat(rep("CV_com", nK), "kde-CV"), stat(rep("ROT_com", nK), "kde-ROT"),
+        stat(paste0("mv", z$K_grid), "movMF"))
+
+}))
+df$dataset <- factor(df$dataset, levels = sapply(res, `[[`, "name"))
+df$method <- factor(df$method, levels = c("kde-CV", "kde-ROT", "movMF"))
+col <- c("kde-CV" = "#000000", "kde-ROT" = "#009E73", "movMF" = "#CC79A7")
+lty <- c("kde-CV" = "dashed", "kde-ROT" = "dashed", "movMF" = "solid")
+gg <- ggplot(df, aes(x = K, y = acc, color = method, linetype = method)) +
+  geom_ribbon(aes(ymin = acc - sd, ymax = acc + sd, fill = method),
+              alpha = 0.15, color = NA) +
+  geom_line(linewidth = 0.6) +
+  geom_point(data = df[df$method == "movMF", ], size = 0.9) +
+  facet_wrap(~ dataset, nrow = 1, scales = "free_x") +
+  scale_color_manual(values = col) +
+  scale_fill_manual(values = col) +
+  scale_linetype_manual(values = lty) +
+  scale_x_continuous(transform = "log10",
+                     breaks = c(1, 2, 3, 5, 10, 20, 30, 50)) +
+  coord_cartesian(ylim = c(0, 1)) +
+  labs(x = expression("Number of mixture components" ~ K),
+       y = "Test accuracy", color = "", linetype = "") +
+  guides(color = guide_legend(nrow = 1), fill = "none") +
+  theme_minimal() +
+  theme(legend.position = "bottom", panel.grid.minor.x = element_blank())
+ggsave("realdata_sweep.pdf", plot = gg, device = cairo_pdf, width = 12,
+       height = 4, units = "in")
 
 }
