@@ -20,7 +20,8 @@ arma::vec dist_polysph(arma::mat x, arma::mat y, arma::uvec ind_dj,
 arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
                       Rcpp::NumericVector weights, bool log, bool wrt_unif,
                       bool normalized, bool intrinsic, bool norm_x, bool norm_X,
-                      arma::uword kernel, arma::uword kernel_type, double k);
+                      arma::uword kernel, arma::uword kernel_type, double k,
+                      bool loo);
 
 //' @title Euler algorithms for polyspherical density ridge estimation
 //'
@@ -304,7 +305,7 @@ Rcpp::List euler_ridge(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
   // Compute log-density final points
   arma::vec log_dens = kde_polysph(y, X, d, h, weights, true, wrt_unif,
                                    normalized, false, norm_x, norm_X, kernel,
-                                   kernel_type, k);
+                                   kernel_type, k, false);
 
   // Return a Rcpp list
   return Rcpp::List::create(Rcpp::Named("ridge_y") = y,

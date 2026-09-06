@@ -18,7 +18,8 @@ kde_polysph(
   norm_X = FALSE,
   kernel = 1L,
   kernel_type = 1L,
-  k = 10
+  k = 10,
+  loo = FALSE
 )
 }
 \arguments{
@@ -57,6 +58,10 @@ extrinsic-chordal distance, in the kernel? Defaults to \code{FALSE}.}
 (default); \code{2} for spherically symmetric kernel.}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
+
+\item{loo}{leave-one-out: skip the \eqn{i}-th observation when evaluating
+at \eqn{\boldsymbol{X}_i}? Requires \code{x = X}. Defaults to
+\code{FALSE}.}
 }
 \value{
 A column matrix of size \code{c(nx, 1)} with the evaluation of the

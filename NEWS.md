@@ -43,10 +43,12 @@
 
 # polykde 1.3.0
 
+* Update `bw_cv_polysph(type = "LSCV", exact_vmf = TRUE)` to use chunking and reduce memory usage significantly without speed loss.
+* Add `loo` to `kde_polysph()`, speeding up `log_cv_kde_polysph()`, particularly vMF-product kernel. Improve the efficiency of `bw_cv_polysph(type = "LCV")` with chunking to speed up evaluations.
+* Update the default of `spline` in `bw_cv_polysph()` to `TRUE` and extend its validity from `d` up to 50 to `d` up to 101.
+* Move DirStats from Suggests to Imports, with a minimum version 1.0.0, and Bessel from Imports to Suggests.
+* Remove the internal `log_besselI_scaled()` and `fast_log_c_vMF()`, in favor of `DirStats::log_besselI_scaled()` and `DirStats::log_c_vmf()`.
+* Add `show_prog` to `hom_test_polysph()` to silence the permutation progress bar.
 * Add the vignette.
 * Add usage examples to the README.
-* Add `show_prog` to `hom_test_polysph()` to silence the permutation progress bar.
 * Update publication.
-* Remove the internal `log_besselI_scaled()` and `fast_log_c_vMF()`, in favor of `DirStats::log_besselI_scaled()` and `DirStats::log_c_vmf()`.
-* Move DirStats from Suggests to Imports, with a minimum version 1.0.0, and Bessel from Imports to Suggests.
-* Update the default of `spline` in `bw_cv_polysph()` to `TRUE` and extend its validity from `d` up to 50 to `d` up to 101.
