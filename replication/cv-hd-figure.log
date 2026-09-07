@@ -1,0 +1,24 @@
+Welcome to compositions, a package for compositional data analysis.
+Find an intro with "? compositions"
+
+
+Attaching package: ‘compositions’
+
+The following objects are masked from ‘package:stats’:
+
+    anova, cor, cov, dist, var
+
+The following object is masked from ‘package:graphics’:
+
+    segments
+
+The following objects are masked from ‘package:base’:
+
+    %*%, norm, scale, scale.default
+
+Hydrochem : kde-CV 89.1 (2.3)  cls 86.5 (2.7)  kde-ROT 85.7 (2.6)  cls 77.0 (2.1) 
+  movMF: max 82.4 at r = 24
+Vowel : kde-CV 96.0 (1.3)  cls 90.4 (2.4)  kde-ROT 79.2 (2.6)  cls 83.8 (2.0) 
+  movMF: max 85.2 at r = 16
+LetterRecognition : kde-CV 93.9 (0.3)  cls 89.7 (0.6)  kde-ROT 86.1 (0.5)  cls 87.4 (0.4) 
+  movMF: max 90.9 at r = 60

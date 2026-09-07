@@ -6,6 +6,7 @@ library(mlbench)
 library(compositions)
 library(parallel)
 library(ggplot2)
+library(patchwork)
 stopifnot(packageVersion("polykde") >= "1.3.0")
 
 ## Sphere embeddings
@@ -90,10 +91,11 @@ bw_rot <- function(X, d) {
 
 }
 
-# movMF fit with k components, with error catching
-fit_movmf <- function(X, k) {
+# movMF fit with k components and n_runs_em random EM starts, with error
+# catching
+fit_movmf <- function(X, k, n_runs_em) {
 
-  tryCatch(movMF(X, k = k, nruns = nruns), error = function(e) NULL)
+  tryCatch(movMF(X, k = k, nruns = n_runs_em), error = function(e) NULL)
 
 }
 
@@ -144,7 +146,7 @@ dedup_dataset <- function(dataset) {
 
 # Stratified 70/30 split and leak-free data embedding (l2 uses the training
 # center/scale)
-split_embed <- function(dataset, seed, prop = 0.7) {
+split_embed <- function(dataset, seed, prop = 0.70) {
 
   # Split into predictors and labels
   X <- dataset$X
@@ -178,14 +180,11 @@ split_embed <- function(dataset, seed, prop = 0.7) {
 
 }
 
-# One split: test accuracy of kde-CV and kde-ROT (common and per-class
-# bandwidth), of the movMF classifier at each K in K_grid (per-class
-# K-component fits, each class capped at its frontier), and of movMF with K
-# chosen by BIC (shared across classes or per class). Every quantity is caught
-# individually: a failure yields NA for it only, counted by run_dataset().
-sweep_split <- function(dataset, seed, K_grid) {
+# Test accuracy of kde-CV and kde-ROT (common and per-class bandwidths) and of
+# movMF at each r in r_grid (per-class r-component fits)
+sweep_split <- function(dataset, seed, r_grid, n_runs_em) {
 
-  # Unpack the split, as its pieces are used throughout
+  # Split and unpack
   split_data <- split_embed(dataset, seed)
   X_train <- split_data$X_train
   y_train <- split_data$y_train
@@ -195,8 +194,16 @@ sweep_split <- function(dataset, seed, K_grid) {
   classes <- levels(y_train)
   log_prior <- log(as.numeric(table(y_train)) / length(y_train))
 
-  # Test accuracy of a log-density matrix, of a common bandwidth, and of a
-  # per-class bandwidth selector.
+  ## KDE computations
+
+  # Safe wrapper
+  safe <- function(expr) tryCatch(expr, error = function(e) NA_real_)
+
+  # Compute the common kde bandwidths
+  h_cv <- safe(bw_cv(X_train, d))
+  h_rot <- safe(bw_rot(X_train, d))
+
+  # Test accuracy functions for kde, with common and per-class variants
   acc <- function(log_dens) {
 
     mean(classify(log_dens, log_prior, classes) == y_test)
@@ -205,60 +212,41 @@ sweep_split <- function(dataset, seed, K_grid) {
   acc_h <- function(h) acc(kda_log_dens(X_train, y_train, X_test, d, h = h))
   acc_bw <- function(bw_fun) acc(kda_log_dens(X_train, y_train, X_test, d,
                                               bw_fun = bw_fun))
-  safe <- function(expr) tryCatch(expr, error = function(e) NA_real_)
-
-  # kdes: bandwidths (kept for later analysis) and accuracies
-  h_cv <- safe(bw_cv(X_train, d))
-  h_rot <- safe(bw_rot(X_train, d))
   kde <- c(CV_com = safe(acc_h(h_cv)), CV_cls = safe(acc_bw(bw_cv)),
            ROT_com = safe(acc_h(h_rot)), ROT_cls = safe(acc_bw(bw_rot)))
 
-  # movMF: per-class fits at the grid k's up to min(K, class frontier), each
-  # distinct k fitted once per class; a class whose fit at some k fails uses
-  # its largest successful k below it (dropped fits counted)
-  X_by_class <- lapply(classes, function(lev)
-    X_train[y_train == lev, , drop = FALSE])
-  k_cap <- sapply(X_by_class, function(X) max(1L, floor(nrow(X) / 3)))
-  class_fits <- Map(function(X, k_cap_lev) {
+  ## movMF computations
 
-    # Fit each distinct k once and keep the successful fits with their BICs
-    k_vals <- unique(pmin(K_grid, k_cap_lev))
-    fits <- lapply(k_vals, function(k) fit_movmf(X, k = k))
+  # Per-class fits at the distinct grid k's below the class cap n_c / 3. A fit
+  # in which EM fails is dropped and counted (n_fail out of n_try).
+  class_fits <- lapply(classes, function(lev) {
+
+    X <- X_train[y_train == lev, , drop = FALSE]
+    k_vals <- unique(pmin(r_grid, floor(nrow(X) / 3)))
+    fits <- lapply(k_vals, function(k) fit_movmf(X, k = k,
+                                                 n_runs_em = n_runs_em))
     ok <- !sapply(fits, is.null)
-    list(fits = fits[ok], k = k_vals[ok], bic = sapply(fits[ok], BIC),
+    list(fits = fits[ok], k = k_vals[ok], n_try = length(k_vals),
          n_fail = sum(!ok))
 
-  }, X_by_class, k_cap)
-
-  # Mixture log-density matrix from one fit index per class
-  log_dens_movmf <- function(pick_fit) sapply(class_fits, function(class_fit) {
-
-    fit <- class_fit$fits[[pick_fit(class_fit)]]
-    dmovMF(X_test, theta = fit$theta, alpha = fit$alpha, log = TRUE)
-
   })
-  acc_movmf <- function(pick_fit) safe(acc(log_dens_movmf(pick_fit)))
 
-  # At a shared K, each class uses its largest fitted k <= K
-  at_K <- function(K) function(class_fit)
-    which.max(class_fit$k * (class_fit$k <= K))
+  # Test accuracy at each shared r, each class using its largest fitted k <= r
+  acc_r <- sapply(r_grid, function(r) safe(acc(sapply(class_fits,
+    function(class_fit) {
 
-  # Accuracy sweep along the K grid
-  acc_K <- sapply(K_grid, function(K) acc_movmf(at_K(K)))
+      fit <- class_fit$fits[[max(which(class_fit$k <= r))]]
+      dmovMF(X_test, theta = fit$theta, alpha = fit$alpha, log = TRUE)
 
-  # movMF with K chosen by BIC (text-only): one K shared across classes (BIC
-  # of the class-conditional model, the sum of the class BICs at K) or per
-  # class
-  bic_K <- safe(sapply(K_grid, function(K)
-    sum(sapply(class_fits, function(class_fit)
-      class_fit$bic[at_K(K)(class_fit)]))))
-  acc_bic <- c(movMF_bic_com = acc_movmf(at_K(K_grid[which.min(bic_K)])),
-               movMF_bic_cls = acc_movmf(function(class_fit)
-                 which.min(class_fit$bic)))
+    }))))
 
-  # Result: named accuracies, the kde bandwidths, and the failed-fit count
-  c(kde, setNames(acc_K, paste0("movMF", K_grid)), acc_bic, h_CV = h_cv,
-    h_ROT = h_rot, n_fail = sum(sapply(class_fits, `[[`, "n_fail")))
+  ## Final results
+
+  # Named accuracies, kde bandwidths, and attempted/failed movMF fit counts
+  c(kde, setNames(acc_r, paste0("movMF", r_grid)),
+    h_CV = h_cv, h_ROT = h_rot,
+    n_try = sum(sapply(class_fits, `[[`, "n_try")),
+    n_fail = sum(sapply(class_fits, `[[`, "n_fail")))
 
 }
 
@@ -267,73 +255,68 @@ sweep_split <- function(dataset, seed, K_grid) {
 ## Experiments
 {
 
-# Number of stratified train/test splits and movMF random starts per fit
-R <- 100
-nruns <- 25
+# Number of stratified train/test splits
+M <- 100
+
+# Number of EM initializations per movMF fit
+n_runs_em <- 25
 
 # Cores for parallelization
 n_cores <- 12
 
-# K grid dense up to 10, then geometrically spaced
-k_grid <- function(K_top) {
+# r grid dense up to 10, then geometrically spaced
+mixture_grid <- function(r_top) {
 
   k_geom <- round(10 * 1.25^(1:40))
-  sort(unique(c(seq_len(min(10, K_top)), k_geom[k_geom < K_top], K_top)))
+  sort(unique(c(seq_len(min(10, r_top)), k_geom[k_geom < r_top], r_top)))
 
 }
 
-# Run one dataset: de-duplicate, set the K grid from the largest class, sweep
+# Run one dataset: de-duplicate, set the r grid from the largest class, sweep
 # the splits in parallel, report the failure counts
 run_dataset <- function(dataset) {
 
   dataset <- dedup_dataset(dataset)
-  K_grid <- k_grid(floor(0.7 * max(table(dataset$y)) / 3))
-  cat(dataset$name, "n =", nrow(dataset$X), " K_top =", max(K_grid), "\n",
+  r_grid <- mixture_grid(floor(0.7 * max(table(dataset$y)) / 3))
+  cat(dataset$name, "n =", nrow(dataset$X), " r_top =", max(r_grid), "\n",
       file = stderr())
 
   # One seed per split, run in parallel; an erroring split yields NULL
-  res <- mclapply(seq_len(R), function(seed)
-    tryCatch(sweep_split(dataset, seed = seed, K_grid = K_grid),
+  res <- mclapply(seq_len(M), function(seed)
+    tryCatch(sweep_split(dataset, seed = seed, r_grid = r_grid,
+                         n_runs_em = n_runs_em),
              error = function(e) NULL), mc.cores = n_cores)
 
-  # A dead worker gives a non-numeric entry: keep it as an all-NA split
-  failed <- !sapply(res, is.numeric)
-  if (any(failed)) {
-
-    stopifnot(!all(failed))
-    res[failed] <- list(res[[which(!failed)[1]]] * NA)
-    warning(sum(failed), " of ", R, " splits failed for ", dataset$name, ".")
-
-  }
-
-  # Splits by rows; report the NA count of each quantity, excluding n_fail
+  # Splits by rows; report the NA count of each quantity, excluding the counts
   acc_mat <- do.call(rbind, res)
-  n_na <- colSums(is.na(acc_mat[, colnames(acc_mat) != "n_fail",
+  n_na <- colSums(is.na(acc_mat[, !colnames(acc_mat) %in% c("n_try", "n_fail"),
                                 drop = FALSE]))
   if (any(n_na > 0)) {
 
-    cat("  NA/", R, ": ", paste(names(n_na)[n_na > 0], n_na[n_na > 0],
+    cat("  NA/", M, ": ", paste(names(n_na)[n_na > 0], n_na[n_na > 0],
                                 sep = "=", collapse = ", "), "\n", sep = "",
         file = stderr())
 
   }
-  cat("  dropped EM fits:", sum(acc_mat[, "n_fail"], na.rm = TRUE), "\n",
-      file = stderr())
+  n_fail <- sum(acc_mat[, "n_fail"], na.rm = TRUE)
+  n_try <- sum(acc_mat[, "n_try"], na.rm = TRUE)
+  cat("  dropped EM fits: ", n_fail, " of ", n_try, " (",
+      round(100 * n_fail / n_try), "%)\n", sep = "", file = stderr())
   list(name = dataset$name, n = nrow(dataset$X), d = dataset$d,
-       n_classes = nlevels(dataset$y), K_grid = K_grid, acc = acc_mat)
+       n_classes = nlevels(dataset$y), r_grid = r_grid, acc = acc_mat)
 
 }
 
-# Each dataset is cached as soon as it finishes (cv-hd-<dataset>-R<R>.RData),
-# so an interrupted run resumes and earlier R's stay reloadable
+# Each dataset is cached as soon as it finishes (cv-hd-<dataset>-M<M>.RData),
+# so an interrupted run resumes and earlier M's stay reloadable
 datasets <- list(load_hydrochem(), load_vowel(), load_letter())
 res <- lapply(datasets, function(dataset) {
 
-  cache_file <- sprintf("cv-hd-%s-R%d.RData", dataset$name, R)
+  cache_file <- sprintf("cv-hd-%s-M%d.RData", dataset$name, M)
   if (!file.exists(cache_file)) {
 
     res_dataset <- run_dataset(dataset)
-    save(res_dataset, nruns, file = cache_file)
+    save(res_dataset, n_runs_em, file = cache_file)
 
   }
   load(cache_file)
@@ -349,7 +332,7 @@ res <- lapply(datasets, function(dataset) {
 # Mean over the splits, NA unless at least half of them are available
 mean_ok <- function(v) {
 
-  if (sum(!is.na(v)) >= R / 2) mean(v, na.rm = TRUE) else NA
+  if (sum(!is.na(v)) >= M / 2) mean(v, na.rm = TRUE) else NA
 
 }
 
@@ -361,33 +344,31 @@ mean_sd <- function(v) sprintf("%.1f (%.1f)", mean(v, na.rm = TRUE),
 for (res_dataset in res) {
 
   # Accuracies as percentages: kdes with common ("com") and per-class ("cls")
-  # bandwidths, and movMF with K selected by BIC in the same two ways
+  # bandwidths
   acc_mat <- 100 * res_dataset$acc
   cat(res_dataset$name, ": kde-CV", mean_sd(acc_mat[, "CV_com"]),
       " cls", mean_sd(acc_mat[, "CV_cls"]),
       " kde-ROT", mean_sd(acc_mat[, "ROT_com"]),
-      " cls", mean_sd(acc_mat[, "ROT_cls"]),
-      " movMF-BIC", mean_sd(acc_mat[, "movMF_bic_com"]),
-      " cls", mean_sd(acc_mat[, "movMF_bic_cls"]), "\n")
+      " cls", mean_sd(acc_mat[, "ROT_cls"]), "\n")
 
-  # Best mean accuracy of movMF along the K grid
-  mean_acc_K <- apply(acc_mat[, paste0("movMF", res_dataset$K_grid),
+  # Best mean accuracy of movMF along the r grid
+  mean_acc_r <- apply(acc_mat[, paste0("movMF", res_dataset$r_grid),
                               drop = FALSE], 2, mean_ok)
-  cat("  movMF: max ", sprintf("%.1f", max(mean_acc_K, na.rm = TRUE)),
-      " at K = ", res_dataset$K_grid[which.max(mean_acc_K)], "\n", sep = "")
+  cat("  movMF: max ", sprintf("%.1f", max(mean_acc_r, na.rm = TRUE)),
+      " at r = ", res_dataset$r_grid[which.max(mean_acc_r)], "\n", sep = "")
 
 }
 
-# Figure: one row per (dataset, method, K) with the mean accuracy across the
+# Figure: one row per (dataset, method, r) with the mean accuracy across the
 # splits and its standard deviation
 acc_df <- do.call(rbind, lapply(res, function(res_dataset) {
 
-  # Summary of the given accuracy columns, one per K
+  # Summary of the given accuracy columns, one per r
   stat_cols <- function(cols, method) {
 
     acc_cols <- res_dataset$acc[, cols, drop = FALSE]
     acc <- apply(acc_cols, 2, mean_ok)
-    data.frame(dataset = res_dataset$name, K = res_dataset$K_grid,
+    data.frame(dataset = res_dataset$name, r = res_dataset$r_grid,
                method = method, acc = acc,
                sd = ifelse(is.na(acc), NA,
                            apply(acc_cols, 2, sd, na.rm = TRUE)),
@@ -395,11 +376,11 @@ acc_df <- do.call(rbind, lapply(res, function(res_dataset) {
 
   }
 
-  # The kde methods do not depend on K: their column is recycled along the grid
-  n_K <- length(res_dataset$K_grid)
-  rbind(stat_cols(rep("CV_com", n_K), "kde-CV"),
-        stat_cols(rep("ROT_com", n_K), "kde-ROT"),
-        stat_cols(paste0("movMF", res_dataset$K_grid), "movMF"))
+  # The kde methods do not depend on r: their column is recycled along the grid
+  n_r <- length(res_dataset$r_grid)
+  rbind(stat_cols(rep("CV_com", n_r), "kde-CV"),
+        stat_cols(rep("ROT_com", n_r), "kde-ROT"),
+        stat_cols(paste0("movMF", res_dataset$r_grid), "movMF"))
 
 }))
 
@@ -408,32 +389,39 @@ acc_df$dataset <- factor(acc_df$dataset, levels = sapply(res, `[[`, "name"))
 acc_df$method <- factor(acc_df$method,
                         levels = c("kde-CV", "kde-ROT", "movMF"))
 
-# Colorblind-friendly palette, with the K-free kdes dashed and movMF solid
-col_method <- c("kde-CV" = "#000000", "kde-ROT" = "#009E73",
-                "movMF" = "#CC79A7")
+# Palette of Figure 1, with the r-free kdes dashed and movMF solid
+col_method <- c("kde-CV" = "green3", "kde-ROT" = "blue", "movMF" = "red")
 lty_method <- c("kde-CV" = "dashed", "kde-ROT" = "dashed", "movMF" = "solid")
 
-# Mean +/- standard deviation ribbons, one panel per dataset, K in log10 scale
-plot_sweep <- ggplot(acc_df, aes(x = K, y = acc, color = method,
-                                 linetype = method)) +
-  geom_ribbon(aes(ymin = acc - sd, ymax = acc + sd, fill = method),
-              alpha = 0.15, color = NA) +
-  geom_line(linewidth = 0.6) +
-  geom_point(data = acc_df[acc_df$method == "movMF", ], size = 0.9) +
-  facet_wrap(~ dataset, nrow = 1, scales = "free_x") +
-  scale_color_manual(values = col_method) +
-  scale_fill_manual(values = col_method) +
-  scale_linetype_manual(values = lty_method) +
-  scale_x_continuous(transform = "log10",
-                     breaks = c(1, 2, 3, 5, 10, 20, 50, 100, 200)) +
-  coord_cartesian(ylim = c(0, 1)) +
-  labs(x = expression("Number of mixture components" ~ K),
-       y = "Test accuracy", color = "", linetype = "") +
-  guides(color = guide_legend(nrow = 1), fill = "none") +
-  theme_minimal() +
-  theme(legend.position = "bottom", panel.grid.minor.x = element_blank())
+# One panel per dataset, with mean +/- standard deviation ribbons and r in
+# log10 scale. The dataset names are not drawn: they go in the LaTeX
+# subcaptions of the figure.
+panels <- lapply(levels(acc_df$dataset), function(lev) {
 
-# Three panels side by side
+  acc_lev <- acc_df[acc_df$dataset == lev, ]
+  ggplot(acc_lev, aes(x = r, y = acc, color = method, linetype = method)) +
+    geom_ribbon(aes(ymin = acc - sd, ymax = acc + sd, fill = method),
+                alpha = 0.15, color = NA) +
+    geom_line(linewidth = 0.6) +
+    geom_point(data = acc_lev[acc_lev$method == "movMF", ], size = 0.9) +
+    scale_color_manual(values = col_method) +
+    scale_fill_manual(values = col_method) +
+    scale_linetype_manual(values = lty_method) +
+    scale_x_continuous(transform = "log10",
+                       breaks = c(1, 2, 3, 5, 10, 20, 50, 100, 200)) +
+    coord_cartesian(ylim = c(0, 1)) +
+    labs(x = expression("Number of mixture components" ~ r),
+         y = "Test accuracy", color = "", linetype = "") +
+    guides(color = guide_legend(nrow = 1), fill = "none") +
+    theme_minimal() +
+    theme(legend.position = "bottom", panel.grid.minor.x = element_blank(),
+          axis.text.x = element_text(angle = 45, hjust = 1))
+
+})
+
+# Three panels side by side, sharing a single legend at the bottom
+plot_sweep <- wrap_plots(panels, nrow = 1, guides = "collect") &
+  theme(legend.position = "bottom")
 ggsave("realdata_sweep.pdf", plot = plot_sweep, device = cairo_pdf,
        width = 12, height = 4, units = "in")
 
