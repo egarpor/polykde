@@ -191,6 +191,49 @@ test_that("bw_cv_polysph(type = \"LSCV\", arcsinh = TRUE) loss", {
 
 })
 
+test_that("bw_cv_polysph(type = \"LSCV\", exact_vmf = TRUE) loss with blocks", {
+
+  # n = 1001 splits into three row blocks (500, 500, and 1 rows)
+  set.seed(987202226)
+  n_b <- 1001
+  d_b <- c(1, 2)
+  h_b <- c(0.4, 0.6)
+  X_b <- r_unif_polysph(n = n_b, d = d_b)
+
+  # Exact LSCV loss over the full lower triangle, without blocks
+  ind_dj <- cumsum(c(0, d_b + 1))
+  a_ij <- 0
+  s_ij <- 0
+  for (l in seq_along(d_b)) {
+
+    xi_xj <- tcrossprod(X_b[, (ind_dj[l] + 1):ind_dj[l + 1]])
+    xi_xj <- xi_xj[lower.tri(xi_xj)]
+    a_ij <- a_ij + xi_xj / h_b[l]^2
+    s_ij <- s_ij + DirStats::log_c_vmf(q = d_b[l], kappa =
+                                         sqrt(pmax(2 * (1 + xi_xj), 0)) /
+                                         h_b[l]^2)
+
+  }
+  log_c_h2 <- sum(DirStats::log_c_vmf(q = d_b, kappa = 1 / h_b^2))
+  log_c_2h2 <- sum(DirStats::log_c_vmf(q = d_b, kappa = 2 / h_b^2))
+  cv_1 <- exp(2 * log_c_h2 - log_c_2h2 - log(n_b))
+  cv_2 <- 2 * sum(exp(a_ij + log_c_h2 + log(2 / (n_b - 1)) - log(n_b)) -
+                    exp(2 * (log_c_h2 - log(n_b)) - s_ij))
+  cv_full <- cv_1 - cv_2
+
+  # Blocked loss evaluated at bw0 (maxit = 0 skips the optimization)
+  cv_blocks <- bw_cv_polysph(X = X_b, d = d_b, kernel = 1, type = "LSCV",
+                             bw0 = h_b, control = list(maxit = 0),
+                             method = "BFGS", exact_vmf = TRUE)$opt$value
+  expect_equal(cv_blocks, cv_full, tolerance = 1e-8)
+  expect_equal(
+    bw_cv_polysph(X = X_b, d = d_b, kernel = 1, type = "LSCV", bw0 = h_b,
+                  control = list(maxit = 0), method = "BFGS",
+                  exact_vmf = TRUE, arcsinh = TRUE)$opt$value,
+    asinh(cv_blocks))
+
+})
+
 test_that("bw_cv_polysph(type = \"LCV\", common_h = TRUE)", {
 
   for (f in c(0.25, 0.5, 1, 2)) {

@@ -255,6 +255,40 @@ test_that("Log-cv kde with weights is compatible with kde", {
   }
 })
 
+test_that("Log-cv kde vMF-product-extrinsic over several blocks", {
+
+  # n = 600 splits the Gram matrix into two row blocks (416 and 184 rows)
+  set.seed(987204452)
+  n_b <- 600
+  d_b <- c(1, 2)
+  h_b <- c(0.3, 0.5)
+  X_b <- r_unif_polysph(n = n_b, d = d_b)
+  ws_b <- runif(n_b)
+  for (wrt_unif in c(FALSE, TRUE)) {
+
+    log_cv <- log_cv_kde_polysph(X = X_b, d = d_b, h = h_b,
+                                 wrt_unif = wrt_unif)
+    log_cv_ws <- log_cv_kde_polysph(X = X_b, d = d_b, h = h_b,
+                                    wrt_unif = wrt_unif, weights = ws_b)
+    for (i in c(1, 416, 417, 600)) {
+
+      expect_equal(
+        log_cv[i],
+        drop(kde_polysph(x = X_b[i, , drop = FALSE],
+                         X = X_b[-i, , drop = FALSE], d = d_b, h = h_b,
+                         wrt_unif = wrt_unif, log = TRUE)))
+      expect_equal(
+        log_cv_ws[i],
+        drop(kde_polysph(x = X_b[i, , drop = FALSE],
+                         X = X_b[-i, , drop = FALSE], d = d_b, h = h_b,
+                         wrt_unif = wrt_unif, weights = ws_b[-i], log = TRUE)))
+
+    }
+
+  }
+
+})
+
 test_that("Edge cases log_cv_kde_polysph()", {
   expect_error(log_cv_kde_polysph(X = cbind(X, 1), d = d, h = h))
   expect_error(log_cv_kde_polysph(X = X, d = d, h = c(h, 1)))

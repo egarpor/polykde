@@ -226,6 +226,9 @@ proj_grad_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), wrt_un
 #' @param kernel_type type of kernel employed: \code{1} for product kernel
 #' (default); \code{2} for spherically symmetric kernel.
 #' @param k softplus kernel parameter. Defaults to \code{10.0}.
+#' @param loo leave-one-out: skip the \eqn{i}-th observation when evaluating
+#' at \eqn{\boldsymbol{X}_i}? Requires \code{x = X}. Defaults to
+#' \code{FALSE}.
 #' @return A column matrix of size \code{c(nx, 1)} with the evaluation of the
 #' kernel density estimator.
 #' @references
@@ -248,8 +251,8 @@ proj_grad_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), wrt_un
 #' kde_polysph(x = rbind(mu), X = X, d = d, h = h)
 #' d_vmf_polysph(x = rbind(mu), d = d, mu = mu, kappa = kappa)
 #' @export
-kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), log = FALSE, wrt_unif = FALSE, normalized = TRUE, intrinsic = FALSE, norm_x = FALSE, norm_X = FALSE, kernel = 1L, kernel_type = 1L, k = 10.0) {
-    .Call(`_polykde_kde_polysph`, x, X, d, h, weights, log, wrt_unif, normalized, intrinsic, norm_x, norm_X, kernel, kernel_type, k)
+kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), log = FALSE, wrt_unif = FALSE, normalized = TRUE, intrinsic = FALSE, norm_x = FALSE, norm_X = FALSE, kernel = 1L, kernel_type = 1L, k = 10.0, loo = FALSE) {
+    .Call(`_polykde_kde_polysph`, x, X, d, h, weights, log, wrt_unif, normalized, intrinsic, norm_x, norm_X, kernel, kernel_type, k, loo)
 }
 
 #' @title Cross-validation for the polyspherical kernel density estimator
