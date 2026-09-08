@@ -199,7 +199,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
           # X_{il}'X_{jl} may fall below -1 for numerically antipodal points
           log_a <- log_c_h2 + (log_2_n1 - log_n)
           log_b <- 2 * (log_c_h2 - log_n)
-          lse_a <- lse_b <- numeric(length(blocks))
+          lse_a <- lse_b <- rep(-Inf, length(blocks))
           sum_cv_2 <- 0
           for (bi in seq_along(blocks)) {
 
@@ -220,6 +220,9 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
                                                  spline = spline)
 
             }
+
+            # The first block holds no lower-triangle pairs when b = 1
+            if (length(a_ij) == 0) next
 
             # Accumulate in log scale for arcsinh, in natural scale otherwise
             if (arcsinh) {

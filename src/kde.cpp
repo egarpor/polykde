@@ -53,8 +53,8 @@ const double log_M_PI = std::log(M_PI);
 //' (default); \code{2} for spherically symmetric kernel.
 //' @param k softplus kernel parameter. Defaults to \code{10.0}.
 //' @param loo leave-one-out: skip the \eqn{i}-th observation when evaluating
-//' at \eqn{\boldsymbol{X}_i}? Requires \code{x = X}. Defaults to
-//' \code{FALSE}.
+//' at \eqn{\boldsymbol{X}_i}? Requires \code{x = X} and \eqn{n \ge 2}.
+//' Defaults to \code{FALSE}.
 //' @return A column matrix of size \code{c(nx, 1)} with the evaluation of the
 //' kernel density estimator.
 //' @references
@@ -100,9 +100,14 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
     Rcpp::stop("Dimensions of X and x mismatch.");
 
   }
-  if (loo && x.n_rows != n) {
+  if (loo && !arma::approx_equal(x, X, "absdiff", 1e-10)) {
 
     Rcpp::stop("loo = TRUE requires x = X.");
+
+  }
+  if (loo && n < 2) {
+
+    Rcpp::stop("loo = TRUE requires n >= 2.");
 
   }
   if (p != arma::accu(d + 1)) {
@@ -398,10 +403,12 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
   }
 
   // Leave-one-out: renormalize the weights of the remaining observations, so
-  // that they sum one
+  // that they sum one. A weight equal to one leaves no observations behind, so
+  // the -Inf - (-Inf) = NaN arising there is a null density.
   if (loo) {
 
     log_kde -= arma::log1p(-arma::exp(log_weights));
+    log_kde.replace(arma::datum::nan, -arma::datum::inf);
 
   }
 
@@ -538,8 +545,10 @@ arma::vec log_cv_kde_polysph(arma::mat X, arma::uvec d, arma::vec h,
     }
 
     // Add the constants and renormalize the weights of the remaining
-    // observations, so that they sum one
-    return log_cv + C - arma::log1p(-arma::exp(log_w));
+    // observations, so that they sum one, as in kde_polysph().
+    log_cv += C - arma::log1p(-arma::exp(log_w));
+    log_cv.replace(arma::datum::nan, -arma::datum::inf);
+    return log_cv;
 
   }
 

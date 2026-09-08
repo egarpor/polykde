@@ -60,6 +60,10 @@ test_that("Edge cases kde_polysph()", {
   expect_error(kde_polysph(x = x, X = X, d = d, h = c(h, 1)))
   expect_error(kde_polysph(x = x, X = X, d = c(d, 1), h = h))
   expect_error(kde_polysph(x = x, X = X, d = d, h = 0 * h))
+  expect_error(kde_polysph(x = X[c(2:n, 1), ], X = X, d = d, h = h,
+                           loo = TRUE))
+  expect_error(kde_polysph(x = X[1, , drop = FALSE], X = X[1, , drop = FALSE],
+                           d = d, h = h, loo = TRUE))
 })
 
 ## Integration
@@ -284,6 +288,22 @@ test_that("Log-cv kde vMF-product-extrinsic over several blocks", {
                          wrt_unif = wrt_unif, weights = ws_b[-i], log = TRUE)))
 
     }
+
+  }
+
+})
+
+test_that("Log-cv kde with a degenerate weight is -Inf, not NaN", {
+
+  # All the mass on the first observation, which is left out for i = 1. The vMF
+  # kernel uses the fast path; the other kernels, kde_polysph(loo = TRUE)
+  ws_1 <- c(1, rep(0, n - 1))
+  for (kernel in 1:3) {
+
+    log_cv_1 <- log_cv_kde_polysph(X = X, d = d, h = h, weights = ws_1,
+                                   kernel = kernel)
+    expect_equal(log_cv_1[1], -Inf)
+    expect_false(any(is.nan(log_cv_1)))
 
   }
 
