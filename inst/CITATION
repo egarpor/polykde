@@ -11,10 +11,11 @@ bibentry(
   year         = year,
   note         = note,
   url          = "https://CRAN.R-project.org/package=polykde",
+  doi          = "10.32614/CRAN.package.polykde",
   textVersion  =
   paste(paste0("García-Portugués, E. (", year, ")."),
         "polykde: Polyspherical Kernel Density Estimation.",
-        paste0(note, "."), "https://CRAN.R-project.org/package=polykde")
+        paste0(note, "."), "https://doi.org/10.32614/CRAN.package.polykde")
 )
 
 bibentry(
@@ -27,7 +28,7 @@ bibentry(
   volume       = "121",
   number       = "553",
   pages        = "427--439",
-  url          = "https://doi.org/10.1080/01621459.2025.2521898",
+  doi          = "10.1080/01621459.2025.2521898",
   textVersion  =
   paste("García-Portugués, E. and Meilán-Vila, A. (2026).",
         "Kernel density estimation with polyspherical data and its applications.",
@@ -46,7 +47,7 @@ bibentry(
   pages        = "63--82",
   publisher    = "Springer",
   address      = "Cham",
-  url          = "https://doi.org/10.1007/978-3-031-32729-2_4",
+  doi          = "10.1007/978-3-031-32729-2_4",
   textVersion  =
   paste("García-Portugués, E. and Meilán-Vila, A. (2023).",
         "Hippocampus shape analysis via skeletal models and kernel smoothing.",

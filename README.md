@@ -8,6 +8,7 @@ status](https://github.com/egarpor/polykde/workflows/R-CMD-check/badge.svg)](htt
 status](https://github.com/egarpor/polykde/workflows/test-coverage/badge.svg)](https://github.com/egarpor/polykde/actions)
 [![](https://codecov.io/gh/egarpor/polykde/branch/main/graph/badge.svg)](https://app.codecov.io/gh/egarpor/polykde)
 [![](https://www.r-pkg.org/badges/version/polykde?color=green)](https://cran.r-project.org/package=polykde)
+[![](https://img.shields.io/badge/doi-10.32614/CRAN.package.polykde-blue.svg)](https://doi.org/10.32614/CRAN.package.polykde)
 [![](http://cranlogs.r-pkg.org/badges/grand-total/polykde)](https://cran.r-project.org/package=polykde)
 [![](http://cranlogs.r-pkg.org/badges/last-month/polykde)](https://cran.r-project.org/package=polykde)
 
