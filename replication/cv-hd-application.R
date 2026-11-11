@@ -36,14 +36,14 @@ l2_map <- function(X, center, scale) {
 
 # Llobregat-basin river hydrochemistry (compositions::Hydrochem): 14 chemical
 # parts in mg/L mapped to S^13 by the sqrt map, 4 river classes. H is given
-# as 10^(-pH) mol/L and is converted to mg/L with its molar mass, 1.008 g/mol
+# as 10^(-pH) mol/L and is converted to mg/L with its molar mass, 1.008 g/mol.
 load_hydrochem <- function() {
 
   data("Hydrochem", package = "compositions")
   parts <- c("H", "Na", "K", "Mg", "Ca", "Sr", "Ba", "NH4", "Cl", "NO3",
              "PO4", "SO4", "HCO3", "TOC")
   X <- as.matrix(Hydrochem[, parts])
-  X[, "H"] <- 1008 * X[, "H"]
+  X[, "H"] <- 1.008 * 1e3 * X[, "H"]
   list(X = X, y = factor(Hydrochem$River), d = length(parts) - 1,
        embed = "sqrt", name = "Hydrochem")
 
