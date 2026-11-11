@@ -16,7 +16,7 @@ status](https://github.com/egarpor/polykde/workflows/test-coverage/badge.svg)](h
 
 Companion package for the article *Kernel density estimation with
 polyspherical data and its applications* (García-Portugués and
-Meilán-Vila, 2025).
+Meilán-Vila, 2026).
 
 ## Installation
 

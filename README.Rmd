@@ -29,7 +29,7 @@ cat(
 
 ## Overview
 
-Companion package for the article *Kernel density estimation with polyspherical data and its applications* (García-Portugués and Meilán-Vila, 2025).
+Companion package for the article *Kernel density estimation with polyspherical data and its applications* (García-Portugués and Meilán-Vila, 2026).
 
 ## Installation
 
