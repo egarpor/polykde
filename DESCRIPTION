@@ -47,7 +47,8 @@ Suggests:
     rgl,
     scatterplot3d,
     sdetorus,
-    smacof
+    smacof,
+    withr
 LinkingTo: Rcpp, RcppArmadillo, RcppProgress
 URL: https://github.com/egarpor/polykde
 BugReports: https://github.com/egarpor/polykde/issues
