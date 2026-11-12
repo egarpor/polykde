@@ -45,9 +45,8 @@ plus the vector `d` of dimensions.
 ### Density estimation on the sphere
 
 ``` r
-set.seed(42)
-
 # A two-component von Mises--Fisher mixture on S^2
+set.seed(42)
 d <- 2
 X <- r_mvmf_polysph(n = 500, d = d, mu = rbind(c(0, 0, 1), c(1, 1, 0) / sqrt(2)),
                     kappa = rbind(10, 25), prop = c(0.6, 0.4))
@@ -62,7 +61,7 @@ h
 # Evaluate the kernel density estimator on a grid of spherical angles, with
 # theta_1 the polar angle and theta_2 the azimuth
 th_1 <- seq(0, pi, l = 100)
-th_2 <- seq(-pi, pi, l = 200)
+th_2 <- seq(0, 2 * pi, l = 200)
 grid <- angles_to_sph(theta = as.matrix(expand.grid(th_1, th_2)))
 kde <- matrix(kde_polysph(x = grid, X = X, d = d, h = h), nrow = length(th_1))
 
@@ -78,10 +77,9 @@ points(sph_to_angles(x = X), pch = 16, cex = 0.4)
 ### Polyspherical data
 
 ``` r
-set.seed(423432)
-
 # A product of von Mises--Fisher distributions on S^1 x S^2: the r = 2 blocks
 # of unit vectors are concatenated by columns
+set.seed(42)
 d <- c(1, 2)
 mu <- c(0, 1, 0, 0, 1)
 kappa <- c(5, 10)
@@ -96,13 +94,13 @@ comp_ind_dj(d = d)
 # Least squares cross-validation, with the exact loss for the vMF kernel
 h <- bw_cv_polysph(X = X, d = d, type = "LSCV", exact_vmf = TRUE)$bw
 h
-#> [1] 0.1240745 0.1674424
+#> [1] 0.1416461 0.1750076
 
 # The estimator tracks the true density over the sample
 cor(kde_polysph(x = X, X = X, d = d, h = h),
     d_vmf_polysph(x = X, d = d, mu = mu, kappa = kappa))
 #>           [,1]
-#> [1,] 0.9059769
+#> [1,] 0.9002732
 ```
 
 ### Homogeneity tests

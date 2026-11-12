@@ -23,6 +23,11 @@ knitr::opts_chunk$set(
   fig.align = "center",
   comment = "#>"
 )
+
+# Optional packages required by the regression and ridge chunks
+has_sc3 <- requireNamespace("scatterplot3d", quietly = TRUE)
+has_sdetorus <- requireNamespace("sdetorus", quietly = TRUE)
+has_smacof <- requireNamespace("smacof", quietly = TRUE)
 ```
 
 The polysphere $\mathbb{S}^{d_1,\ldots,d_r} := \mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}$ is the Cartesian product of $r$ spheres $\mathbb{S}^{d_j} := \{\boldsymbol{x} \in \mathbb{R}^{d_j + 1} : \|\boldsymbol{x}\| = 1\}$, and it hosts multivariate directional data such as sets of angles or unit 3D vectors, like the spokes of a skeletal shape representation. The `polykde` package implements the kernel density estimator on the polysphere, together with the bandwidth selectors, samplers, regression estimators, ridge estimators, and homogeneity tests studied in @Garcia-Portugues2026 and @Garcia-Portugues2023. This vignette showcases this functionality.
@@ -134,7 +139,7 @@ h <- bw_rot_polysph(X = X, d = d)$bw
 # Evaluation on a regular grid of spherical angles, with theta_1 the polar
 # angle and theta_2 the azimuth (see sph_to_angles())
 th_1 <- seq(0, pi, l = 100)
-th_2 <- seq(-pi, pi, l = 200)
+th_2 <- seq(0, 2 * pi, l = 200)
 grid <- angles_to_sph(theta = as.matrix(expand.grid(th_1, th_2)))
 kde <- matrix(kde_polysph(x = grid, X = X, d = d, h = h), nrow = length(th_1))
 image(th_1, th_2, kde, col = hcl.colors(50, "Viridis"), useRaster = TRUE,
@@ -184,7 +189,7 @@ bw_cv_polysph(X = X, d = d, type = "LSCV", exact_vmf = TRUE,
 
 `kre_polysph()` regresses a polyspherical response `Y` on a real covariate `X` by local constant (`p = 0`, Nadaraya--Watson) or local linear (`p = 1`) fitting, projecting the fit back onto the polysphere. `bw_cv_kre_polysph()` selects the bandwidth by cross-validation, returning both the minimizer `h_min` and the more conservative one-standard-error rule `h_1se`.
 
-```{r kre, fig.asp = 1, fig.width = 5, eval = requireNamespace("scatterplot3d", quietly = TRUE)}
+```{r kre, fig.asp = 1, fig.width = 5, eval = has_sc3 && has_sdetorus}
 set.seed(423432)
 n <- 100
 x <- seq(0, 1, l = n)
@@ -209,7 +214,7 @@ legend("topleft", legend = c("Local constant", "Local linear"), lwd = 2,
 
 The density ridge is the one-dimensional set of points where the density is at a local maximum in the direction of least curvature [@Ozertem2011; @Genovese2014]. `euler_ridge()` runs the Euler algorithm of @Garcia-Portugues2023 from a set of starting points `x`, using the ridge bandwidth `h` and the step size `h_euler`. The gradient and Hessian it relies upon are exported as `grad_hess_kde_polysph()` and `proj_grad_kde_polysph()`.
 
-```{r ridge, fig.asp = 1, fig.width = 5, eval = requireNamespace("scatterplot3d", quietly = TRUE)}
+```{r ridge, fig.asp = 1, fig.width = 5, eval = has_sc3 && has_sdetorus}
 set.seed(987204452)
 n <- 100
 X <- r_path_s2r(n = n, r = 1, spiral = FALSE, Theta = cbind(c(1, 0, 0)),
@@ -237,7 +242,7 @@ sc3$points3d(rid$ridge_y, pch = 16, cex = 0.75, col = 2)
 
 `clean_euler_ridge()` removes non-convergent or spurious endpoints, and `index_ridge()` parameterizes the resulting curve, delivering scores that play the role of a first principal component along the ridge.
 
-```{r ridge-index}
+```{r ridge-index, eval = has_sc3 && has_sdetorus && has_smacof}
 rid_clean <- clean_euler_ridge(e = rid, X = X)
 ind <- index_ridge(endpoints = rid_clean$ridge_y, X = X, d = 2,
                    probs_scores = seq(0, 1, l = 50))

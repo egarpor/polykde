@@ -72,7 +72,7 @@ h
 # Evaluate the kernel density estimator on a grid of spherical angles, with
 # theta_1 the polar angle and theta_2 the azimuth
 th_1 <- seq(0, pi, l = 100)
-th_2 <- seq(-pi, pi, l = 200)
+th_2 <- seq(0, 2 * pi, l = 200)
 grid <- angles_to_sph(theta = as.matrix(expand.grid(th_1, th_2)))
 kde <- matrix(kde_polysph(x = grid, X = X, d = d, h = h), nrow = length(th_1))
 
