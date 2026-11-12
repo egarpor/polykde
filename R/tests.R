@@ -447,6 +447,7 @@ hom_test_polysph <- function(X, d, labels,
   if (show_prog) {
 
     pb <- txtProgressBar(style = 3)
+    on.exit(close(pb), add = TRUE)
 
   }
   Tn_star <- rep(NA, B)

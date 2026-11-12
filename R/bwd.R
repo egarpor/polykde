@@ -155,7 +155,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
       # Recomputing them for each h is cheap, as log_c_vmf() dominates the
       # cost, and the time is flat in the block size above 1e5.
       ind_dj <- comp_ind_dj(d = d)
-      b <- max(1, min(n, floor(2.5e5 / n)))
+      b <- max(2, min(n, floor(2.5e5 / n)))
       blocks <- split(x = seq_len(n), f = ceiling(seq_len(n) / b))
 
       # Precompute other fixed objects in the LSCV loss
@@ -221,9 +221,6 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
                                                  spline = spline)
 
             }
-
-            # The first block holds no lower-triangle pairs when b = 1
-            if (length(a_ij) == 0) next
 
             # Accumulate in log scale for arcsinh, in natural scale otherwise
             if (arcsinh) {

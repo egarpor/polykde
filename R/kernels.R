@@ -529,6 +529,12 @@ b_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
 
   }
 
+  # Check kernel_type
+  if (!(kernel_type %in% c("prod", "sph"))) {
+
+    stop("kernel_type must be either \"prod\" or \"sph\".")
+
+  }
   if (is.function(kernel)) {
 
     if (kernel_type == "prod") {
@@ -541,7 +547,7 @@ b_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
         return(num / (di * den))
       })
 
-    } else if (kernel_type == "sph") {
+    } else {
 
       d_tilde <- sum(d)
       num <- integrate(function(t) kernel(t) * t^(d_tilde / 2),
@@ -549,10 +555,6 @@ b_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
       den <- integrate(function(t) kernel(t) * t^(d_tilde / 2 - 1),
                        lower = 0, upper = Inf, ...)$value
       bd <- num / (d_tilde * den)
-
-    } else {
-
-      stop("kernel_type must be either \"prod\" or \"sph\".")
 
     }
 
@@ -568,14 +570,10 @@ b_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
 
         bd <- 1 / (d + 4)
 
-      } else if (kernel_type == "sph") {
+      } else {
 
         d_tilde <- sum(d)
         bd <- 1 / (d_tilde + 4)
-
-      } else {
-
-        stop("kernel_type must be either \"prod\" or \"sph\".")
 
       }
 
@@ -589,16 +587,12 @@ b_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
           polylog_minus_exp_mu(s = di / 2 + 1, mu = k))
         bd <- Li_num / (2 * k * Li_den)
 
-      } else if (kernel_type == "sph") {
+      } else {
 
         d_tilde <- sum(d)
         Li_num <- polylog_minus_exp_mu(s = d_tilde / 2 + 2, mu = k)
         Li_den <- polylog_minus_exp_mu(s = d_tilde / 2 + 1, mu = k)
         bd <- Li_num / (2 * k * Li_den)
-
-      } else {
-
-        stop("kernel_type must be either \"prod\" or \"sph\".")
 
       }
 

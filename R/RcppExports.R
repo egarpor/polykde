@@ -30,7 +30,8 @@
 #' parallelizes on the starting values \code{x}. The function
 #' \code{euler_ridge_block} runs the Euler algorithm marginally in blocks
 #' of spheres, instead of jointly in the whole polysphere. This function
-#' requires that all the dimensions are the same.
+#' requires that all the dimensions are the same. Only the von Mises--Fisher
+#' product kernel (\code{kernel = 1}, \code{kernel_type = 1}) is supported.
 #' @return The three functions return a list with the following fields:
 #' \item{ridge_y}{a matrix of size \code{c(nx, sum(d) + r)} with the end
 #' points of Euler algorithm defining the estimated ridge.}
@@ -142,6 +143,8 @@ euler_ridge <- function(x, X, d, h, h_euler = as.numeric( c()), weights = as.num
 #' the kernel density estimator evaluated at \code{x}.}
 #' \item{hess}{an array of size \code{c(nx, sum(d) + r, sum(d) + r)} with the
 #' Hessian matrix of the kernel density estimator evaluated at \code{x}.}
+#' @details Only the von Mises--Fisher product kernel (\code{kernel = 1},
+#' \code{kernel_type = 1}) is supported.
 #' @examples
 #' # Simple check on (S^1)^2
 #' n <- 3
@@ -179,6 +182,8 @@ grad_hess_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), projec
 #' first non-null Hessian eigenvector evaluated at \code{x}.}
 #' \item{lamb_norm}{a matrix of size \code{c(nx, sum(d) + r)} with the
 #' Hessian eigenvalues (largest to smallest) evaluated at \code{x}.}
+#' @details Only the von Mises--Fisher product kernel (\code{kernel = 1},
+#' \code{kernel_type = 1}) is supported.
 #' @examples
 #' # Simple check on (S^1)^2
 #' n <- 3

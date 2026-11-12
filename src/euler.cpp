@@ -52,7 +52,8 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
 //' parallelizes on the starting values \code{x}. The function
 //' \code{euler_ridge_block} runs the Euler algorithm marginally in blocks
 //' of spheres, instead of jointly in the whole polysphere. This function
-//' requires that all the dimensions are the same.
+//' requires that all the dimensions are the same. Only the von Mises--Fisher
+//' product kernel (\code{kernel = 1}, \code{kernel_type = 1}) is supported.
 //' @return The three functions return a list with the following fields:
 //' \item{ridge_y}{a matrix of size \code{c(nx, sum(d) + r)} with the end
 //' points of Euler algorithm defining the estimated ridge.}
