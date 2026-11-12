@@ -20,8 +20,8 @@
 #' \emph{Statistical Methods at the Forefront of Biomedical Advances},
 #' pp. 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}.
 #' @name polykde-package
+#' @aliases polykde polykde-package
 #' @import graphics Rcpp RcppProgress stats
 #' @importFrom utils setTxtProgressBar txtProgressBar
 #' @useDynLib polykde, .registration = TRUE
-#' @aliases polykde polykde-package
 "_PACKAGE"

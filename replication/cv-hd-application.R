@@ -1,5 +1,6 @@
 
 # Required libraries
+library(DirStats)
 library(polykde)
 library(movMF)
 library(mlbench)
@@ -7,6 +8,7 @@ library(compositions)
 library(parallel)
 library(ggplot2)
 library(patchwork)
+stopifnot(packageVersion("DirStats") >= "1.0.0")
 stopifnot(packageVersion("polykde") >= "1.3.0")
 
 ## Sphere embeddings
