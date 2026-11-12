@@ -128,5 +128,5 @@ bw_cv_polysph(X = X, d = d, type = "LSCV", exact_vmf = TRUE)$bw
 García-Portugués, E. and Meilán-Vila, A. (2026). Kernel density estimation
 with polyspherical data and its applications. \emph{Journal of the American
 Statistical Association}, 121(553):427--439.
-\doi{10.1080/01621459.2025.2521898}.
+\doi{10.1080/01621459.2025.2521898}
 }

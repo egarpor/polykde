@@ -216,8 +216,8 @@ Y_block <- block_euler_ridge(x = X[1:5, , drop = FALSE], X = X, d = d,
 \references{
 García-Portugués, E. and Meilán-Vila, A. (2023). Hippocampus shape analysis
 via skeletal models and kernel smoothing. In Larriba, Y. (Ed.),
-\emph{Statistical Methods at the Forefront of Biomedical Advances},
-pp. 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}.
+\emph{Statistical Methods at the Forefront of Biomedical Advances}, pp.
+63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}
 }
 \seealso{
 \code{\link{clean_euler_ridge}}, \code{\link{index_ridge}},
