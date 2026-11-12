@@ -20,7 +20,8 @@ arma::vec dist_polysph(arma::mat x, arma::mat y, arma::uvec ind_dj,
 arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
                       Rcpp::NumericVector weights, bool log, bool wrt_unif,
                       bool normalized, bool intrinsic, bool norm_x, bool norm_X,
-                      arma::uword kernel, arma::uword kernel_type, double k);
+                      arma::uword kernel, arma::uword kernel_type, double k,
+                      bool loo);
 
 //' @title Euler algorithms for polyspherical density ridge estimation
 //'
@@ -51,7 +52,8 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
 //' parallelizes on the starting values \code{x}. The function
 //' \code{euler_ridge_block} runs the Euler algorithm marginally in blocks
 //' of spheres, instead of jointly in the whole polysphere. This function
-//' requires that all the dimensions are the same.
+//' requires that all the dimensions are the same. Only the von Mises--Fisher
+//' product kernel (\code{kernel = 1}, \code{kernel_type = 1}) is supported.
 //' @return The three functions return a list with the following fields:
 //' \item{ridge_y}{a matrix of size \code{c(nx, sum(d) + r)} with the end
 //' points of Euler algorithm defining the estimated ridge.}
@@ -73,8 +75,8 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
 //' @references
 //' García-Portugués, E. and Meilán-Vila, A. (2023). Hippocampus shape analysis
 //' via skeletal models and kernel smoothing. In Larriba, Y. (Ed.),
-//' \emph{Statistical Methods at the Forefront of Biomedical Advances},
-//' pp. 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}.
+//' \emph{Statistical Methods at the Forefront of Biomedical Advances}, pp.
+//' 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}
 //' @seealso
 //' \code{\link{clean_euler_ridge}}, \code{\link{index_ridge}},
 //' \code{\link{proj_grad_kde_polysph}}, \code{\link{grad_hess_kde_polysph}}.
@@ -304,7 +306,7 @@ Rcpp::List euler_ridge(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
   // Compute log-density final points
   arma::vec log_dens = kde_polysph(y, X, d, h, weights, true, wrt_unif,
                                    normalized, false, norm_x, norm_X, kernel,
-                                   kernel_type, k);
+                                   kernel_type, k, false);
 
   // Return a Rcpp list
   return Rcpp::List::create(Rcpp::Named("ridge_y") = y,

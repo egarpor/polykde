@@ -3,7 +3,7 @@
 # painted with a multimodal von Mises-Fisher mixture density (a KDE on the
 # sphere) via polykde's own d_vmf_polysph. The globes are drawn with a base-
 # graphics orthographic ray-caster (no rgl needed) and framed in a dark-viridis
-# hexagon. An optional rgl path (render_rgl) is kept at the bottom.
+# hexagon.
 
 library(polykde)
 library(viridis)
@@ -172,36 +172,3 @@ sticker(
   dpi = dpi, filename = "logo/logo.png"
 )
 file.copy("logo/logo.png", "man/figures/logo.png", overwrite = TRUE)
-
-# Optional: native rgl render (interactive only)
-# Run in RStudio / an interactive session with a working OpenGL context to get
-# the rgl-native version (lit translucent spheres). Not used by default because
-# rgl cannot open a GL window under `Rscript` here.
-render_rgl <- function(file = "logo-spheres-rgl.png") {
-  stopifnot(requireNamespace("rgl", quietly = TRUE))
-  rgl::open3d(useNULL = FALSE)
-  rgl::bg3d("white")
-  centers <- list(c(0, 0, 0), c(-1.6, 1.5, -0.6), c(1.6, 1.5, -0.6))
-  radii <- c(1, 0.72, 0.72)
-  for (j in seq_along(centers)) {
-    g <- globes[[j]]
-    latt <- fib_latt(n = 8000)
-    dens <- numeric(nrow(latt))
-    for (k in seq_len(nrow(rbind(g$mu)))) {
-      dens <- dens + g$prop[k] *
-        d_vmf_polysph(x = latt, d = 2, mu = rbind(g$mu)[k, ],
-                      kappa = g$kappa[k])
-    }
-    cols <- viridis(256)[1 + round(255 * (dens - min(dens)) /
-                                     diff(range(dens)))]
-    pts <- latt * radii[j]
-    pts <- sweep(pts, 2, centers[[j]], `+`)
-    rgl::spheres3d(centers[[j]], radius = radii[j] * 0.985,
-                   col = "grey85", alpha = 0.25, lit = TRUE)
-    rgl::plot3d(pts, col = cols, size = 5, add = TRUE,
-                axes = FALSE, box = FALSE, xlab = "", ylab = "", zlab = "")
-  }
-  rgl::par3d(zoom = 0.62)
-  rgl::snapshot3d(file, width = 1600, height = 1600, webshot = FALSE)
-  rgl::close3d()
-}

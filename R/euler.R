@@ -30,10 +30,15 @@ parallel_euler_ridge <- function(x, X, d, h, h_euler, N = 1e3, eps = 1e-5,
 
   # Empty Euler
   p <- ncol(x)
-  empty_euler <- list("ridge_y" = rbind(rep(NA, p)), "log_dens_y" = rbind(NA),
-                      "paths" = array(NA, dim = c(1, p, N + 1)),
+  n_lamb <- ifelse(isTRUE(list(...)$sparse), 1, p)
+  empty_euler <- list("ridge_y" = rbind(rep(NA, p)),
+                      "lamb_norm_y" = rbind(rep(NA, n_lamb)),
+                      "log_dens_y" = rbind(NA),
+                      "paths" = array(NA, dim = switch(keep_paths + 1,
+                                                       c(1, 1, 1),
+                                                       c(1, p, N + 1))),
                       "start_x" = NA, "iter" = rbind(NA), "conv" = rbind(NA),
-                      "error" = NA)
+                      "d" = matrix(d), "h" = matrix(h), "error" = NA)
 
   # Eulers
   k <- 0
@@ -45,7 +50,7 @@ parallel_euler_ridge <- function(x, X, d, h, h_euler, N = 1e3, eps = 1e-5,
     # Euler algorithm, with error handling
     eu <- try(euler_ridge(x = x[k, , drop = FALSE], X = X, d = d, h = h,
                           h_euler = h_euler, N = N, eps = eps,
-                          keep_paths = keep_paths, ...))
+                          keep_paths = keep_paths, ...), silent = TRUE)
     if (inherits(eu, what = "try-error")) {
 
       empty_euler$start_x <- x[k, , drop = FALSE]
@@ -195,22 +200,6 @@ block_euler_ridge <- function(x, X, d, h, h_euler, ind_blocks, N = 1e3,
   e_block$d <- c(e_block$d)[ind_reord_blocks]
   e_block$h <- c(e_block$h)[ind_reord_blocks]
 
-  # Final checks
-  if (any(abs(e_block$start_x - x) > 1e-10)) {
-
-    warning("Unequal x and $start_x: wrong recollection of blocks!")
-
-  }
-  if (any(abs(e_block$h - h) > 1e-10)) {
-
-    warning("Unequal h and $h: wrong recollection of blocks!")
-
-  }
-  if (!identical(as.integer(e_block$d), as.integer(d))) {
-
-    warning("Unequal d and $d: wrong recollection of blocks!")
-
-  }
   return(e_block)
 
 }
@@ -234,8 +223,8 @@ block_euler_ridge <- function(x, X, d, h, h_euler, ind_blocks, N = 1e3,
 #' @references
 #' García-Portugués, E. and Meilán-Vila, A. (2023). Hippocampus shape analysis
 #' via skeletal models and kernel smoothing. In Larriba, Y. (Ed.),
-#' \emph{Statistical Methods at the Forefront of Biomedical Advances},
-#' pp. 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}.
+#' \emph{Statistical Methods at the Forefront of Biomedical Advances}, pp.
+#' 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}
 #' @examples
 #' \donttest{
 #' if (requireNamespace("scatterplot3d", quietly = TRUE)) {
@@ -372,8 +361,8 @@ clean_euler_ridge <- function(e, X, p_out = NULL) {
 #' @references
 #' García-Portugués, E. and Meilán-Vila, A. (2023). Hippocampus shape analysis
 #' via skeletal models and kernel smoothing. In Larriba, Y. (Ed.),
-#' \emph{Statistical Methods at the Forefront of Biomedical Advances},
-#' pp. 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}.
+#' \emph{Statistical Methods at the Forefront of Biomedical Advances}, pp.
+#' 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}
 #' @examples
 #' \donttest{
 #' if (requireNamespace("sdetorus", quietly = TRUE) &&

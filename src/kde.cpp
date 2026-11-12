@@ -9,7 +9,8 @@ arma::mat proj_polysph(arma::mat x, arma::uvec ind_dj);
 arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
                       Rcpp::NumericVector weights, bool log, bool wrt_unif,
                       bool normalized, bool intrinsic, bool norm_x, bool norm_X,
-                      arma::uword kernel, arma::uword kernel_type, double k);
+                      arma::uword kernel, arma::uword kernel_type, double k,
+                      bool loo);
 arma::mat sfp(arma::mat t);
 
 // Constants
@@ -51,12 +52,16 @@ const double log_M_PI = std::log(M_PI);
 //' @param kernel_type type of kernel employed: \code{1} for product kernel
 //' (default); \code{2} for spherically symmetric kernel.
 //' @param k softplus kernel parameter. Defaults to \code{10.0}.
+//' @param loo leave-one-out: skip the \eqn{i}-th observation when evaluating
+//' at \eqn{\boldsymbol{X}_i}? Requires \code{x = X} and \eqn{n \ge 2}.
+//' Defaults to \code{FALSE}.
 //' @return A column matrix of size \code{c(nx, 1)} with the evaluation of the
 //' kernel density estimator.
 //' @references
-//' García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+//' García-Portugués, E. and Meilán-Vila, A. (2026). Kernel density estimation
 //' with polyspherical data and its applications. \emph{Journal of the American
-//' Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+//' Statistical Association}, 121(553):427--439.
+//' \doi{10.1080/01621459.2025.2521898}
 //' @seealso \code{\link{log_cv_kde_polysph}},
 //' \code{\link{grad_hess_kde_polysph}}, \code{\link{r_kde_polysph}},
 //' \code{\link{bw_rot_polysph}}, \code{\link{bw_cv_polysph}},
@@ -79,7 +84,8 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
                       bool wrt_unif = false, bool normalized = true,
                       bool intrinsic = false, bool norm_x = false,
                       bool norm_X = false, arma::uword kernel = 1,
-                      arma::uword kernel_type = 1, double k = 10.0) {
+                      arma::uword kernel_type = 1, double k = 10.0,
+                      bool loo = false) {
 
   // Sample size
   arma::uword n = X.n_rows;
@@ -92,6 +98,16 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
   if (p != x.n_cols) {
 
     Rcpp::stop("Dimensions of X and x mismatch.");
+
+  }
+  if (loo && !arma::approx_equal(x, X, "absdiff", 1e-10)) {
+
+    Rcpp::stop("loo = TRUE requires x = X.");
+
+  }
+  if (loo && n < 2) {
+
+    Rcpp::stop("loo = TRUE requires n >= 2.");
 
   }
   if (p != arma::accu(d + 1)) {
@@ -363,6 +379,13 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
 
     }
 
+    // Leave-one-out: drop the ki-th observation from the sum
+    if (loo) {
+
+      log_L(ki) = -arma::datum::inf;
+
+    }
+
     // Sum kernels with LogSumExp trick to avoid overflows in large
     // exponentials -- but be careful, as if max_log_L = -inf, then
     // log_L - max_log_L = -inf + inf = nan! (and the subtraction of max_log_L
@@ -376,6 +399,16 @@ arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h,
 
     // Log-kde computed using the LogSumExp trick
     log_kde(ki) = max_log_L + std::log(arma::accu(arma::exp(log_L)));
+
+  }
+
+  // Leave-one-out: renormalize the weights of the remaining observations, so
+  // that they sum one. A weight equal to one leaves no observations behind, so
+  // the -Inf - (-Inf) = NaN arising there is a null density.
+  if (loo) {
+
+    log_kde -= arma::log1p(-arma::exp(log_weights));
+    log_kde.replace(arma::datum::nan, -arma::datum::inf);
 
   }
 
@@ -442,18 +475,6 @@ arma::vec log_cv_kde_polysph(arma::mat X, arma::uvec d, arma::vec h,
 
   }
 
-  // Transform NumericVector to arma::vec
-  arma::vec cv_weights = Rcpp::as<arma::vec>(weights);
-
-  // Are weights given?
-  if (cv_weights.n_elem == 0) {
-
-    // Fill with 1 / n
-    cv_weights.set_size(n);
-    cv_weights.fill(1.0 / (n - 1));
-
-  }
-
   // Indexes with begin and end of each S^dj
   arma::uvec ind_dj = arma::conv_to<arma::uvec>::from(arma::zeros(r + 1));
   ind_dj.tail(r) = d + 1;
@@ -466,21 +487,72 @@ arma::vec log_cv_kde_polysph(arma::mat X, arma::uvec d, arma::vec h,
 
   }
 
-  // Log-cv kde
-  arma::vec log_cv_i = arma::zeros(n);
-  arma::uvec inds = arma::conv_to<arma::uvec>::from(
-    arma::regspace(0, 1, n - 1));
-  for (arma::uword i = 0; i < n; i ++) {
+  // Leave-one-out kde evaluated at the sample, except for
+  // vMF-product-extrinsic kernel that admits a more efficient computation.
+  if (kernel != 1 || kernel_type != 1 || intrinsic) {
 
-    arma::uvec minus_i = inds;
-    minus_i.shed_row(i);
-    arma::vec cv_weights_i = cv_weights.elem(minus_i);
-    log_cv_i(i) = arma::as_scalar(
-      kde_polysph(X.row(i), X.rows(minus_i), d, h, Rcpp::wrap(cv_weights_i),
-                  true, wrt_unif, normalized, intrinsic, false, false, kernel,
-                  kernel_type, k));
+    return kde_polysph(X, X, d, h, weights, true, wrt_unif, normalized,
+                       intrinsic, false, false, kernel, kernel_type, k, true);
+
+  } else {
+
+    // For the extrinsic product vMF kernel, the log-kernel is
+    // log L_h(X_i, X_j) = C + sum_dj (X_{i,dj}'X_{j,dj} - 1) / h_dj^2, with C
+    // the log-kernel at X_i = X_j, computed with a single kde call. The sum is
+    // the Gram matrix X (X S)' minus sum_dj 1 / h_dj^2, with S scaling the
+    // coordinates of S^dj by 1 / h_dj^2, which can be blockwise computed. The
+    // subtraction is done within each block, before adding the log-weights,
+    // and not within C: for small h, the two terms are huge and nearly cancel,
+    // so C would be lost.
+    arma::vec inv_h2 = 1.0 / arma::square(h);
+    double C = arma::as_scalar(kde_polysph(X.row(0), X.row(0), d, h,
+                                           Rcpp::NumericVector::create(), true,
+                                           wrt_unif, normalized, false, false,
+                                           false, kernel, kernel_type, k,
+                                           false));
+
+    // Normalized log-weights, as in kde_polysph()
+    arma::vec w = arma::ones(n);
+    if (weights.size() > 0) {
+
+      w = arma::clamp(Rcpp::as<arma::vec>(weights), 0.0, arma::datum::inf);
+
+    }
+    arma::vec log_w = arma::log(w / arma::accu(w));
+
+    // Sample with the coordinates of S^dj scaled by 1 / h_dj^2
+    arma::mat XS = X;
+    for (arma::uword dj = 0; dj < r; dj++) {
+
+      XS.cols(ind_dj(dj), ind_dj(dj + 1) - 1) *= inv_h2(dj);
+
+    }
+
+    // Row-wise LogSumExp of the blocks, excluding the diagonal
+    arma::uword b = std::max<arma::uword>(1, std::min(n, 250000 / n));
+    arma::vec log_cv = arma::zeros(n);
+    for (arma::uword i0 = 0; i0 < n; i0 += b) {
+
+      arma::uword i1 = std::min(i0 + b, n) - 1;
+      arma::mat G = XS.rows(i0, i1) * X.t() - arma::accu(inv_h2);
+      G.each_row() += log_w.t();
+      G.diag(i0).fill(-arma::datum::inf);
+
+      // Rows without finite entries (all the other weights are zero) get a zero
+      // shift, so that they give -Inf instead of NaN
+      arma::vec m = arma::max(G, 1);
+      m.replace(-arma::datum::inf, 0.0);
+      G.each_col() -= m;
+      log_cv.subvec(i0, i1) = m + arma::log(arma::sum(arma::exp(G), 1));
+
+    }
+
+    // Add the constants and renormalize the weights of the remaining
+    // observations, so that they sum one, as in kde_polysph().
+    log_cv += C - arma::log1p(-arma::exp(log_w));
+    log_cv.replace(arma::datum::nan, -arma::datum::inf);
+    return log_cv;
 
   }
-  return log_cv_i;
 
 }

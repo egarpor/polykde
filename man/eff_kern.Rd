@@ -46,11 +46,11 @@ codification as \code{kernel_type}. Defaults to \code{"sph"}.}
 }
 \value{
 \itemize{
-\item{\code{b_d}: a vector with the first kernel moment on each sphere
-(common if \code{kernel_type = "sph"}).}
-\item{\code{v_d}: a vector with the second kernel moment if
-\code{kernel_type = "prod"}, or a scalar if \code{kernel_type = "sph"}.}
-\item{\code{eff_kern}: a scalar with the kernel efficiency.}
+  \item \code{b_d}: a vector with the first kernel moment on each sphere
+  (common if \code{kernel_type = "sph"}).
+  \item \code{v_d}: a vector with the second kernel moment if
+  \code{kernel_type = "prod"}, or a scalar if \code{kernel_type = "sph"}.
+  \item \code{eff_kern}: a scalar with the kernel efficiency.
 }
 }
 \description{

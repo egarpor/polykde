@@ -94,8 +94,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // kde_polysph
-arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h, Rcpp::NumericVector weights, bool log, bool wrt_unif, bool normalized, bool intrinsic, bool norm_x, bool norm_X, arma::uword kernel, arma::uword kernel_type, double k);
-RcppExport SEXP _polykde_kde_polysph(SEXP xSEXP, SEXP XSEXP, SEXP dSEXP, SEXP hSEXP, SEXP weightsSEXP, SEXP logSEXP, SEXP wrt_unifSEXP, SEXP normalizedSEXP, SEXP intrinsicSEXP, SEXP norm_xSEXP, SEXP norm_XSEXP, SEXP kernelSEXP, SEXP kernel_typeSEXP, SEXP kSEXP) {
+arma::vec kde_polysph(arma::mat x, arma::mat X, arma::uvec d, arma::vec h, Rcpp::NumericVector weights, bool log, bool wrt_unif, bool normalized, bool intrinsic, bool norm_x, bool norm_X, arma::uword kernel, arma::uword kernel_type, double k, bool loo);
+RcppExport SEXP _polykde_kde_polysph(SEXP xSEXP, SEXP XSEXP, SEXP dSEXP, SEXP hSEXP, SEXP weightsSEXP, SEXP logSEXP, SEXP wrt_unifSEXP, SEXP normalizedSEXP, SEXP intrinsicSEXP, SEXP norm_xSEXP, SEXP norm_XSEXP, SEXP kernelSEXP, SEXP kernel_typeSEXP, SEXP kSEXP, SEXP looSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -113,7 +113,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::uword >::type kernel(kernelSEXP);
     Rcpp::traits::input_parameter< arma::uword >::type kernel_type(kernel_typeSEXP);
     Rcpp::traits::input_parameter< double >::type k(kSEXP);
-    rcpp_result_gen = Rcpp::wrap(kde_polysph(x, X, d, h, weights, log, wrt_unif, normalized, intrinsic, norm_x, norm_X, kernel, kernel_type, k));
+    Rcpp::traits::input_parameter< bool >::type loo(looSEXP);
+    rcpp_result_gen = Rcpp::wrap(kde_polysph(x, X, d, h, weights, log, wrt_unif, normalized, intrinsic, norm_x, norm_X, kernel, kernel_type, k, loo));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -248,7 +249,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_polykde_euler_ridge", (DL_FUNC) &_polykde_euler_ridge, 21},
     {"_polykde_grad_hess_kde_polysph", (DL_FUNC) &_polykde_grad_hess_kde_polysph, 16},
     {"_polykde_proj_grad_kde_polysph", (DL_FUNC) &_polykde_proj_grad_kde_polysph, 15},
-    {"_polykde_kde_polysph", (DL_FUNC) &_polykde_kde_polysph, 14},
+    {"_polykde_kde_polysph", (DL_FUNC) &_polykde_kde_polysph, 15},
     {"_polykde_log_cv_kde_polysph", (DL_FUNC) &_polykde_log_cv_kde_polysph, 11},
     {"_polykde_sfp", (DL_FUNC) &_polykde_sfp, 1},
     {"_polykde_proj_polysph", (DL_FUNC) &_polykde_proj_polysph, 2},

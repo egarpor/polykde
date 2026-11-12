@@ -18,7 +18,8 @@ kde_polysph(
   norm_X = FALSE,
   kernel = 1L,
   kernel_type = 1L,
-  k = 10
+  k = 10,
+  loo = FALSE
 )
 }
 \arguments{
@@ -57,6 +58,10 @@ extrinsic-chordal distance, in the kernel? Defaults to \code{FALSE}.}
 (default); \code{2} for spherically symmetric kernel.}
 
 \item{k}{softplus kernel parameter. Defaults to \code{10.0}.}
+
+\item{loo}{leave-one-out: skip the \eqn{i}-th observation when evaluating
+at \eqn{\boldsymbol{X}_i}? Requires \code{x = X} and \eqn{n \ge 2}.
+Defaults to \code{FALSE}.}
 }
 \value{
 A column matrix of size \code{c(nx, 1)} with the evaluation of the
@@ -83,9 +88,10 @@ kde_polysph(x = rbind(mu), X = X, d = d, h = h)
 d_vmf_polysph(x = rbind(mu), d = d, mu = mu, kappa = kappa)
 }
 \references{
-García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+García-Portugués, E. and Meilán-Vila, A. (2026). Kernel density estimation
 with polyspherical data and its applications. \emph{Journal of the American
-Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+Statistical Association}, 121(553):427--439.
+\doi{10.1080/01621459.2025.2521898}
 }
 \seealso{
 \code{\link{log_cv_kde_polysph}},

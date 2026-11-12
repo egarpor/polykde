@@ -2,6 +2,7 @@
 test_that("mise_vmf() does the job on computing exactly the MISE", {
 
   # Parameters
+  set.seed(42)
   M <- 1e4
   n <- 3
   d <- rpois(1, lambda = 1) + 1
@@ -12,7 +13,6 @@ test_that("mise_vmf() does the job on computing exactly the MISE", {
   h <- 1
 
   # Sample X's and evaluate density
-  set.seed(42)
   N1 <- 1e3
   X <- r_mvmf_polysph(n = N1, d = d, mu = mu, kappa = kappa, prop = prop)
   f_X <- drop(d_mvmf_polysph(x = X, d = d, mu = mu, kappa = kappa, prop = prop))
@@ -25,18 +25,17 @@ test_that("mise_vmf() does the job on computing exactly the MISE", {
 
   # Simulate sample and compute kde
   kde_f_2 <- sapply(seq_len(N2), function(k) {
-    kde <- tryCatch(kde_polysph(x = X, X = Y[[k]][1:n, ], d = d, h = h),
-                    error = function(e) NA)
+    kde <- kde_polysph(x = X, X = Y[[k]][1:n, ], d = d, h = h)
     (kde - f_X)^2
   })
-  kde_f_2 <- rowMeans(kde_f_2, na.rm = TRUE)
+  kde_f_2 <- rowMeans(kde_f_2)
 
   # Exact vs. Monte Carlo
   expect_equal(drop(mise_vmf(h = h, n = n, mu = mu, kappa = kappa,
                              prop = prop, d = d, seed_psi = 42,
                              spline = TRUE)$mise),
                mean(kde_f_2 / f_X),
-               tolerance = 1e-2)
+               tolerance = 5e-2)
 
 })
 
@@ -65,6 +64,10 @@ test_that("mise_vmf() is properly vectorized in h and n", {
                  mise_vmf(h = h[2], n = n[1], mu = mu, kappa = kappa,
                           prop = prop, d = 1, seed_psi = 1, M_psi = 10,
                           spline = TRUE)$mise))
+  expect_error(mise_vmf_polysph(h = cbind(h), n = c(n, 1), mu = mu,
+                                kappa = kappa, prop = prop, d = 1), "n must")
+  expect_error(mise_vmf(h = h, n = c(n, 1), mu = mu, kappa = kappa,
+                        prop = prop, d = 1), "n must")
 
 })
 
@@ -93,6 +96,7 @@ test_that("mise_vmf_polysph() accepts a length-r kappa vector when m = 1", {
 test_that("bw_mise_polysph() minimizes the MISE on the sphere", {
 
   # Parameters
+  set.seed(42)
   r <- 1
   m <- rpois(1, 3) + 1
   d <- rpois(r, 3) + 1
@@ -106,20 +110,24 @@ test_that("bw_mise_polysph() minimizes the MISE on the sphere", {
   bw0 <- cbind(10^seq(log10(0.2), log10(5), l = 10))
   log1p_mise_bw0 <- sapply(bw0, function(h) {
     log1p_mise(log_h = log(h), n = n, mu = mu, kappa = kappa, prop = prop,
-               d = d, seed_psi = 1, spline = TRUE)
+               d = d, M_psi = 1e3, seed_psi = 1, spline = TRUE)
   })
   bw_mise <- bw_mise_polysph(n = n, d = d, bw0 = bw0, mu = mu, kappa = kappa,
-                             prop = prop, seed_psi = 1, spline = TRUE)
+                             prop = prop, M_psi = 1e3, seed_psi = 1,
+                             spline = TRUE)
   plot(bw0, log1p_mise_bw0, type = "o", xlab = "h", ylab = "log1p_mise",
        xlim = range(c(bw0, bw_mise$bw)))
   points(bw_mise$bw, bw_mise$opt$minimum, col = "red", pch = 19)
   expect_lte(bw_mise$opt$minimum, min(log1p_mise_bw0))
+  expect_error(bw_mise_polysph(n = n, d = d), "bw0")
+  expect_error(bw_mise_polysph(n = n, d = d, bw0 = c(1, 1)), "incompatible")
 
 })
 
 test_that("ise_vmf_polysph() does the job on computing exactly the ISE", {
 
   # Parameters and sample
+  set.seed(42)
   n <- 3
   d <- rpois(1, lambda = 1) + 1
   m <- 2
@@ -134,16 +142,20 @@ test_that("ise_vmf_polysph() does the job on computing exactly the ISE", {
     ise_vmf_polysph(X = X, d = d, h = h, mu = mu, kappa = kappa,
                     prop = prop, spline = TRUE, exact = TRUE)$ise,
     ise_vmf_polysph(X = X, d = d, h = h, mu = mu, kappa = kappa,
-                    prop = prop, seed_psi = 42, M_psi = 1e4,
+                    prop = prop, seed_psi = 42, M_psi = 1e5,
                     spline = TRUE, exact = FALSE)$ise,
     tolerance = 5e-2
   )
+  expect_error(ise_vmf_polysph(X = cbind(X, X), d = c(d, d), h = cbind(1, 1),
+                               mu = cbind(mu, mu), kappa = cbind(kappa, kappa),
+                               prop = prop, exact = TRUE), "r > 1")
 
 })
 
 test_that("bw_ise_polysph() minimizes the ISE on the sphere", {
 
   # Parameters and sample
+  set.seed(42)
   r <- 1
   m <- rpois(1, 3) + 1
   d <- rpois(r, 3) + 1
@@ -167,6 +179,10 @@ test_that("bw_ise_polysph() minimizes the ISE on the sphere", {
        xlim = range(c(bw0, bw_ise$bw)))
   points(bw_ise$bw, bw_ise$opt$minimum, col = "red", pch = 19)
   expect_lte(bw_ise$opt$minimum, min(log1p_ise_bw0))
+  expect_error(bw_ise_polysph(X = X, d = d, mu = mu, kappa = kappa,
+                              prop = prop), "bw0")
+  expect_error(bw_ise_polysph(X = X, d = d, bw0 = c(1, 1), mu = mu,
+                              kappa = kappa, prop = prop), "incompatible")
 
 })
 

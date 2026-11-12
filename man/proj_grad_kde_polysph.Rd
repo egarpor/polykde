@@ -78,6 +78,10 @@ density estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the
 polysphere \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}},
 where \eqn{p=\sum_{j=1}^r d_j+r} is the dimension of the ambient space.
 }
+\details{
+Only the von Mises--Fisher product kernel (\code{kernel = 1},
+\code{kernel_type = 1}) is supported.
+}
 \examples{
 # Simple check on (S^1)^2
 n <- 3

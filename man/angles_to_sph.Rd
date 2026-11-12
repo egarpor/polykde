@@ -18,8 +18,8 @@ sph_to_angles(x)
 }
 \value{
 \itemize{
-\item{\code{angles_to_sph}: the matrix \code{x}.}
-\item{\code{sph_to_angles}: the matrix \code{theta}.}
+  \item \code{angles_to_sph}: the matrix \code{x}.
+  \item \code{sph_to_angles}: the matrix \code{theta}.
 }
 }
 \description{

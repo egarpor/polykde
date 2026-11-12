@@ -17,8 +17,8 @@ hammer_to_sph(y)
 }
 \value{
 \itemize{
-\item{\code{sph_to_hammer}: the matrix \code{y}.}
-\item{\code{hammer_to_sph}: the matrix \code{x}.}
+  \item \code{sph_to_hammer}: the matrix \code{y}.
+  \item \code{hammer_to_sph}: the matrix \code{x}.
 }
 }
 \description{

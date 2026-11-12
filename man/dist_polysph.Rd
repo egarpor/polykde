@@ -29,12 +29,12 @@ distance is \eqn{\sqrt{r}\pi}. Defaults to \code{TRUE}.}
 }
 \value{
 \itemize{
-\item{\code{dist_polysph}: a vector of size \code{n} with the distances
-between \code{x} and \code{y}.}
-\item{\code{dist_polysph_matrix}: a matrix of size \code{c(n, n)} with the
-pairwise distances of \code{x}.}
-\item{\code{dist_polysph_cross}: a matrix of distances of size
-\code{c(n, m)} with the cross distances between \code{x} and \code{y}.}
+  \item \code{dist_polysph}: a vector of size \code{n} with the distances
+  between \code{x} and \code{y}.
+  \item \code{dist_polysph_matrix}: a matrix of size \code{c(n, n)} with the
+  pairwise distances of \code{x}.
+  \item \code{dist_polysph_cross}: a matrix of distances of size
+  \code{c(n, m)} with the cross distances between \code{x} and \code{y}.
 }
 }
 \description{

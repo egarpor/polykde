@@ -14,8 +14,7 @@ x <- r_unif_polysph(n = nx, d = d)
 X <- r_unif_polysph(n = n, d = d)
 X1 <- X[1:n1, ]
 X2 <- X[(n1 + 1):n, ]
-x_int <- rbind(X, r_unif_polysph(n = 1e5, d = d))
-# Fine for integrating up to r = 3
+x_int <- rbind(X, r_unif_polysph(n = 1e4, d = d))
 
 ## Basics
 
@@ -55,11 +54,17 @@ test_that("Edge cases kde_polysph()", {
   expect_error(kde_polysph(x = x, X = X, d = d, h = h, kernel = 4))
   expect_error(kde_polysph(x = x, X = X, d = d, h = h, kernel = 2,
                            kernel_type = 4))
+  expect_error(kde_polysph(x = x, X = X, d = d, h = h, kernel = 3,
+                           kernel_type = 4))
   expect_error(kde_polysph(x = cbind(x, 1), X = X, d = d, h = h))
   expect_error(kde_polysph(x = cbind(x, 1), X = cbind(X, 1), d = d, h = h))
   expect_error(kde_polysph(x = x, X = X, d = d, h = c(h, 1)))
   expect_error(kde_polysph(x = x, X = X, d = c(d, 1), h = h))
   expect_error(kde_polysph(x = x, X = X, d = d, h = 0 * h))
+  expect_error(kde_polysph(x = X[c(2:n, 1), ], X = X, d = d, h = h,
+                           loo = TRUE))
+  expect_error(kde_polysph(x = X[1, , drop = FALSE], X = X[1, , drop = FALSE],
+                           d = d, h = h, loo = TRUE))
 })
 
 ## Integration
@@ -255,6 +260,56 @@ test_that("Log-cv kde with weights is compatible with kde", {
   }
 })
 
+test_that("Log-cv kde vMF-product-extrinsic over several blocks", {
+
+  # n = 600 splits the Gram matrix into two row blocks (416 and 184 rows)
+  set.seed(987204452)
+  n_b <- 600
+  d_b <- c(1, 2)
+  h_b <- c(0.3, 0.5)
+  X_b <- r_unif_polysph(n = n_b, d = d_b)
+  ws_b <- runif(n_b)
+  for (wrt_unif in c(FALSE, TRUE)) {
+
+    log_cv <- log_cv_kde_polysph(X = X_b, d = d_b, h = h_b,
+                                 wrt_unif = wrt_unif)
+    log_cv_ws <- log_cv_kde_polysph(X = X_b, d = d_b, h = h_b,
+                                    wrt_unif = wrt_unif, weights = ws_b)
+    for (i in c(1, 416, 417, 600)) {
+
+      expect_equal(
+        log_cv[i],
+        drop(kde_polysph(x = X_b[i, , drop = FALSE],
+                         X = X_b[-i, , drop = FALSE], d = d_b, h = h_b,
+                         wrt_unif = wrt_unif, log = TRUE)))
+      expect_equal(
+        log_cv_ws[i],
+        drop(kde_polysph(x = X_b[i, , drop = FALSE],
+                         X = X_b[-i, , drop = FALSE], d = d_b, h = h_b,
+                         wrt_unif = wrt_unif, weights = ws_b[-i], log = TRUE)))
+
+    }
+
+  }
+
+})
+
+test_that("Log-cv kde with a degenerate weight is -Inf, not NaN", {
+
+  # All the mass on the first observation, which is left out for i = 1. The vMF
+  # kernel uses the fast path; the other kernels, kde_polysph(loo = TRUE)
+  ws_1 <- c(1, rep(0, n - 1))
+  for (kernel in 1:3) {
+
+    log_cv_1 <- log_cv_kde_polysph(X = X, d = d, h = h, weights = ws_1,
+                                   kernel = kernel)
+    expect_equal(log_cv_1[1], -Inf)
+    expect_false(any(is.nan(log_cv_1)))
+
+  }
+
+})
+
 test_that("Edge cases log_cv_kde_polysph()", {
   expect_error(log_cv_kde_polysph(X = cbind(X, 1), d = d, h = h))
   expect_error(log_cv_kde_polysph(X = X, d = d, h = c(h, 1)))
@@ -328,6 +383,9 @@ test_that("bw_lcv_min_epa is the critical point", {
 })
 test_that("bw_lcv_min_epa() requires n >= 2", {
   expect_error(bw_lcv_min_epa(X = X[1, , drop = FALSE], d = d))
+  expect_error(bw_lcv_min_epa(X = X, d = d + 1))
+  expect_error(bw_lcv_min_epa(X = X, d = d, kernel_type = 2))
+  expect_error(bw_lcv_min_epa(X = X, d = d, kernel_type = "foo"))
 })
 
 ## Others

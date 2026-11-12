@@ -31,7 +31,9 @@
 #' Mises--Fisher kernel? Defaults to \code{FALSE}.
 #' @param common_h use the same bandwidth for all dimensions? Defaults to
 #' \code{FALSE}.
-#' @param spline use a faster spline approximation to compute Bessel functions, when available (\code{d} up to 50)?
+#' @param spline use a fast spline approximation to evaluate the Bessel
+#' functions, as implemented in \code{\link[DirStats]{log_c_vmf}}?
+#' Defaults to \code{TRUE}.
 #' @param arcsinh do an \eqn{\operatorname{arcsinh}} transformation of the LSCV
 #' loss to improve numerical stability? Defaults to \code{FALSE}.
 #' @param opt optimizer to use; either \code{"\link{optim}"} (default) or
@@ -48,9 +50,10 @@
 #' the latter containing the output of \code{\link[stats]{nlm}},
 #' \code{\link[stats]{optim}}, or \code{\link[optimParallel]{optimParallel}}.
 #' @references
-#' García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+#' García-Portugués, E. and Meilán-Vila, A. (2026). Kernel density estimation
 #' with polyspherical data and its applications. \emph{Journal of the American
-#' Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+#' Statistical Association}, 121(553):427--439.
+#' \doi{10.1080/01621459.2025.2521898}
 #' @examples
 #' \donttest{
 #' n <- 20
@@ -67,7 +70,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
                           M = 1e4, bw0 = NULL, na.rm = FALSE, h_min = 0,
                           upscale = FALSE, deriv = 0, imp_mc = TRUE,
                           seed_mc = NULL, exact_vmf = FALSE, common_h = FALSE,
-                          spline = FALSE, arcsinh = FALSE,
+                          spline = TRUE, arcsinh = FALSE,
                           opt = c("optim", "nlm")[1], ncores = 1, ...) {
 
   # Check dimensions
@@ -146,26 +149,14 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
       }
 
-      # Precompute matrix with the lower triangular parts of the matrices
-      # (X_{il}'X_{jl})_{ij}, l = 1, ..., r.
-      # ||X_i - X_j|| = sqrt(2 * (1 - X_i'X_j))
-      #  => ||X_i - X_j||^2 = 2 * (1 - X_i'X_j)
-      #  => ||X_i - X_j||^2 / 2 = 1 - X_i'X_j
-      #  => X_i'X_j = 1 - ||X_i - X_j||^2 / 2
-      # The matrix is r x n2 for better column recycling later. It is filled
-      # by rows using as.numeric() on the "dist" objects to strip their class.
+      # Inner products (X_{il}'X_{jl})_{ij}, l = 1, ..., r, of the strict lower
+      # triangle i > j, obtained with tcrossprod() on row blocks of up to 2.5e5
+      # entries, so the pairwise sums take O(n * b) memory instead of O(n^2).
+      # Recomputing them for each h is cheap, as log_c_vmf() dominates the
+      # cost, and the time is flat in the block size above 1e5.
       ind_dj <- comp_ind_dj(d = d)
-      n2 <- n * (n - 1) / 2
-      Xi_Xj_l <- matrix(nrow = r, ncol = n2)
-      for (l in seq_len(r)) {
-
-        d_ij <- as.numeric(dist(X[, (ind_dj[l] + 1):ind_dj[l + 1]],
-                                method = "euclidean", diag = FALSE,
-                                upper = FALSE))
-        Xi_Xj_l[l, ] <- 1 - 0.5 * d_ij^2
-
-      }
-      norm_Xi_Xj_l <- sqrt(2 * (1 + Xi_Xj_l))
+      b <- max(2, min(n, floor(2.5e5 / n)))
+      blocks <- split(x = seq_len(n), f = ceiling(seq_len(n) / b))
 
       # Precompute other fixed objects in the LSCV loss
       log_n <- log(n)
@@ -197,20 +188,51 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
           # Log-constants
           h_pos2 <- 1 / h_pos^2
-          log_c_h2 <- sum(fast_log_c_vMF(p = d + 1, kappa = h_pos2,
-                                         spline = spline))
-          log_c_2h2 <- sum(fast_log_c_vMF(p = d + 1, kappa = 2 * h_pos2,
-                                          spline = spline))
+          log_c_h2 <- sum(DirStats::log_c_vmf(q = d, kappa = h_pos2,
+                                              spline = spline))
+          log_c_2h2 <- sum(DirStats::log_c_vmf(q = d, kappa = 2 * h_pos2,
+                                               spline = spline))
 
-          # Compute X_{il}'X_{jl} / h_l^2 and
-          # \sum_l \log(c_vMF(||X_{il}'X_{jl}|| / h_l^2))
-          Xi_Xj_l_h <- .colSums(Xi_Xj_l * h_pos2, m = r, n = n2)
-          log_c_norm_Xi_Xj_l_h <- numeric(n2)
-          for (l in seq_len(r)) {
+          # Pairwise terms, accumulated block by block over the strict lower
+          # triangle: a_ij = \sum_l X_{il}'X_{jl} / h_l^2 and
+          # s_ij = \sum_l \log c_vMF(||X_{il} + X_{jl}|| / h_l^2), with
+          # ||X_{il} + X_{jl}|| = sqrt(2 * (1 + X_{il}'X_{jl})), truncated as
+          # X_{il}'X_{jl} may fall below -1 for numerically antipodal points
+          log_a <- log_c_h2 + (log_2_n1 - log_n)
+          log_b <- 2 * (log_c_h2 - log_n)
+          lse_a <- lse_b <- rep(-Inf, length(blocks))
+          sum_cv_2 <- 0
+          for (bi in seq_along(blocks)) {
 
-            log_c_norm_Xi_Xj_l_h <- log_c_norm_Xi_Xj_l_h +
-              fast_log_c_vMF(p = d[l] + 1, kappa = norm_Xi_Xj_l[l, ] *
-                               h_pos2[l], spline = spline)
+            # Only the columns j < max(ind) hold pairs of the lower triangle
+            ind <- blocks[[bi]]
+            j_max <- ind[length(ind)]
+            low <- outer(X = ind, Y = seq_len(j_max), FUN = ">")
+            a_ij <- 0
+            s_ij <- 0
+            for (l in seq_len(r)) {
+
+              X_lj <- X[seq_len(j_max), (ind_dj[l] + 1):ind_dj[l + 1],
+                        drop = FALSE]
+              xi_xj <- tcrossprod(x = X_lj[ind, , drop = FALSE], y = X_lj)[low]
+              kappa_ij <- sqrt(pmax(2 * (1 + xi_xj), 0)) * h_pos2[l]
+              a_ij <- a_ij + xi_xj * h_pos2[l]
+              s_ij <- s_ij + DirStats::log_c_vmf(q = d[l], kappa = kappa_ij,
+                                                 spline = spline)
+
+            }
+
+            # Accumulate in log scale for arcsinh, in natural scale otherwise
+            if (arcsinh) {
+
+              lse_a[bi] <- log_sum_exp(a_ij + log_a)
+              lse_b[bi] <- log_sum_exp(log_b - s_ij)
+
+            } else {
+
+              sum_cv_2 <- sum_cv_2 + sum(exp(a_ij + log_a) - exp(log_b - s_ij))
+
+            }
 
           }
 
@@ -219,10 +241,8 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
             # CV terms with LogSumExp trick
             log_cv_1 <- 2 * log_c_h2 - log_c_2h2 - log_n
-            log_cv_2a <- log(2) +
-              log_sum_exp(Xi_Xj_l_h + log_c_h2 + (log_2_n1 - log_n))
-            log_cv_2b <- log(2) +
-              log_sum_exp(2 * (log_c_h2 - log_n) - log_c_norm_Xi_Xj_l_h)
+            log_cv_2a <- log(2) + log_sum_exp(lse_a)
+            log_cv_2b <- log(2) + log_sum_exp(lse_b)
 
             # Positive and negative terms
             log_A <- log_sum_exp(c(log_cv_1, log_cv_2b))
@@ -238,9 +258,7 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
             # CV loss
             cv_1 <- exp(2 * log_c_h2 - log_c_2h2 - log_n)
-            cv_2 <- 2 * sum(exp(Xi_Xj_l_h + log_c_h2 + (log_2_n1 - log_n)) -
-                              exp(2 * (log_c_h2 - log_n) -
-                                    log_c_norm_Xi_Xj_l_h))
+            cv_2 <- 2 * sum_cv_2
             cv <- cv_1 - cv_2
             loss <- cv + penalty
 
@@ -648,9 +666,10 @@ curv_vmf_polysph <- function(kappa, d, log = FALSE) {
 #' @return A list with entries \code{bw} (optimal bandwidth) and \code{opt},
 #' the latter containing the output of \code{\link[stats]{nlm}}.
 #' @references
-#' García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+#' García-Portugués, E. and Meilán-Vila, A. (2026). Kernel density estimation
 #' with polyspherical data and its applications. \emph{Journal of the American
-#' Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+#' Statistical Association}, 121(553):427--439.
+#' \doi{10.1080/01621459.2025.2521898}
 #' @examples
 #' n <- 100
 #' d <- 1:2
@@ -819,9 +838,10 @@ bw_rot_polysph <- function(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
 #' @inheritParams bw_rot_polysph
 #' @return A vector of size \code{r} with the marginal optimal bandwidths.
 #' @references
-#' García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+#' García-Portugués, E. and Meilán-Vila, A. (2026). Kernel density estimation
 #' with polyspherical data and its applications. \emph{Journal of the American
-#' Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+#' Statistical Association}, 121(553):427--439.
+#' \doi{10.1080/01621459.2025.2521898}
 #' @examples
 #' n <- 100
 #' d <- 1:2

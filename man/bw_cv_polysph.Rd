@@ -23,7 +23,7 @@ bw_cv_polysph(
   seed_mc = NULL,
   exact_vmf = FALSE,
   common_h = FALSE,
-  spline = FALSE,
+  spline = TRUE,
   arcsinh = FALSE,
   opt = c("optim", "nlm")[1],
   ncores = 1,
@@ -81,7 +81,9 @@ Mises--Fisher kernel? Defaults to \code{FALSE}.}
 \item{common_h}{use the same bandwidth for all dimensions? Defaults to
 \code{FALSE}.}
 
-\item{spline}{use a faster spline approximation to compute Bessel functions, when available (\code{d} up to 50)?}
+\item{spline}{use a fast spline approximation to evaluate the Bessel
+functions, as implemented in \code{\link[DirStats]{log_c_vmf}}?
+Defaults to \code{TRUE}.}
 
 \item{arcsinh}{do an \eqn{\operatorname{arcsinh}} transformation of the LSCV
 loss to improve numerical stability? Defaults to \code{FALSE}.}
@@ -123,7 +125,8 @@ bw_cv_polysph(X = X, d = d, type = "LSCV", exact_vmf = TRUE)$bw
 }
 }
 \references{
-García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+García-Portugués, E. and Meilán-Vila, A. (2026). Kernel density estimation
 with polyspherical data and its applications. \emph{Journal of the American
-Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+Statistical Association}, 121(553):427--439.
+\doi{10.1080/01621459.2025.2521898}
 }

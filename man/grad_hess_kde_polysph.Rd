@@ -81,6 +81,10 @@ Computes the gradient
 estimator \eqn{\hat{f}(\boldsymbol{x};\boldsymbol{h})} on the polysphere
 \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}}.
 }
+\details{
+Only the von Mises--Fisher product kernel (\code{kernel = 1},
+\code{kernel_type = 1}) is supported.
+}
 \examples{
 # Simple check on (S^1)^2
 n <- 3

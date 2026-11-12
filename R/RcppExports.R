@@ -30,7 +30,8 @@
 #' parallelizes on the starting values \code{x}. The function
 #' \code{euler_ridge_block} runs the Euler algorithm marginally in blocks
 #' of spheres, instead of jointly in the whole polysphere. This function
-#' requires that all the dimensions are the same.
+#' requires that all the dimensions are the same. Only the von Mises--Fisher
+#' product kernel (\code{kernel = 1}, \code{kernel_type = 1}) is supported.
 #' @return The three functions return a list with the following fields:
 #' \item{ridge_y}{a matrix of size \code{c(nx, sum(d) + r)} with the end
 #' points of Euler algorithm defining the estimated ridge.}
@@ -52,8 +53,8 @@
 #' @references
 #' García-Portugués, E. and Meilán-Vila, A. (2023). Hippocampus shape analysis
 #' via skeletal models and kernel smoothing. In Larriba, Y. (Ed.),
-#' \emph{Statistical Methods at the Forefront of Biomedical Advances},
-#' pp. 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}.
+#' \emph{Statistical Methods at the Forefront of Biomedical Advances}, pp.
+#' 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}
 #' @seealso
 #' \code{\link{clean_euler_ridge}}, \code{\link{index_ridge}},
 #' \code{\link{proj_grad_kde_polysph}}, \code{\link{grad_hess_kde_polysph}}.
@@ -142,6 +143,8 @@ euler_ridge <- function(x, X, d, h, h_euler = as.numeric( c()), weights = as.num
 #' the kernel density estimator evaluated at \code{x}.}
 #' \item{hess}{an array of size \code{c(nx, sum(d) + r, sum(d) + r)} with the
 #' Hessian matrix of the kernel density estimator evaluated at \code{x}.}
+#' @details Only the von Mises--Fisher product kernel (\code{kernel = 1},
+#' \code{kernel_type = 1}) is supported.
 #' @examples
 #' # Simple check on (S^1)^2
 #' n <- 3
@@ -179,6 +182,8 @@ grad_hess_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), projec
 #' first non-null Hessian eigenvector evaluated at \code{x}.}
 #' \item{lamb_norm}{a matrix of size \code{c(nx, sum(d) + r)} with the
 #' Hessian eigenvalues (largest to smallest) evaluated at \code{x}.}
+#' @details Only the von Mises--Fisher product kernel (\code{kernel = 1},
+#' \code{kernel_type = 1}) is supported.
 #' @examples
 #' # Simple check on (S^1)^2
 #' n <- 3
@@ -226,12 +231,16 @@ proj_grad_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), wrt_un
 #' @param kernel_type type of kernel employed: \code{1} for product kernel
 #' (default); \code{2} for spherically symmetric kernel.
 #' @param k softplus kernel parameter. Defaults to \code{10.0}.
+#' @param loo leave-one-out: skip the \eqn{i}-th observation when evaluating
+#' at \eqn{\boldsymbol{X}_i}? Requires \code{x = X} and \eqn{n \ge 2}.
+#' Defaults to \code{FALSE}.
 #' @return A column matrix of size \code{c(nx, 1)} with the evaluation of the
 #' kernel density estimator.
 #' @references
-#' García-Portugués, E. and Meilán-Vila, A. (2025). Kernel density estimation
+#' García-Portugués, E. and Meilán-Vila, A. (2026). Kernel density estimation
 #' with polyspherical data and its applications. \emph{Journal of the American
-#' Statistical Association}, to appear. \doi{10.1080/01621459.2025.2521898}.
+#' Statistical Association}, 121(553):427--439.
+#' \doi{10.1080/01621459.2025.2521898}
 #' @seealso \code{\link{log_cv_kde_polysph}},
 #' \code{\link{grad_hess_kde_polysph}}, \code{\link{r_kde_polysph}},
 #' \code{\link{bw_rot_polysph}}, \code{\link{bw_cv_polysph}},
@@ -247,8 +256,8 @@ proj_grad_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), wrt_un
 #' kde_polysph(x = rbind(mu), X = X, d = d, h = h)
 #' d_vmf_polysph(x = rbind(mu), d = d, mu = mu, kappa = kappa)
 #' @export
-kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), log = FALSE, wrt_unif = FALSE, normalized = TRUE, intrinsic = FALSE, norm_x = FALSE, norm_X = FALSE, kernel = 1L, kernel_type = 1L, k = 10.0) {
-    .Call(`_polykde_kde_polysph`, x, X, d, h, weights, log, wrt_unif, normalized, intrinsic, norm_x, norm_X, kernel, kernel_type, k)
+kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), log = FALSE, wrt_unif = FALSE, normalized = TRUE, intrinsic = FALSE, norm_x = FALSE, norm_X = FALSE, kernel = 1L, kernel_type = 1L, k = 10.0, loo = FALSE) {
+    .Call(`_polykde_kde_polysph`, x, X, d, h, weights, log, wrt_unif, normalized, intrinsic, norm_x, norm_X, kernel, kernel_type, k, loo)
 }
 
 #' @title Cross-validation for the polyspherical kernel density estimator
@@ -329,12 +338,12 @@ proj_polysph <- function(x, ind_dj) {
 #' distance is \eqn{\sqrt{r}\pi}. Defaults to \code{TRUE}.
 #' @return
 #' \itemize{
-#' \item{\code{dist_polysph}: a vector of size \code{n} with the distances
-#' between \code{x} and \code{y}.}
-#' \item{\code{dist_polysph_matrix}: a matrix of size \code{c(n, n)} with the
-#' pairwise distances of \code{x}.}
-#' \item{\code{dist_polysph_cross}: a matrix of distances of size
-#' \code{c(n, m)} with the cross distances between \code{x} and \code{y}.}
+#'   \item \code{dist_polysph}: a vector of size \code{n} with the distances
+#'   between \code{x} and \code{y}.
+#'   \item \code{dist_polysph_matrix}: a matrix of size \code{c(n, n)} with the
+#'   pairwise distances of \code{x}.
+#'   \item \code{dist_polysph_cross}: a matrix of distances of size
+#'   \code{c(n, m)} with the cross distances between \code{x} and \code{y}.
 #' }
 #' @examples
 #' # Example on S^2 x S^3 x S^1
@@ -370,22 +379,22 @@ dist_polysph_cross <- function(x, y, ind_dj, norm_x = FALSE, norm_y = FALSE, std
 #' polysphere \eqn{\mathbb{S}^{d_1} \times \cdots \times \mathbb{S}^{d_r}
 #' \subset \mathbb{R}^p,}:
 #' \itemize{
-#' \item{\code{diamond_crossprod} computes the \eqn{n\times p\times p} cube
-#' whose rows are \eqn{\boldsymbol{X}_i \diamond \boldsymbol{X}_i'},
-#' \eqn{i = 1, \ldots, n}, and \eqn{\diamond} is a block-by-block product.}
-#' \item{\code{diamond_rcrossprod} computes the \eqn{n\times n\times r} cube
-#' formed by \eqn{(\boldsymbol{X}_{ik}' \boldsymbol{X}_{jk})_{ijk}},
-#' \eqn{k = 1, \ldots, r}.}
+#'   \item \code{diamond_crossprod} computes the \eqn{n\times p\times p} cube
+#'   whose rows are \eqn{\boldsymbol{X}_i \diamond \boldsymbol{X}_i'},
+#'   \eqn{i = 1, \ldots, n}, and \eqn{\diamond} is a block-by-block product.
+#'   \item \code{diamond_rcrossprod} computes the \eqn{n\times n\times r} cube
+#'   formed by \eqn{(\boldsymbol{X}_{ik}' \boldsymbol{X}_{jk})_{ijk}},
+#'   \eqn{k = 1, \ldots, r}.
 #' }
 #'
 #' @inheritParams kde_polysph
 #' @inheritParams proj_polysph
 #' @return
 #' \itemize{
-#' \item{\code{diamond_crossprod}: an array of size \code{c(nrow(X), ncol(X),
-#'  ncol(X))}.}
-#' \item{\code{diamond_rcrossprod}: an array of size \code{c(nrow(X), nrow(X),
-#' r)}.}
+#'   \item \code{diamond_crossprod}: an array of size \code{c(nrow(X), ncol(X),
+#'   ncol(X))}.
+#'   \item \code{diamond_rcrossprod}: an array of size \code{c(nrow(X),
+#'   nrow(X), r)}.
 #' }
 #' @examples
 #' d <- c(1, 2)

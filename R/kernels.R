@@ -25,9 +25,9 @@
 #' L\left(\frac{1 - \boldsymbol{x}'\boldsymbol{y}}{h^2}\right)}.
 #' @return
 #' \itemize{
-#' \item{\code{L}: a vector with the kernel evaluated at \code{t}.}
-#' \item{\code{grad_L}: a vector with the gradient evaluated at \code{x}.}
-#' \item{\code{hess_L}: a matrix with the Hessian evaluated at \code{x}.}
+#'   \item \code{L}: a vector with the kernel evaluated at \code{t}.
+#'   \item \code{grad_L}: a vector with the gradient evaluated at \code{x}.
+#'   \item \code{hess_L}: a matrix with the Hessian evaluated at \code{x}.
 #' }
 #' @examples
 #' # Constants in terms of h
@@ -443,11 +443,11 @@ r_g_kern <- function(n, d, h, kernel = "1", k = 10) {
 #' @seealso \code{\link{kde_polysph}}, \code{\link{bw_rot_polysph}}.
 #' @return
 #' \itemize{
-#' \item{\code{b_d}: a vector with the first kernel moment on each sphere
-#' (common if \code{kernel_type = "sph"}).}
-#' \item{\code{v_d}: a vector with the second kernel moment if
-#' \code{kernel_type = "prod"}, or a scalar if \code{kernel_type = "sph"}.}
-#' \item{\code{eff_kern}: a scalar with the kernel efficiency.}
+#'   \item \code{b_d}: a vector with the first kernel moment on each sphere
+#'   (common if \code{kernel_type = "sph"}).
+#'   \item \code{v_d}: a vector with the second kernel moment if
+#'   \code{kernel_type = "prod"}, or a scalar if \code{kernel_type = "sph"}.
+#'   \item \code{eff_kern}: a scalar with the kernel efficiency.
 #' }
 #' @examples
 #' # Kernel moments
@@ -529,6 +529,12 @@ b_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
 
   }
 
+  # Check kernel_type
+  if (!(kernel_type %in% c("prod", "sph"))) {
+
+    stop("kernel_type must be either \"prod\" or \"sph\".")
+
+  }
   if (is.function(kernel)) {
 
     if (kernel_type == "prod") {
@@ -541,7 +547,7 @@ b_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
         return(num / (di * den))
       })
 
-    } else if (kernel_type == "sph") {
+    } else {
 
       d_tilde <- sum(d)
       num <- integrate(function(t) kernel(t) * t^(d_tilde / 2),
@@ -549,10 +555,6 @@ b_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
       den <- integrate(function(t) kernel(t) * t^(d_tilde / 2 - 1),
                        lower = 0, upper = Inf, ...)$value
       bd <- num / (d_tilde * den)
-
-    } else {
-
-      stop("kernel_type must be either \"prod\" or \"sph\".")
 
     }
 
@@ -568,14 +570,10 @@ b_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
 
         bd <- 1 / (d + 4)
 
-      } else if (kernel_type == "sph") {
+      } else {
 
         d_tilde <- sum(d)
         bd <- 1 / (d_tilde + 4)
-
-      } else {
-
-        stop("kernel_type must be either \"prod\" or \"sph\".")
 
       }
 
@@ -589,16 +587,12 @@ b_d <- function(kernel, d, k = 10, kernel_type = c("prod", "sph")[1], ...) {
           polylog_minus_exp_mu(s = di / 2 + 1, mu = k))
         bd <- Li_num / (2 * k * Li_den)
 
-      } else if (kernel_type == "sph") {
+      } else {
 
         d_tilde <- sum(d)
         Li_num <- polylog_minus_exp_mu(s = d_tilde / 2 + 2, mu = k)
         Li_den <- polylog_minus_exp_mu(s = d_tilde / 2 + 1, mu = k)
         bd <- Li_num / (2 * k * Li_den)
-
-      } else {
-
-        stop("kernel_type must be either \"prod\" or \"sph\".")
 
       }
 

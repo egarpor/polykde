@@ -40,3 +40,17 @@
 # polykde 1.2.1
 
 * Unrandomize the tests in `tests_bwd.R`, `tests_distr.R`, `tests_grad_hess.R`, `tests_kde.R`, `tests_samplers.R`, and `tests_tests.R` to avoid spurious failures on some platforms.
+
+# polykde 1.3.0
+
+* Move `DirStats` from `Suggests` to `Imports`, with a minimum version 1.0.0, and `Bessel` from `Imports` to `Suggests`.
+* Remove the internal `log_besselI_scaled()` and `fast_log_c_vMF()`, in favor of `DirStats::log_besselI_scaled()` and `DirStats::log_c_vmf()`.
+* Update `bw_cv_polysph(type = "LSCV", exact_vmf = TRUE)` to use chunking and reduce memory usage significantly without speed loss.
+* Add `loo` to `kde_polysph()`, speeding up `log_cv_kde_polysph()`, particularly for the vMF-product kernel, and hence `bw_cv_polysph(type = "LCV")`.
+* Add `show_prog` to `hom_test_polysph()` to silence the permutation progress bar.
+* Add the vignette `vignette("polykde")`.
+* Restrict `grad_hess_kde_polysph()`, `proj_grad_kde_polysph()`, and `euler_ridge()` to the vMF-product kernel.
+* Fix `parallel_euler_ridge()` misaligning the output fields when some starting points fail.
+* Increase test coverage.
+* Add usage examples to the README.
+* Update the reference to García-Portugués and Meilán-Vila (2026), now published.

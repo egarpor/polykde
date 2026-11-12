@@ -44,6 +44,8 @@ const double log_M_PI = std::log(M_PI);
 //' the kernel density estimator evaluated at \code{x}.}
 //' \item{hess}{an array of size \code{c(nx, sum(d) + r, sum(d) + r)} with the
 //' Hessian matrix of the kernel density estimator evaluated at \code{x}.}
+//' @details Only the von Mises--Fisher product kernel (\code{kernel = 1},
+//' \code{kernel_type = 1}) is supported.
 //' @examples
 //' # Simple check on (S^1)^2
 //' n <- 3
@@ -71,10 +73,10 @@ Rcpp::List grad_hess_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
    * Code replicated from kde_polysph(). NEW indicates the main differences.
    */
 
-  // Stop if kernel_type is not product (NEW)
-  if (kernel_type != 1) {
+  // Stop if the kernel is not the vMF product kernel (NEW)
+  if (kernel != 1 || kernel_type != 1) {
 
-    Rcpp::stop("Only kernel_type = 1 is supported.");
+    Rcpp::stop("Only kernel = 1 and kernel_type = 1 are supported.");
 
   }
 
@@ -494,6 +496,8 @@ Rcpp::List grad_hess_kde_polysph(arma::mat x, arma::mat X, arma::uvec d,
 //' first non-null Hessian eigenvector evaluated at \code{x}.}
 //' \item{lamb_norm}{a matrix of size \code{c(nx, sum(d) + r)} with the
 //' Hessian eigenvalues (largest to smallest) evaluated at \code{x}.}
+//' @details Only the von Mises--Fisher product kernel (\code{kernel = 1},
+//' \code{kernel_type = 1}) is supported.
 //' @examples
 //' # Simple check on (S^1)^2
 //' n <- 3

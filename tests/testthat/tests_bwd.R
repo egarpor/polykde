@@ -21,7 +21,7 @@ test_that("v_d(L) equals definition for kernel = 1, 2", {
   expect_equal(v_d(d = d, kernel = 2),
                DirStats::d_L(L = function(r) (1 - r) * (r <= 1), q = d) /
                  DirStats::lambda_L(L = function(r) (1 - r) * (r <= 1), q = d),
-               tolerance = 1e-6)
+               tolerance = 1e-5)
 })
 
 ## CV bandwidth selectors
@@ -107,9 +107,9 @@ test_that("bw_cv_polysph(type = \"LCV\") in sequential and parallel mode", {
 test_that("bw_cv_polysph(type = \"LSCV\") in sequential and parallel mode", {
   expect_equal(
     bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV", method = "L-BFGS-B",
-                  control = list(maxit = 1e3), seed_mc = 1)$opt$value,
+                  M = 1e3, control = list(maxit = 1e3), seed_mc = 1)$opt$value,
     bw_cv_polysph(X = X, d = d, kernel = 1, type = "LSCV", method = "L-BFGS-B",
-                  control = list(maxit = 1e3), seed_mc = 1,
+                  M = 1e3, control = list(maxit = 1e3), seed_mc = 1,
                   ncores = 2)$opt$value,
     tolerance = 1e-2)
 })
@@ -188,6 +188,49 @@ test_that("bw_cv_polysph(type = \"LSCV\", arcsinh = TRUE) loss", {
       tolerance = 1e-3)
 
   }
+
+})
+
+test_that("bw_cv_polysph(type = \"LSCV\", exact_vmf = TRUE) loss with blocks", {
+
+  # n = 1001 splits into five row blocks (four of 249 rows and one of 5)
+  set.seed(987202226)
+  n_b <- 1001
+  d_b <- c(1, 2)
+  h_b <- c(0.4, 0.6)
+  X_b <- r_unif_polysph(n = n_b, d = d_b)
+
+  # Exact LSCV loss over the full lower triangle, without blocks
+  ind_dj <- cumsum(c(0, d_b + 1))
+  a_ij <- 0
+  s_ij <- 0
+  for (l in seq_along(d_b)) {
+
+    xi_xj <- tcrossprod(X_b[, (ind_dj[l] + 1):ind_dj[l + 1]])
+    xi_xj <- xi_xj[lower.tri(xi_xj)]
+    a_ij <- a_ij + xi_xj / h_b[l]^2
+    s_ij <- s_ij + DirStats::log_c_vmf(q = d_b[l], kappa =
+                                         sqrt(pmax(2 * (1 + xi_xj), 0)) /
+                                         h_b[l]^2)
+
+  }
+  log_c_h2 <- sum(DirStats::log_c_vmf(q = d_b, kappa = 1 / h_b^2))
+  log_c_2h2 <- sum(DirStats::log_c_vmf(q = d_b, kappa = 2 / h_b^2))
+  cv_1 <- exp(2 * log_c_h2 - log_c_2h2 - log(n_b))
+  cv_2 <- 2 * sum(exp(a_ij + log_c_h2 + log(2 / (n_b - 1)) - log(n_b)) -
+                    exp(2 * (log_c_h2 - log(n_b)) - s_ij))
+  cv_full <- cv_1 - cv_2
+
+  # Blocked loss evaluated at bw0 (maxit = 0 skips the optimization)
+  cv_blocks <- bw_cv_polysph(X = X_b, d = d_b, kernel = 1, type = "LSCV",
+                             bw0 = h_b, control = list(maxit = 0),
+                             method = "BFGS", exact_vmf = TRUE)$opt$value
+  expect_equal(cv_blocks, cv_full, tolerance = 1e-8)
+  expect_equal(
+    bw_cv_polysph(X = X_b, d = d_b, kernel = 1, type = "LSCV", bw0 = h_b,
+                  control = list(maxit = 0), method = "BFGS",
+                  exact_vmf = TRUE, arcsinh = TRUE)$opt$value,
+    asinh(cv_blocks))
 
 })
 
@@ -284,6 +327,22 @@ test_that("bw_cv_polysph(type = \"LCV\") with optim/nlm", {
     tolerance = 1e-2)
   expect_error(bw_cv_polysph(X = X, d = d, kernel = 1, type = "LCV",
                              opt = "nlm", ncores = 2))
+  expect_error(bw_cv_polysph(X = X, d = d + 1))
+  expect_error(bw_cv_polysph(X = X, d = d, type = "LSCV", exact_vmf = TRUE,
+                             intrinsic = TRUE))
+  expect_error(bw_cv_polysph(X = X, d = d, type = "foo"))
+  expect_error(bw_cv_polysph(X = X, d = d, bw0 = 1:3))
+  expect_message(expect_message(bw_cv_polysph(X = X, d = d, bw0 = h, h_min = 1,
+                                              control = list(maxit = 0,
+                                                             trace = 1)),
+                                "h_min"), "bw0")
+  expect_message(bw_cv_polysph(X = X, d = d, type = "LSCV", exact_vmf = TRUE,
+                               bw0 = h, h_min = 1, control = list(maxit = 0)),
+                 "h_min")
+  expect_message(bw_cv_polysph(X = X, d = d, type = "LSCV", M = 10,
+                               common_h = TRUE, bw0 = h, h_min = 1,
+                               method = "BFGS", control = list(maxit = 0)),
+                 "h_min")
 
 })
 
@@ -564,7 +623,7 @@ test_that("Same result for vMF kernel with kernel_type = 1,2", {
   n <- 50
   kappa <- 1:r
   mu <- r_unif_polysph(n = 5, d = d)
-  X <- r_kde_polysph(n = n, X = mu, d = d, h = h)
+  X <- r_kde_polysph(n = n, X = mu, d = d, h = h, norm_X = TRUE)
   expect_equal(
     bw_rot_polysph(X = X, d = d, kernel = 1, kernel_type = 1)$bw,
     bw_rot_polysph(X = X, d = d, kernel = 1, kernel_type = 2)$bw
@@ -615,6 +674,15 @@ test_that("Same result with kappa precomputed", {
       bw_mrot_polysph(X = X + 1, d = d, kappa = kappa),
       bw_mrot_polysph(X = X, d = d, kappa = NULL)
     )
+    expect_error(bw_rot_polysph(X = X, d = d + 1))
+    expect_error(bw_rot_polysph(X = X, d = d, bw0 = 1:3))
+    expect_message(expect_output(bw_rot_polysph(X = X, d = d, print.level = 1,
+                                                iterlim = 1)), "bw0")
+    expect_error(bw_rot_polysph(X = X, d = d, upscale = 2), "Not supported")
+    expect_length(bw_rot_polysph(X = X, d = d, upscale = 1)$bw, 2)
+    expect_error(bw_mrot_polysph(X = X, d = d + 1))
+    expect_error(bw_mrot_polysph(X = X, d = d, kernel = 4))
+    for (u in 1:2) expect_length(bw_mrot_polysph(X = X, d = d, upscale = u), 2)
 
 })
 

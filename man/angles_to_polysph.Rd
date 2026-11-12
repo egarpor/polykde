@@ -21,8 +21,8 @@ Assumed to be of unit norm by blocks of coordinates in the rows.}
 }
 \value{
 \itemize{
-\item{\code{angles_to_polysph}: the matrix \code{x}.}
-\item{\code{polysph_to_angles}: the matrix \code{theta}.}
+  \item \code{angles_to_polysph}: the matrix \code{x}.
+  \item \code{polysph_to_angles}: the matrix \code{theta}.
 }
 }
 \description{
