@@ -8,7 +8,7 @@ test_that("Check d_vmf_polysph by inverse weighted sampling", {
   d <- c(1, 2)
   mu <- c(0, 1, 0, 1, 0)
   kappa <- c(1, 1)
-  x <- r_vmf_polysph(n = M, d = d, mu = mu, kappa = kappa)
+  x <- r_vmf_polysph(n = M, d = d, mu = mu, kappa = kappa, norm_mu = TRUE)
   dens <- d_vmf_polysph(x = x, d = d, mu = mu, kappa = kappa)
   expect_equal(mean(1 / dens) / prod(rotasym::w_p(p = d + 1)), 1,
                tolerance = 1e-1)
@@ -43,6 +43,13 @@ test_that("Mixture functions accept a length-r kappa vector when m = 1", {
   dens <- d_mvmf_polysph(x = x, d = d, mu = mu, kappa = kappa, prop = 1)
   expect_length(dens, 5)
   expect_true(all(is.finite(dens)))
+  expect_equal(d_mvmf_polysph(x = x, d = d, mu = mu, kappa = kappa, prop = 1,
+                              log = TRUE), log(dens))
+  expect_error(d_mvmf_polysph(x = x, d = d, mu = mu, kappa = 1:3, prop = 1))
+  expect_error(d_mvmf_polysph(x = x, d = d, mu = mu[-1], kappa = kappa,
+                              prop = 1))
+  expect_error(d_mvmf_polysph(x = x, d = d, mu = mu, kappa = kappa,
+                              prop = 0.5))
 
 })
 

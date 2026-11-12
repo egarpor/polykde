@@ -290,9 +290,9 @@ test_that("Tests reject H_0 when it is false", {
 
 test_that("Edge cases hom_test_polysph()", {
 
-  expect_no_error(hom_test_polysph(X = X, d = d, labels = labels,
-                                   type = "jsd", B = 10, M = M,
-                                   plot_boot = TRUE, show_prog = FALSE))
+  expect_output(hom_test_polysph(X = X, d = d, labels = labels,
+                                 type = "jsd", B = 10, M = M,
+                                 plot_boot = TRUE, show_prog = TRUE))
   expect_error(hom_test_polysph(X = X, d = d, labels = labels,
                                 type = "wrong", B = 1, M = M,
                                 show_prog = FALSE))

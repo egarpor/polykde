@@ -14,8 +14,7 @@ x <- r_unif_polysph(n = nx, d = d)
 X <- r_unif_polysph(n = n, d = d)
 X1 <- X[1:n1, ]
 X2 <- X[(n1 + 1):n, ]
-x_int <- rbind(X, r_unif_polysph(n = 1e5, d = d))
-# Fine for integrating up to r = 3
+x_int <- rbind(X, r_unif_polysph(n = 1e4, d = d))
 
 ## Basics
 
@@ -54,6 +53,8 @@ test_that("Kernel normalization", {
 test_that("Edge cases kde_polysph()", {
   expect_error(kde_polysph(x = x, X = X, d = d, h = h, kernel = 4))
   expect_error(kde_polysph(x = x, X = X, d = d, h = h, kernel = 2,
+                           kernel_type = 4))
+  expect_error(kde_polysph(x = x, X = X, d = d, h = h, kernel = 3,
                            kernel_type = 4))
   expect_error(kde_polysph(x = cbind(x, 1), X = X, d = d, h = h))
   expect_error(kde_polysph(x = cbind(x, 1), X = cbind(X, 1), d = d, h = h))
@@ -382,6 +383,9 @@ test_that("bw_lcv_min_epa is the critical point", {
 })
 test_that("bw_lcv_min_epa() requires n >= 2", {
   expect_error(bw_lcv_min_epa(X = X[1, , drop = FALSE], d = d))
+  expect_error(bw_lcv_min_epa(X = X, d = d + 1))
+  expect_error(bw_lcv_min_epa(X = X, d = d, kernel_type = 2))
+  expect_error(bw_lcv_min_epa(X = X, d = d, kernel_type = "foo"))
 })
 
 ## Others

@@ -49,5 +49,8 @@
 * Add `loo` to `kde_polysph()`, speeding up `log_cv_kde_polysph()`, particularly for the vMF-product kernel, and hence `bw_cv_polysph(type = "LCV")`.
 * Add `show_prog` to `hom_test_polysph()` to silence the permutation progress bar.
 * Add the vignette `vignette("polykde")`.
+* Restrict `grad_hess_kde_polysph()`, `proj_grad_kde_polysph()`, and `euler_ridge()` to the vMF-product kernel.
+* Fix `parallel_euler_ridge()` misaligning the output fields when some starting points fail.
+* Increase test coverage.
 * Add usage examples to the README.
 * Update the reference to García-Portugués and Meilán-Vila (2026), now published.

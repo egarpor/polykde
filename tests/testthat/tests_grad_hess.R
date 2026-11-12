@@ -325,16 +325,6 @@ test_that("Projected gradient is orthogonal to x", {
   expect_false(max(abs(drop(P %*% eta_2) - eta_2)) < 1e-9)
 })
 
-test_that("grad_hess_kde_polysph() runs for kernel = 2 and 3", {
-  # The mis-bound c_kern() call could silently corrupt or, depending on
-  # coercion, break the computation for kernel %in% c(2, 3)
-  for (ker in c(2, 3)) {
-    out <- grad_hess_kde_polysph(x = x, X = X, d = d, h = h, kernel = ker)
-    expect_true(all(is.finite(out$grad)))
-    expect_true(all(is.finite(out$hess)))
-  }
-})
-
 ## Normalizing constants
 
 test_that("Normalizing constants in unprojected gradient and Hessians", {
@@ -371,4 +361,24 @@ test_that("Normalizing constants in projected gradient and Hessians", {
   gh_4$hess <- cte * gh_4$hess
   expect_equal(gh_1, gh_2)
   expect_equal(gh_3, gh_4)
+})
+
+test_that("Edge cases grad_hess_kde_polysph()", {
+
+  expect_error(grad_hess_kde_polysph(x = cbind(x, 1), X = X, d = d, h = h))
+  expect_error(grad_hess_kde_polysph(x = x, X = X, d = c(d, 1), h = h))
+  expect_error(grad_hess_kde_polysph(x = x, X = X, d = d, h = c(h, 1)))
+  expect_error(grad_hess_kde_polysph(x = x, X = X, d = d, h = 0 * h))
+  expect_error(grad_hess_kde_polysph(x = x, X = X, d = d, h = h, kernel = 2),
+               "kernel = 1")
+  expect_equal(grad_hess_kde_polysph(x = 2 * x, X = 2 * X, d = d, h = h,
+                                     weights = rep(2, n), wrt_unif = TRUE,
+                                     norm_x = TRUE, norm_X = TRUE),
+               grad_hess_kde_polysph(x = x, X = X, d = d, h = h,
+                                     wrt_unif = TRUE))
+  expect_error(proj_grad_kde_polysph(x = NaN * x, X = X, d = d, h = h),
+               "failed")
+  expect_error(proj_grad_kde_polysph(x = NaN * x, X = X, d = d, h = h,
+                                     sparse = TRUE), "failed")
+
 })

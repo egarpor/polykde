@@ -19,6 +19,7 @@ test_that("proj_polysph() rejects zero-norm blocks", {
   )
   out <- proj_polysph(x = rbind(c(2, 0, 1, 1)), ind_dj = comp_ind_dj(c(1, 1)))
   expect_equal(unname(out[1, 1:2]), c(1, 0))
+  expect_error(proj_polysph(x = rbind(c(1, 0)), ind_dj = comp_ind_dj(c(1, 1))))
 })
 
 ## dist_polysph()
@@ -36,6 +37,8 @@ test_that("Normalization in dist_polysph()", {
                  norm_x = FALSE, norm_y = FALSE),
     dist_polysph(x = X1, y = X2, ind_dj = ind_dj,
                  norm_x = TRUE, norm_y = TRUE))
+  expect_error(dist_polysph(x = X1, y = X2[1:2, ], ind_dj = ind_dj))
+  expect_error(dist_polysph(x = X1, y = X2, ind_dj = c(0, 3)))
 })
 
 test_that("Simple case in dist_polysph()", {
@@ -85,7 +88,8 @@ test_that("dist_polysph_cross() equals dist_polysph()", {
                        ind_dj = ind_dj),
           dist_polysph(x = X1[1:3, ], y = X2[2, , drop = FALSE],
                        ind_dj = ind_dj)),
-    dist_polysph_cross(x = X1[1:3, ], y = X2[1:2, ], ind_dj = ind_dj),
+    dist_polysph_cross(x = X1[1:3, ], y = X2[1:2, ], ind_dj = ind_dj,
+                       norm_x = TRUE, norm_y = TRUE),
     tolerance = 1e-6)
   expect_equal(
     dist_polysph(x = X1[1, , drop = FALSE], y = X2[1, , drop = FALSE],
@@ -93,6 +97,8 @@ test_that("dist_polysph_cross() equals dist_polysph()", {
     dist_polysph_cross(x = X1[1, , drop = FALSE], y = X2[1, , drop = FALSE],
                        ind_dj = ind_dj),
     tolerance = 1e-6)
+  expect_error(dist_polysph_cross(x = X1, y = X2[, -1], ind_dj = ind_dj))
+  expect_error(dist_polysph_cross(x = X1, y = X2, ind_dj = c(0, 3)))
 })
 
 ## diamond_crossprod() and diamond_rcrossprod()
@@ -112,6 +118,7 @@ test_that("Simple case in diamond_crossprod()", {
             cbind(tcrossprod(X[i, 4:7], X[i, 1:3]), tcrossprod(X[i, 4:7])))
       )
   }
+  expect_error(diamond_crossprod(X = X, ind_dj = c(0, 3)))
 })
 
 test_that("Simple case in diamond_rcrossprod()", {
@@ -121,6 +128,7 @@ test_that("Simple case in diamond_rcrossprod()", {
   expect_equal(
     diamond_rcrossprod(X = X, ind_dj = ind_dj)[, , 2],
     tcrossprod(X[, 4:7]))
+  expect_error(diamond_rcrossprod(X = X, ind_dj = c(0, 3)))
 })
 
 ## s()
@@ -157,6 +165,7 @@ test_that("AP does the job", {
   expect_equal(proj_P(x = x, d = d), AP(x = x, v = x, ind_dj = ind_dj)$P)
   expect_equal(diag(1, nrow = ncol(x), ncol = ncol(x)) - proj_P(x = x, d = d),
                AP(x = x, v = x, ind_dj = ind_dj, orth = TRUE)$P)
+  expect_error(AP(x = x, v = x, ind_dj = c(0, 1)))
 })
 
 ## polylog_minus_exp_mu()

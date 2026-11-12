@@ -17,6 +17,21 @@ test_that("Reordering of blocks works in block_euler_ridge()", {
   expect_equal(d, res$d)
   expect_equal(x, res$start_x)
   expect_equal(x, res$paths[, , 1])
+  expect_match(parallel_euler_ridge(x = rbind(1:3), X = rbind(c(1, 0)), d = 1,
+                                    h = 1, h_euler = 1)$error, "mismatch")
+  expect_error(block_euler_ridge(x = 0, X = 0, d = 1:2, h = 1, h_euler = 1,
+                                 ind_blocks = 1))
+  expect_error(block_euler_ridge(x = 0, X = 0, d = c(1, 1), h = 1,
+                                 h_euler = 1, ind_blocks = 1))
+  expect_error(block_euler_ridge(x = 0, X = 0, d = c(1, 1), h = 1,
+                                 h_euler = 1, ind_blocks = c(1, 3)))
+  expect_error(block_euler_ridge(x = 0, X = matrix(2, nrow = 2, ncol = 4),
+                                 d = c(1, 1), h = 1, h_euler = 1,
+                                 ind_blocks = c(1, 1)))
+  expect_error(euler_ridge(x = rbind(c(1, 0)), X = rbind(c(1, 0)), d = 2,
+                           h = 1))
+  expect_error(euler_ridge(x = rbind(c(1, 0)), X = rbind(c(1, 0)), d = 1,
+                           h = c(1, 1)))
 
 })
 
@@ -25,11 +40,10 @@ test_that("clean_euler_ridge does not return error", {
   d <- 2
   X <- r_unif_polysph(n = 30, d = d)
   h_rid <- 0.5
-  h_eu <- h_rid^2
   N <- 30
   eps <- 1e-6
-  Y <- euler_ridge(x = X, X = X, d = d, h = h_rid, h_euler = h_eu,
-                   N = N, eps = eps, keep_paths = TRUE)
+  Y <- euler_ridge(x = X, X = X, d = d, h = h_rid, N = N, eps = eps,
+                   keep_paths = TRUE)
   expect_no_error(clean_euler_ridge(e = Y, X = X))
   expect_no_error(clean_euler_ridge(e = Y, X = X, p_out = 0.1))
 
@@ -45,7 +59,7 @@ test_that("index_ridge does not return error", {
   eps <- 1e-6
   Y <- euler_ridge(x = X, X = X, d = d, h = h_rid, h_euler = h_eu,
                    N = N, eps = eps, keep_paths = TRUE)
-  expect_no_error(index_ridge(endpoints = Y$ridge_y, X = X, d = d))
+  expect_no_error(index_ridge(endpoints = Y$ridge_y, X = X, d = d)$ridge_fun(0))
   expect_no_error(index_ridge(endpoints = Y$ridge_y, X = X, d = d,
                               verbose = TRUE))
 

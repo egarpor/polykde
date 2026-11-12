@@ -59,6 +59,8 @@ test_that("Intrinsic kernel constants", {
                           kernel = kern) / d_MC),
                  1, tolerance = 1e-1)
   }
+  expect_equal(c_kern(h = h, d = d, kernel_type = 2, intrinsic = TRUE),
+               c_kern(h = h, d = d, intrinsic = TRUE))
 })
 
 test_that("Intrinsic kernel constants become extrinsic constants for small h", {
@@ -243,10 +245,10 @@ dd <- 1:5
 rr <- 1:5
 
 test_that("Kernel moments for spherically symmetric vMF", {
-  expect_equal(b_d(kernel = 1, d = dd, kernel_type = "sph"),
+  expect_equal(b_d(kernel = 1, d = dd, kernel_type = 2),
                b_d(kernel = L_vMF, d = dd, kernel_type = "sph"),
                tolerance = 1e-6)
-  expect_equal(v_d(kernel = 1, d = dd, kernel_type = "sph"),
+  expect_equal(v_d(kernel = 1, d = dd, kernel_type = 2),
                v_d(kernel = L_vMF, d = dd, kernel_type = "sph"),
                tolerance = 1e-6)
 })
@@ -432,7 +434,8 @@ test_that("Efficiencies from effic_prop7() and eff_kern() coincide", {
   for (ri in rr) {
     for (di in dd) {
       expect_equal(effic_prop7(d = di, r = ri, type = "vmf"),
-                   eff_kern(kernel = 1, kernel_type = "sph", d = di, r = ri))
+                   eff_kern(kernel = 1, kernel_type = 2, kernel_ref_type = 2,
+                            d = di, r = ri))
       expect_equal(effic_prop7(d = di, r = ri, k = ki, type = "epa-p"),
                    eff_kern(kernel = 2, kernel_type = "prod", d = di, r = ri))
       for (ki in c(1, 10, 100)) {
@@ -543,4 +546,29 @@ test_that("Kernel sampling coherency between Epa and sfp in d = 2", {
   expect_false(
     ks.test(r_g_kern(n = 100, d = 2, h = 0.5, kernel = 3, k = 1),
             r_g_kern(n = 100, d = 2, h = 0.5, kernel = 2))$p.value > 0.1)
+})
+
+test_that("Edge cases kernels", {
+
+  expect_error(L(t = 1, kernel = 4))
+  expect_error(L(t = 1, deriv = 3))
+  expect_error(c_kern(h = 1, d = 2, kernel_type = 3, intrinsic = TRUE))
+  expect_error(c_kern(h = 1, d = 2, kernel_type = 3))
+  expect_error(c_kern(h = 1, d = 2, kernel = 4))
+  expect_error(r_g_kern(n = 1, d = 2, h = 1, kernel = 4))
+  for (ker in 2:3) {
+
+    expect_length(r_g_kern(n = 2, d = 3, h = 0.5, kernel = ker), 2)
+
+  }
+  expect_error(eff_kern(d = 2, r = 1, kernel = 1, kernel_type = "foo"))
+  for (f in list(b_d, v_d)) {
+    expect_error(f(kernel = 4, d = 2))
+    for (ker in list(L_vMF, 1, 2, 3)) {
+
+      expect_error(f(kernel = ker, d = 2, kernel_type = "foo"))
+
+    }
+  }
+
 })

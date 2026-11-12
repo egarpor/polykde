@@ -17,5 +17,3 @@ W  checking whether package ‘rotasym’ can be installed (4s)
 The URL https://doi.org/10.1080/01621459.2025.2521898 has been double-checked.
 
 The warning from Boolean.h is out of my control.
-
-Revdep tested with revdepcheck::revdep_check(pkg, num_workers = 1).

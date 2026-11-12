@@ -34,6 +34,14 @@ test_that("Check r_kern_polysph", {
       expect_lt(pval, 0.10)
     }
   }
+  expect_error(r_kern_polysph(n = 1, d = 1, mu = c(1, 0), h = c(1, 1)))
+  expect_error(r_kern_polysph(n = 1, d = 1, mu = 1, h = 1))
+  expect_error(r_kern_polysph(n = 1, d = 1, mu = c(1, 0), h = 1,
+                              intrinsic = TRUE))
+  expect_error(r_kern_polysph(n = 1, d = 1, mu = c(1, 0), h = 1, kernel = 2,
+                              kernel_type = 3))
+  expect_error(r_kde_polysph(n = 1, X = rbind(c(1, 0)), d = 1, h = c(1, 1)))
+  expect_error(r_kde_polysph(n = 1, X = rbind(c(1, 0)), d = 2, h = 1))
 
 })
 
@@ -107,5 +115,21 @@ test_that("Check r_mvmf_polysph with small proportions and sample size", {
   set.seed(6)
   expect_no_error(r_mvmf_polysph(n = 10, d = 1, mu = diag(c(1, 1)),
                                  kappa = c(2, 2), prop = c(0, 1)))
+  expect_error(r_vmf_polysph(n = 1, d = 1, mu = c(1, 0), kappa = c(1, 1)))
+  expect_error(r_vmf_polysph(n = 1, d = 1, mu = 1, kappa = 1))
+  expect_error(r_mvmf_polysph(n = 1, d = 1, mu = c(1, 0), kappa = c(1, 1),
+                              prop = 1))
+  expect_error(r_mvmf_polysph(n = 1, d = 1, mu = 1, kappa = 1, prop = 1))
+  expect_error(r_mvmf_polysph(n = 1, d = 1, mu = c(1, 0), kappa = 1,
+                              prop = 0.5))
+
+})
+
+test_that("r_path_s1r() and r_path_s2r() run", {
+
+  skip_if_not_installed("sdetorus")
+  expect_no_error(r_path_s1r(n = 2, r = 1))
+  expect_no_error(r_path_s1r(n = 2, r = 1, angles = TRUE))
+  expect_no_error(r_path_s2r(n = 2, r = 1))
 
 })
