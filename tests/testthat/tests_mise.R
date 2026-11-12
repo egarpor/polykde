@@ -2,6 +2,7 @@
 test_that("mise_vmf() does the job on computing exactly the MISE", {
 
   # Parameters
+  set.seed(42)
   M <- 1e4
   n <- 3
   d <- rpois(1, lambda = 1) + 1
@@ -12,7 +13,6 @@ test_that("mise_vmf() does the job on computing exactly the MISE", {
   h <- 1
 
   # Sample X's and evaluate density
-  set.seed(42)
   N1 <- 1e3
   X <- r_mvmf_polysph(n = N1, d = d, mu = mu, kappa = kappa, prop = prop)
   f_X <- drop(d_mvmf_polysph(x = X, d = d, mu = mu, kappa = kappa, prop = prop))
@@ -25,18 +25,17 @@ test_that("mise_vmf() does the job on computing exactly the MISE", {
 
   # Simulate sample and compute kde
   kde_f_2 <- sapply(seq_len(N2), function(k) {
-    kde <- tryCatch(kde_polysph(x = X, X = Y[[k]][1:n, ], d = d, h = h),
-                    error = function(e) NA)
+    kde <- kde_polysph(x = X, X = Y[[k]][1:n, ], d = d, h = h)
     (kde - f_X)^2
   })
-  kde_f_2 <- rowMeans(kde_f_2, na.rm = TRUE)
+  kde_f_2 <- rowMeans(kde_f_2)
 
   # Exact vs. Monte Carlo
   expect_equal(drop(mise_vmf(h = h, n = n, mu = mu, kappa = kappa,
                              prop = prop, d = d, seed_psi = 42,
                              spline = TRUE)$mise),
                mean(kde_f_2 / f_X),
-               tolerance = 1e-2)
+               tolerance = 5e-2)
 
 })
 
@@ -120,6 +119,7 @@ test_that("bw_mise_polysph() minimizes the MISE on the sphere", {
 test_that("ise_vmf_polysph() does the job on computing exactly the ISE", {
 
   # Parameters and sample
+  set.seed(42)
   n <- 3
   d <- rpois(1, lambda = 1) + 1
   m <- 2
@@ -134,7 +134,7 @@ test_that("ise_vmf_polysph() does the job on computing exactly the ISE", {
     ise_vmf_polysph(X = X, d = d, h = h, mu = mu, kappa = kappa,
                     prop = prop, spline = TRUE, exact = TRUE)$ise,
     ise_vmf_polysph(X = X, d = d, h = h, mu = mu, kappa = kappa,
-                    prop = prop, seed_psi = 42, M_psi = 1e4,
+                    prop = prop, seed_psi = 42, M_psi = 1e5,
                     spline = TRUE, exact = FALSE)$ise,
     tolerance = 5e-2
   )

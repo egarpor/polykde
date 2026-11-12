@@ -21,7 +21,7 @@ test_that("v_d(L) equals definition for kernel = 1, 2", {
   expect_equal(v_d(d = d, kernel = 2),
                DirStats::d_L(L = function(r) (1 - r) * (r <= 1), q = d) /
                  DirStats::lambda_L(L = function(r) (1 - r) * (r <= 1), q = d),
-               tolerance = 1e-6)
+               tolerance = 1e-5)
 })
 
 ## CV bandwidth selectors

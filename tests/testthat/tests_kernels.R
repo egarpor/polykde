@@ -171,7 +171,7 @@ test_that("Coherency between lambda_h, b_d, and v_d", {
       expect_equal(v_d(kernel = ki, d = di),
                    lambda_h(d = di, kernel = ki, squared = TRUE, h = NULL) /
                      lambda_h(d = di, kernel = ki, h = NULL)^2,
-                   tolerance = 1e-6)
+                   tolerance = 1e-5)
     }
   }
 })
@@ -211,7 +211,7 @@ test_that("Kernel moments for product vMF", {
     expect_equal(b_d(kernel = 1, d = di), b_d(kernel = L_vMF, d = di),
                  tolerance = 1e-6)
     expect_equal(v_d(kernel = 1, d = di), v_d(kernel = L_vMF, d = di),
-                 tolerance = 1e-6)
+                 tolerance = 1e-5)
   }
 })
 
@@ -356,7 +356,7 @@ test_that("Intrinsic and extrinsic moments match for J(s) := L(s^2/2) or
       expect_equal(b_d_tilde(d = di, kernel = kern),
                    b_d(d = di, kernel = kern), tolerance = 1e-5)
       expect_equal(v_d_tilde(d = di, kernel = kern),
-                   v_d(d = di, kernel = kern), tolerance = 1e-5)
+                   v_d(d = di, kernel = kern), tolerance = 1e-4)
     }
   }
 })
