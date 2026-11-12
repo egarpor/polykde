@@ -132,7 +132,8 @@ eff_kern(d = 2, r = 2, kernel = "3", k = 10, kernel_type = "sph")
 ```{r kde-sphere, fig.asp = 0.55, fig.width = 7}
 set.seed(42)
 d <- 2
-X <- r_mvmf_polysph(n = 500, d = d, mu = rbind(c(0, 0, 1), c(1, 1, 0) / sqrt(2)),
+X <- r_mvmf_polysph(n = 500, d = d, mu = rbind(c(0, 0, 1),
+                                               c(1, 1, 0) / sqrt(2)),
                     kappa = rbind(10, 25), prop = c(0.6, 0.4))
 h <- bw_rot_polysph(X = X, d = d)$bw
 
