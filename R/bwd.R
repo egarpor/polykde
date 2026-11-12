@@ -149,10 +149,11 @@ bw_cv_polysph <- function(X, d, kernel = 1, kernel_type = 1, k = 10,
 
       }
 
-      # Row blocks holding up to 2.5e5 inner products each, so the pairwise
-      # sums take O(n * b) memory. Recomputing the inner products is cheap, as
-      # log_c_vmf() dominates the cost. The evaluation time is flat in the
-      # block size above 1e5 while the peak memory grows linearly with it.
+      # Inner products (X_{il}'X_{jl})_{ij}, l = 1, ..., r, of the strict lower
+      # triangle i > j, obtained with tcrossprod() on row blocks of up to 2.5e5
+      # entries, so the pairwise sums take O(n * b) memory instead of O(n^2).
+      # Recomputing them for each h is cheap, as log_c_vmf() dominates the
+      # cost, and the time is flat in the block size above 1e5.
       ind_dj <- comp_ind_dj(d = d)
       b <- max(1, min(n, floor(2.5e5 / n)))
       blocks <- split(x = seq_len(n), f = ceiling(seq_len(n) / b))
