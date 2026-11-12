@@ -497,16 +497,19 @@ arma::vec log_cv_kde_polysph(arma::mat X, arma::uvec d, arma::vec h,
   } else {
 
     // For the extrinsic product vMF kernel, the log-kernel is
-    // log L_h(X_i, X_j) = C + sum_dj (X_{i,dj}'X_{j,dj} - 1) / h_dj^2. The
-    // log-kernel matrix is then, up to constants, the Gram matrix X (X S)',
-    // with S scaling the coordinates of S^dj by 1 / h_dj^2, which can be
-    // blockwise computed. C is computed with a single kde call.
+    // log L_h(X_i, X_j) = C + sum_dj (X_{i,dj}'X_{j,dj} - 1) / h_dj^2, with C
+    // the log-kernel at X_i = X_j, computed with a single kde call. The sum is
+    // the Gram matrix X (X S)' minus sum_dj 1 / h_dj^2, with S scaling the
+    // coordinates of S^dj by 1 / h_dj^2, which can be blockwise computed. The
+    // subtraction is done within each block, before adding the log-weights,
+    // and not within C: for small h, the two terms are huge and nearly cancel,
+    // so C would be lost.
     arma::vec inv_h2 = 1.0 / arma::square(h);
     double C = arma::as_scalar(kde_polysph(X.row(0), X.row(0), d, h,
                                            Rcpp::NumericVector::create(), true,
                                            wrt_unif, normalized, false, false,
                                            false, kernel, kernel_type, k,
-                                           false)) - arma::accu(inv_h2);
+                                           false));
 
     // Normalized log-weights, as in kde_polysph()
     arma::vec w = arma::ones(n);
@@ -531,7 +534,7 @@ arma::vec log_cv_kde_polysph(arma::mat X, arma::uvec d, arma::vec h,
     for (arma::uword i0 = 0; i0 < n; i0 += b) {
 
       arma::uword i1 = std::min(i0 + b, n) - 1;
-      arma::mat G = XS.rows(i0, i1) * X.t();
+      arma::mat G = XS.rows(i0, i1) * X.t() - arma::accu(inv_h2);
       G.each_row() += log_w.t();
       G.diag(i0).fill(-arma::datum::inf);
 

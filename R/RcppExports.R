@@ -52,8 +52,8 @@
 #' @references
 #' García-Portugués, E. and Meilán-Vila, A. (2023). Hippocampus shape analysis
 #' via skeletal models and kernel smoothing. In Larriba, Y. (Ed.),
-#' \emph{Statistical Methods at the Forefront of Biomedical Advances},
-#' pp. 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}.
+#' \emph{Statistical Methods at the Forefront of Biomedical Advances}, pp.
+#' 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}
 #' @seealso
 #' \code{\link{clean_euler_ridge}}, \code{\link{index_ridge}},
 #' \code{\link{proj_grad_kde_polysph}}, \code{\link{grad_hess_kde_polysph}}.
@@ -235,7 +235,7 @@ proj_grad_kde_polysph <- function(x, X, d, h, weights = as.numeric( c()), wrt_un
 #' García-Portugués, E. and Meilán-Vila, A. (2026). Kernel density estimation
 #' with polyspherical data and its applications. \emph{Journal of the American
 #' Statistical Association}, 121(553):427--439.
-#' \doi{10.1080/01621459.2025.2521898}.
+#' \doi{10.1080/01621459.2025.2521898}
 #' @seealso \code{\link{log_cv_kde_polysph}},
 #' \code{\link{grad_hess_kde_polysph}}, \code{\link{r_kde_polysph}},
 #' \code{\link{bw_rot_polysph}}, \code{\link{bw_cv_polysph}},
