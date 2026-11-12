@@ -30,10 +30,10 @@
 #' @references
 #' García-Portugués, E. and Meilán-Vila, A. (2023). Hippocampus shape analysis
 #' via skeletal models and kernel smoothing. In Larriba, Y. (Ed.),
-#' \emph{Statistical Methods at the Forefront of Biomedical Advances},
-#' pp. 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}.
+#' \emph{Statistical Methods at the Forefront of Biomedical Advances}, pp.
+#' 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}
 #'
-#' Liu, Z., Hong, J., Vicory, J., Damon, J. N. and Pizer, S. M. (2021). Fitting
+#' Liu, Z., Hong, J., Vicory, J., Damon, J. N., and Pizer, S. M. (2021). Fitting
 #' unbranching skeletal structures to objects. \emph{Medical Image Analysis},
 #' 70:102020. \doi{10.1016/j.media.2021.102020}
 #' @examples

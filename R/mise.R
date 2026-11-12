@@ -37,7 +37,7 @@
 #' @references
 #' García-Portugués, E., Crujeiras, R. M., and González-Manteiga, W. (2013).
 #' Kernel density estimation for directional-linear data. \emph{Journal of
-#' Multivariate Analysis}, 121:152--175. \doi{10.1016/j.jmva.2013.06.009}.
+#' Multivariate Analysis}, 121:152--175. \doi{10.1016/j.jmva.2013.06.009}
 #' @examples
 #' h <- seq(0.01, 1, l = 100)
 #' log_mise_h <- log(polykde:::mise_vmf(

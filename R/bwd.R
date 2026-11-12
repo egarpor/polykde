@@ -53,7 +53,7 @@
 #' García-Portugués, E. and Meilán-Vila, A. (2026). Kernel density estimation
 #' with polyspherical data and its applications. \emph{Journal of the American
 #' Statistical Association}, 121(553):427--439.
-#' \doi{10.1080/01621459.2025.2521898}.
+#' \doi{10.1080/01621459.2025.2521898}
 #' @examples
 #' \donttest{
 #' n <- 20
@@ -671,7 +671,7 @@ curv_vmf_polysph <- function(kappa, d, log = FALSE) {
 #' García-Portugués, E. and Meilán-Vila, A. (2026). Kernel density estimation
 #' with polyspherical data and its applications. \emph{Journal of the American
 #' Statistical Association}, 121(553):427--439.
-#' \doi{10.1080/01621459.2025.2521898}.
+#' \doi{10.1080/01621459.2025.2521898}
 #' @examples
 #' n <- 100
 #' d <- 1:2
@@ -843,7 +843,7 @@ bw_rot_polysph <- function(X, d, kernel = 1, kernel_type = c("prod", "sph")[1],
 #' García-Portugués, E. and Meilán-Vila, A. (2026). Kernel density estimation
 #' with polyspherical data and its applications. \emph{Journal of the American
 #' Statistical Association}, 121(553):427--439.
-#' \doi{10.1080/01621459.2025.2521898}.
+#' \doi{10.1080/01621459.2025.2521898}
 #' @examples
 #' n <- 100
 #' d <- 1:2

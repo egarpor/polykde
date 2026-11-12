@@ -234,8 +234,8 @@ block_euler_ridge <- function(x, X, d, h, h_euler, ind_blocks, N = 1e3,
 #' @references
 #' García-Portugués, E. and Meilán-Vila, A. (2023). Hippocampus shape analysis
 #' via skeletal models and kernel smoothing. In Larriba, Y. (Ed.),
-#' \emph{Statistical Methods at the Forefront of Biomedical Advances},
-#' pp. 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}.
+#' \emph{Statistical Methods at the Forefront of Biomedical Advances}, pp.
+#' 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}
 #' @examples
 #' \donttest{
 #' if (requireNamespace("scatterplot3d", quietly = TRUE)) {
@@ -372,8 +372,8 @@ clean_euler_ridge <- function(e, X, p_out = NULL) {
 #' @references
 #' García-Portugués, E. and Meilán-Vila, A. (2023). Hippocampus shape analysis
 #' via skeletal models and kernel smoothing. In Larriba, Y. (Ed.),
-#' \emph{Statistical Methods at the Forefront of Biomedical Advances},
-#' pp. 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}.
+#' \emph{Statistical Methods at the Forefront of Biomedical Advances}, pp.
+#' 63--82. Springer, Cham. \doi{10.1007/978-3-031-32729-2_4}
 #' @examples
 #' \donttest{
 #' if (requireNamespace("sdetorus", quietly = TRUE) &&
